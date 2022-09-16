@@ -14,11 +14,11 @@ The goal of this project is to investigate the application and adaptation of rec
 A particular model formulation called "guided" diffusion allows to bias the generative process toward a particular direction if during training a text or continuous/discrete labels are provided. This allows the creation of "AI artists" that, based on a text prompt, can create beautiful and complex images (a lot of examples here: https://www.reddit.com/r/StableDiffusion/).
 
 Some groups have reported the possibility of generating synthetic DNA regulatory elements in a context-dependent system, for example, cell-specific enhancers. 
-https://elifesciences.org/articles/41279
-https://www.biorxiv.org/content/10.1101/2022.07.26.501466v1
+(https://elifesciences.org/articles/41279 , 
+	https://www.biorxiv.org/content/10.1101/2022.07.26.501466v1)
 
-The creation of DNA-regulatory elements is not limited to regulatory single isolated enhancers. Such idea can be expanded to create a whole regulatory locus with multiple promoters and their negative and positive regulators. Besides synthetic DNA creations, a diffusion model can help understand regulatory elements components and be a valuable tool for studying single nucleotide variations (paper plant deeplearning gan) and evolution.
-https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1502-5
+The creation of DNA-regulatory elements is not limited to regulatory single isolated enhancers. Such idea can be expanded to create a whole regulatory locus with multiple promoters and their negative and positive regulators. Besides synthetic DNA creations, a diffusion model can help understand regulatory elements components and be a valuable tool for studying single nucleotide variations (https://www.biorxiv.org/content/10.1101/2022.08.22.504706v1) and evolution.
+(https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1502-5)
 
 Based on these premises, we want to create a model that can generate cell type specific or context specific DNA-sequences with certain regulatory properties based on a simple prompt. For example: 
 
