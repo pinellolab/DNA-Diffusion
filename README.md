@@ -7,6 +7,20 @@
 
 ## Abstract
 __Provide a brief outline motivating the project. How would it positively impact biological research? What is the hypothesis behind it? No need to discuss datasets or models yet, we will do that later. Focus on the grand picture and \textit{why} the community should care about it.__
+
+The Human Genome Project has laid bare the DNA sequence of the entire human genome, revealing the blueprint for tens of thousands of genes involved in a plethora of biological process and pathways.
+In addition to this (coding) part of the human genome, DNA contains millions of non-coding elements involved in the regulation of said genes. 
+
+Such regulatory elements control the expression levels of genes, in a way that is, at least in part, encoded in their primary genomic sequence. 
+Many human diseases and disorders are the result of genes being misregulated.
+As such, being able to control the behavior of such elements, and thus their effect on gene expression, offers the tantalizing opportunity of correcting disease-related misregulation.
+
+Although such cellular programming should in principle be possible through changing the sequence of regulatory elements, the rules for doing so are largely unknown.
+A number of experimental efforts have been guided by preconceived notions and assumptions about what constitutes a regulatory element, essentialy resulting in a "trial and error" approach.
+
+Here, we instead propose to use a large-scale data-driven approach to learn and apply the rules underlying regulatory element sequences, applying the latest generative modelling techniques.
+
+
 ## Introduction and Prior Work
 __Provide a short (preferably beginner friendly) introduction to the project and a brief outline of the literature most relevant to it. How does the project fit into this context?__
 
@@ -17,10 +31,11 @@ Some groups have reported the possibility of generating synthetic DNA regulatory
 (https://elifesciences.org/articles/41279 , 
 	https://www.biorxiv.org/content/10.1101/2022.07.26.501466v1)
 
-The creation of DNA-regulatory elements is not limited to regulatory single isolated enhancers. Such idea can be expanded to create a whole regulatory locus with multiple promoters and their negative and positive regulators. Besides synthetic DNA creations, a diffusion model can help understand regulatory elements components and be a valuable tool for studying single nucleotide variations (https://www.biorxiv.org/content/10.1101/2022.08.22.504706v1) and evolution.
-(https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1502-5)
 
-Based on these premises, we want to create a model that can generate cell type specific or context specific DNA-sequences with certain regulatory properties based on a simple prompt. For example: 
+### Step 1: generative model
+
+We propose to develop models that can generate cell type specific or context specific DNA-sequences with certain regulatory properties based on an input text prompt.
+For example: 
 
   - "Please generate a sequence that will activate a gene to its maximum expression level in cell type X"
 
@@ -28,8 +43,18 @@ Based on these premises, we want to create a model that can generate cell type s
 
   - "Please generate an activating sequence in cell type X that contains the transcription factor Gata1"
 
+  - "Please generate a sequence that activates a gene in liver and heart, but not in brain"
 
-We believe this can accelerate our understanding of the intrinsic properties of DNA-regulatory sequence in normal development and different diseases.
+
+### Step 2: extensions and improvements
+
+Beyond individual regulatory elements, so called "Locus Control Regions" are known to harbour multiple regulatory elements in specific configurations, working in concert to result in more complex regulatory rulesets. Having parallels with "collaging" approaches, in which multiple stable diffusion steps are combined into one final (graphical) output, we want to apply this notion to DNA sequences with the goal of designing larger regulatory loci. This is a particularly exciting and, to our knowledge, hitherto unexplored direction.
+
+Besides synthetic DNA creations, a diffusion model can help understand and interpret regulatory sequence element components and for instance be a valuable tool for studying single nucleotide variations (https://www.biorxiv.org/content/10.1101/2022.08.22.504706v1) and evolution.
+(https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1502-5)
+
+
+Taken together, we believe our work can accelerate our understanding of the intrinsic properties of DNA-regulatory sequence in normal development and different diseases.
 
 ## Proposed framework
 
