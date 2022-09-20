@@ -116,7 +116,7 @@ Our group and collaborators present a substantial reputation in the academic com
 ## Resources Requirements
 __What kinds of resources (e.g. GPU hours, RAM, storage) are needed to complete the project?__
 
-We will need several high performant GPUs for about 3 months. 
+Our initial model can be trained with small datasets (~1k  sequences) in about 3 hours ( ~500 epochs) on a colab PRO (24GB ram ) single GPU Tesla K80. Based on this we expect that to train this or similar models on the large dataset mentioned above  ( ~3 million sequences (4x200) we will need several high-performant GPUs for about 3 months. ( Optimization suggestions are welcome!)
 
 ## Timeline
 __What is a (rough) timeline for this project?__
