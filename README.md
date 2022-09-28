@@ -60,9 +60,9 @@ https://github.com/lucidrains/bit-diffusion
 
 ## Tasks and potential roadmap:
   - Collecting genomic datasets 
-  -Implementing the guided diffusion based on the code base
-Thinking about the best encoding of biological information for the guided diffusion (e.g. cell type: K562, very strong activating sequence for chromatin, or cell type: GM12878, very open chromatin)
-Plans for validation based on existing datasets or how to perform new biological experiments (we need to think about potential active learning strategies).
+  - Implementing the guided diffusion based on the code base
+  - Thinking about the best encoding of biological information for the guided diffusion (e.g. cell type: K562, very strong activating sequence for chromatin, or cell type: GM12878, very open chromatin)
+  - Plans for validation based on existing datasets or how to perform new biological experiments (we need to think about potential active learning strategies).
 
 
 ## Deliverables
