@@ -1,0 +1,20 @@
+name: diffusion
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python>=3.7
+  - gimmemotifs
+  - genomepy
+  - pytorch
+  - pytorch-lightning
+  - pandas
+  - tqdm
+  - numpy
+  - einops
+  - accelerate
+  - seaborn
+  - matplotlib
+
