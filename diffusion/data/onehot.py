@@ -14,9 +14,10 @@ def one_hot_encode(seq, alphabet, max_seq_len):
 def encode(seq, alphabet):
     """Encode a sequence."""
     seq_len = len(seq)
-    seq_array = np.zeros(seq_len)
+    seq_array = np.zeros(len(alphabet))
     for i in range(seq_len):
-        seq_array[i] = alphabet.index(seq[i])
+        seq_array[alphabet.index(seq[i])] = 1
+    
     return seq_array
 
 
