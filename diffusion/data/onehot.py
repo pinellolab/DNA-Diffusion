@@ -22,16 +22,10 @@ def encode(seq, alphabet):
 
 
 if __name__ == "__main__":
-    seq = ["T", "G", "C", "A"]
-    alphabet = ["A", "C", "G", "T"]
-    seq = ["A", "C", "G", "T"]
-    one = one_hot_encode(seq, alphabet)
-    print(one)
-    print(one.shape)
-
+    alphabet = ["A", "C", "T", "G"]
     
-    df = pd.read_csv("train_all_classifier_WM20220916_motifs.csv")
-    motifs = open("unique_motifs.txt").read().splitlines()
+    df = pd.read_csv("train_all_classifier_WM20220916.csv", sep="\t")
 
-    motif_encoded = one_hot_encode(eval(df.iloc[0]["motifs"]), motifs)
-    print(motif_encoded)
+    x_train_seq = np.array([one_hot_encode(x, alphabet, 200) for x in df['raw_sequence'] if 'N' not in x ])
+
+    print(x_train_seq.shape)
