@@ -78,8 +78,21 @@ Plans for validation based on existing datasets or how to perform new biological
 
 ## Datasets
 
-- High-resolution maps of DHSs from 733 human biosamples encompassing 438 cell and tissue types and states, and integrated these to delineate and numerically index approximately 3.6 million DHSs within the human genome sequence (https://www.nature.com/articles/s41586-020-2559-3)
+### DHS Index:
+Chromatin (DNA + associated proteins) that is actively used for the regulation of genes (i.e. "regulatory elements") is typically accessible to DNA-binding proteins such as transcription factors ([review](https://www.nature.com/articles/s41576-018-0089-8), [relevant paper](https://www.nature.com/articles/nature11232))
+Through the use of a technique called [DNase-seq](https://en.wikipedia.org/wiki/DNase-Seq), we've measured which parts of the genome are accessible across 733 human biosamples encompassing 438 cell and tissue types and states, resulting in more than 3.5 million DNase Hypersensitive Sites (DHSs).  
+Using Non-Negative Matrix Factorization, we've summarized these data into 16 _components_, each corresponding to a different cellular context (e.g. 'cardiac', 'neural', 'lymphoid').
+These full datasets and annotations are available [here](https://www.meuleman.org/research/dhsindex/) and the paper is available [here](https://www.nature.com/articles/s41586-020-2559-3).
 
+For the efforts described in this proposal, and as part of an earlier [ongoing project](https://www.meuleman.org/research/synthseqs/) in the research group of Wouter Meuleman, we've put together smaller subsets of these data that can be used to train models to generate synthetic sequences for each NMF component.
+Specifically, we have the following datasets available:
+- __training set:__ 160k sequences, 10k per NMF component ([.csv.gz](https://www.dropbox.com/s/db6up7c0d4jwdp4/train_all_classifier_WM20220916.csv.gz?dl=0)]
+- __validation set:__ 16k sequences, 1k per NMF component ([.csv.gz](https://www.dropbox.com/s/fo98xtrkt0p26oo/validation_all_classifier.csv.gz?dl=0)]
+- __test set:__ 16k sequences, 1k per NMF component ([.csv.gz](https://www.dropbox.com/s/nuglvfpy2za6gy3/test_all_classifier.csv.gz?dl=0)]
+Each of these contains the genomic locations (human genome assembly hg38, first 3 columns) of accessible genome elements, their majority NMF component (column: 'component') as well as their nucleotide sequence (column: 'raw_sequence').
+
+
+### Other potential datasets:
 
 - DNA-sequences data corresponding to annotated regulatory sequences such as gene promoters or distal regulatory sequences such as enhancers annotated (based on chromatin marks or accessibility) for hundreds of cells by the NHGRI funded projects like ENCODE or Roadmap Epigenomics. 
 
