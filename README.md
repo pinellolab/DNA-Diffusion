@@ -84,14 +84,10 @@ Through the use of a technique called [DNase-seq](https://en.wikipedia.org/wiki/
 Using Non-Negative Matrix Factorization, we've summarized these data into 16 _components_, each corresponding to a different cellular context (e.g. 'cardiac', 'neural', 'lymphoid').
 These full datasets and annotations are available [here](https://www.meuleman.org/research/dhsindex/) and the paper is available [here](https://www.nature.com/articles/s41586-020-2559-3).
 
-For the efforts described in this proposal, and as part of an earlier [ongoing project](https://www.meuleman.org/research/synthseqs/) in the research group of Wouter Meuleman, we've put together smaller subsets of these data that can be used to train models to generate synthetic sequences for each NMF component.
-Specifically, we have the following datasets available:
-- __training set:__ 160k sequences, 10k per NMF component ([.csv.gz](https://www.dropbox.com/s/db6up7c0d4jwdp4/train_all_classifier_WM20220916.csv.gz?dl=0))
-- __validation set:__ 16k sequences, 1k per NMF component ([.csv.gz](https://www.dropbox.com/s/fo98xtrkt0p26oo/validation_all_classifier.csv.gz?dl=0))
-- __test set:__ 16k sequences, 1k per NMF component ([.csv.gz](https://www.dropbox.com/s/nuglvfpy2za6gy3/test_all_classifier.csv.gz?dl=0))
+For the efforts described in this proposal, and as part of an earlier [ongoing project](https://www.meuleman.org/research/synthseqs/) in the research group of Wouter Meuleman, 
+we've put together smaller subsets of these data that can be used to train models to generate synthetic sequences for each NMF component.
 
-Each of these contains the genomic locations (human genome assembly hg38, first 3 columns) of accessible genome elements, their majority NMF component (column: 'component') as well as their nucleotide sequence (column: 'raw_sequence').
-
+Please find these data, along with a data dictionary, [here](https://www.meuleman.org/research/synthseqs/).
 
 ### Other potential datasets:
 
