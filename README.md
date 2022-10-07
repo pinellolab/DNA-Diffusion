@@ -82,7 +82,6 @@ https://github.com/lucidrains/bit-diffusion
 Chromatin (DNA + associated proteins) that is actively used for the regulation of genes (i.e. "regulatory elements") is typically accessible to DNA-binding proteins such as transcription factors ([review](https://www.nature.com/articles/s41576-018-0089-8), [relevant paper](https://www.nature.com/articles/nature11232)).
 Through the use of a technique called [DNase-seq](https://en.wikipedia.org/wiki/DNase-Seq), we've measured which parts of the genome are accessible across 733 human biosamples encompassing 438 cell and tissue types and states, resulting in more than 3.5 million DNase Hypersensitive Sites (DHSs).
 Using Non-Negative Matrix Factorization, we've summarized these data into 16 _components_, each corresponding to a different cellular context (e.g. 'cardiac', 'neural', 'lymphoid').
-These full datasets and annotations are available [here](https://www.meuleman.org/research/dhsindex/) and the paper is available [here](https://www.nature.com/articles/s41586-020-2559-3).
 
 For the efforts described in this proposal, and as part of an earlier [ongoing project](https://www.meuleman.org/research/synthseqs/) in the research group of Wouter Meuleman, 
 we've put together smaller subsets of these data that can be used to train models to generate synthetic sequences for each NMF component.
