@@ -86,7 +86,7 @@ Using Non-Negative Matrix Factorization, we've summarized these data into 16 _co
 For the efforts described in this proposal, and as part of an earlier [ongoing project](https://www.meuleman.org/research/synthseqs/) in the research group of Wouter Meuleman, 
 we've put together smaller subsets of these data that can be used to train models to generate synthetic sequences for each NMF component.
 
-Please find these data, along with a data dictionary, [here](https://www.meuleman.org/research/synthseqs/).
+Please find these data, along with a data dictionary, [here](https://www.meuleman.org/research/synthseqs/#material).
 
 ### Other potential datasets:
 
