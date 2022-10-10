@@ -33,13 +33,13 @@ Some groups have reported the possibility of generating synthetic DNA regulatory
 We propose to develop models that can generate cell type specific or context specific DNA-sequences with certain regulatory properties based on an input text prompt.
 For example: 
 
-  - "Please generate a sequence that will activate a gene to its maximum expression level in cell type X"
+  - "A sequence that will correspond to open (or closed) chromatin in cell type X"
+  
+  - "A sequence that will activate a gene to its maximum expression level in cell type X" 
 
-  - "Please generate a sequence that will correspond to open (or closed) chromatin in cell type X"
+  - "A sequence active in cell type X that contains binding site(s) for the transcription factor Y"
 
-  - "Please generate an activating sequence in cell type X that contains the transcription factor Gata1"
-
-  - "Please generate a sequence that activates a gene in liver and heart, but not in brain"
+  - "A sequence that activates a gene in liver and heart, but not in brain"
 
 
 ### Step 2: extensions and improvements
