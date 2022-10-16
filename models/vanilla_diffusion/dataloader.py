@@ -64,8 +64,8 @@ class SequenceDataModule(pl.LightningDataModule):
     def setup(self):
        #transform = T.Compose([T.ToTensor()])
        self.train_data = SequenceDataset(self.train_path, transform = self.transform)
-       self.val_data = SequenceDataset(self.train_path, transform = self.transform)
-       self.test_data = SequenceDataset(self.train_path, transform = self.transform)
+       self.val_data = SequenceDataset(self.val_path, transform = self.transform)
+       self.test_data = SequenceDataset(self.test_path, transform = self.transform)
 
     def train_dataloader(self):
         return DataLoader(self.train_data,
