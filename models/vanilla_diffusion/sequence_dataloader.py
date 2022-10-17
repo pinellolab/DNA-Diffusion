@@ -23,11 +23,9 @@ class SequenceDataset(Dataset):
             X_seq = np.array(self.one_hot_encode(current_seq, ['A','C','T','G'], 200))
             X_seq = X_seq.T
             X_seq[X_seq == 0] = -1
-
-            # One hot encoding the components that provide tissue context
-            all_cell_type = self.data["component"].to_numpy()
-            all_cell_type = F.one_hot(torch.from_numpy(all_cell_type), len(self.data.component.unique()))
-            X_cell_type = all_cell_type[index]
+            
+            # Reading cell component at current index
+            X_cell_type = self.data["component"][index]
             
             if self.transform:
                 X_seq = self.transform(X_seq)
@@ -56,10 +54,6 @@ class SequenceDataModule(pl.LightningDataModule):
         self.transform = transform
         self.batch_size = batch_size
         self.num_workers = num_workers
-
-
-    def prepare_data(self):
-        pass
 
     def setup(self):
        #transform = T.Compose([T.ToTensor()])
