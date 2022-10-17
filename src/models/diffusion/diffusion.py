@@ -3,6 +3,7 @@ import torch.nn as nn
 import pytorch_lightning as pl
 
 from utils.ema import EMA
+from utils.misc import instantiate_from_config
 
 class DiffusionModel(pl.LightningModule):
     def __init__(
