@@ -11,10 +11,10 @@ class DiffusionModel(pl.LightningModule):
         timesteps: int,
         is_conditional: bool,
         logdir: str,
-        img_size: int,
+        image_size: int,
         optimizer_config: dict,
-        lr_scheduler_config: dict = None,
-        criterion: nn.Module = nn.MSELoss(reduction="sum"),
+        lr_scheduler_config: dict,
+        criterion: nn.Module,
         use_ema: bool = True,
         ema_decay: float = 0.9999,
         lr_warmup=0,
@@ -23,15 +23,15 @@ class DiffusionModel(pl.LightningModule):
         self.save_hyperparameters(ignore=["criterion"])
 
         # create Unet
-        self.eps_model = instantiate_from_config(unet_config)
+        self.model = instantiate_from_config(unet_config)
         self.timesteps = timesteps
 
         # training parameters
         self.use_ema = use_ema
         if self.use_ema:
-            self.eps_model_ema = EMA(self.eps_model, decay=ema_decay)
+            self.eps_model_ema = EMA(self.model, decay=ema_decay)
         self.is_conditional = is_conditional
-        self.img_size = img_size
+        self.image_size = image_size
         self.lr_scheduler_config = lr_scheduler_config
         self.optimizer_config = optimizer_config
         self.lr_warmup = lr_warmup
@@ -45,12 +45,10 @@ class DiffusionModel(pl.LightningModule):
 
     def validation_step(self, batch: torch.Tensor, batch_idx: int):
         preds = self.inference_step(batch)
-        #self.log("val_loss", loss)
         return preds
 
     def test_step(self, batch: torch.Tensor, batch_idx: int):
         preds = self.inference_step(batch)
-        #self.log("test_loss", loss)
         return preds
 
     def inference_step(self, batch: torch.Tensor):
@@ -86,7 +84,7 @@ class DiffusionModel(pl.LightningModule):
 
     def on_before_zero_grad(self, *args, **kwargs) -> None:
         if self.use_ema:
-            self.eps_model_ema.update(self.eps_model)
+            self.eps_model_ema.update(self.model)
 
     def configure_optimizers(self):
         optimizer = instantiate_from_config(
