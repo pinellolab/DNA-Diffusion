@@ -68,7 +68,7 @@ class SequenceDataModule(pl.LightningDataModule):
                           num_workers=self.num_workers, 
                           pin_memory=True)
 
-    def val_dataloder(self):
+    def val_dataloader(self):
         return DataLoader(self.val_data,
                           self.batch_size, 
                           shuffle=True,
