@@ -7,8 +7,8 @@ import torch.nn.functional as F
 import pytorch_lightning as pl 
 from torch.utils.data import Dataset, DataLoader 
 
-class SequenceDataset(Dataset):
-    def __init__(self, data_path, transform):
+class SequenceDatasetBase(Dataset):
+    def __init__(self, data_path, transform=None):
         super().__init__()
         self.data = pd.read_csv(data_path, sep="\t")
         self.transform = transform
@@ -43,23 +43,46 @@ class SequenceDataset(Dataset):
         for i in range(seq_len):
             seq_array[i, alphabet.index(seq[i])] = 1 
         return seq_array
-     
+
+
+class SequenceDatasetTrain(SequenceDatasetBase):
+    def __init__(self, **kwargs):
+        super().__init__(data_path="", **kwargs)
+
+class SequenceDatasetValidation(SequenceDatasetBase):
+    def __init__(self, **kwargs):
+        super().__init__(data_path="", **kwargs)
+
+class SequenceDatasetTest(SequenceDatasetBase):
+    def __init__(self, **kwargs):
+        super().__init__(data_path="", **kwargs)
+
 
 class SequenceDataModule(pl.LightningDataModule):
-    def __init__(self, train_path, val_path, test_path, transform, batch_size=32, num_workers=3):
+    def __init__(self, train_path=None, val_path=None, test_path=None, transform=None, batch_size=None, num_workers=None):
         super().__init__()
-        self.train_path = train_path
-        self.val_path = val_path
-        self.test_path = test_path
+        self.datasets = dict()
+
+        if train_path:
+            self.datasets["train"] = train_path
+            self.train_dataloader = self._train_dataloader
+
+        if val_path:
+            self.datasets["validation"] = val_path
+            self.val_dataloader = self._val_dataloader
+
+        if test_path:
+            self.datasets["test"] = test_path
+            self.test_dataloader = self._test_dataloader
+
         self.transform = transform
         self.batch_size = batch_size
         self.num_workers = num_workers
 
     def setup(self):
-       #transform = T.Compose([T.ToTensor()])
-       self.train_data = SequenceDataset(self.train_path, transform = self.transform)
-       self.val_data = SequenceDataset(self.val_path, transform = self.transform)
-       self.test_data = SequenceDataset(self.test_path, transform = self.transform)
+       self.train_data = SequenceDatasetTrain(self.datasets["train"], transform = self.transform)
+       self.val_data = SequenceDatasetValidation(self.datasets["validation"], transform = self.transform)
+       self.test_data = SequenceDatasetTest(self.datasets["test"], transform = self.transform)
 
     def train_dataloader(self):
         return DataLoader(self.train_data,
