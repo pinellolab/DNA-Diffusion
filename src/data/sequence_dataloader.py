@@ -85,21 +85,21 @@ class SequenceDataModule(pl.LightningDataModule):
        self.val_data = SequenceDatasetValidation(self.datasets["validation"], transform = self.transform)
        self.test_data = SequenceDatasetTest(self.datasets["test"], transform = self.transform)
 
-    def train_dataloader(self):
+    def _train_dataloader(self):
         return DataLoader(self.train_data,
                           self.batch_size, 
                           shuffle=True, 
                           num_workers=self.num_workers, 
                           pin_memory=True)
 
-    def val_dataloader(self):
+    def _val_dataloader(self):
         return DataLoader(self.val_data,
                           self.batch_size, 
                           shuffle=True,
                           num_workers=self.num_workers,
                           pin_memory=True)
 
-    def test_dataloader(self):
+    def _test_dataloader(self):
         return DataLoader(self.test_data,
                           self.batch_size, 
                           shuffle=True, 
