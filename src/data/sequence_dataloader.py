@@ -8,9 +8,10 @@ import pytorch_lightning as pl
 from torch.utils.data import Dataset, DataLoader 
 
 class SequenceDatasetBase(Dataset):
-    def __init__(self, data_path, transform=None):
+    def __init__(self, data_path, sequence_length=200, transform=None):
         super().__init__()
         self.data = pd.read_csv(data_path, sep="\t")
+        self.sequence_length = sequence_length
         self.transform = transform
 
     def __len__(self):
@@ -20,7 +21,7 @@ class SequenceDatasetBase(Dataset):
         # Iterating through DNA sequences from dataset and one-hot encoding all nucleotides
         current_seq = self.data["raw_sequence"][index]
         if 'N' not in current_seq: 
-            X_seq = np.array(self.one_hot_encode(current_seq, ['A','C','T','G'], 200))
+            X_seq = np.array(self.one_hot_encode(current_seq, ['A','C','T','G'], self.sequence_length))
             X_seq = X_seq.T
             X_seq[X_seq == 0] = -1
             
@@ -34,12 +35,12 @@ class SequenceDatasetBase(Dataset):
             return X_seq, X_cell_type
 
     # Function for one hot encoding each line of the sequence dataset
-    def one_hot_encode(self, seq, alphabet, max_seq_len):
+    def one_hot_encode(self, seq, alphabet, sequence_length):
         """
         One-hot encoding a sequence 
         """
         seq_len = len(seq)
-        seq_array = np.zeros((max_seq_len, len(alphabet)))
+        seq_array = np.zeros((sequence_length, len(alphabet)))
         for i in range(seq_len):
             seq_array[i, alphabet.index(seq[i])] = 1 
         return seq_array
