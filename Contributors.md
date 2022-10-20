@@ -7,3 +7,4 @@ __Zach Nussbaum,__ Machine Learning Engineer.
 __Matei Bejan,__ Phd Student in deep learning.  
 __Simon Senan,__ Master Data Science graduate student.  
 __Aaron Wenteler,__ PhD Student in AI and Drug Discovery, Queen Mary University of London
+__Ihab Bendidi,__ PhD Student in self supervised learning, Ecole Normale Supérieure de Paris
