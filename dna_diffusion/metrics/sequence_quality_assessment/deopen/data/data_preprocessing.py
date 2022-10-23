@@ -25,7 +25,7 @@ def generate_pos_bed(data, sequence_length, output=None):
 
 def trim_sequence_length(start_arr, end_arr, seq_len):
     """
-    This functions centers the start and end positions of the sequences around the sequence centre and trims the
+    This functions centers the start and end positions of the sequences around the sequence centers and trims the
     sequences to the specified length.
     """
     starts = []
