@@ -160,6 +160,6 @@ If this project sounds exciting to you, **please join us**!
 
 ## Known contributors 
 
-You can access the contributor list [here](Contributors.md).
+You can access the contributor list [here](https://docs.google.com/spreadsheets/d/1_nxDI6DIoWbyUDpIDX-tJIILejrJ0kEYrcXXdWlzPvU/edit#gid=1871728801).
 
 
