@@ -1,7 +1,4 @@
 h5py
 hickle
-Scikit-learn=0.18.2
-Theano=0.8.0
-Lasagne=0.2.d
-ev1
-nolearn=0.6.0
+Scikit-learn==0.18.2
+nolearn==0.6.0

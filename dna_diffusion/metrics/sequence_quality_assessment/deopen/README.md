@@ -9,6 +9,12 @@ Deopen is a hybrid deep learning based framework to automatically learn the regu
 - Lasagne=0.2.dev1
 - nolearn=0.6.0
 
+NOTE: You need to download the most recent version of Theano and Lasagne 0.2.dev1 manually by running: 
+
+`pip install --upgrade https://github.com/Theano/Theano/archive/master.zip` 
+
+`pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip`.  
+
 # Installation
 Download Deopen by
 ```shell
