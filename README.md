@@ -154,8 +154,10 @@ Using the Bit Diffusion model we were able to reconstruct 200 bp sequences that 
 Expand the model lengh to generate complete regulatory regions (enhancers + Gene promoter pairs)  
 Use our syntethic enhancers on in-vivo models and check how they can regulate the transcriptional dynamics in biological scenarios (Besides the MPRA arrays).  
 
-If this project sounds exciting to you, **please join us**!
 
+## How to contribute
+If this project sounds exciting to you, **please join us**! 
+Join the OpenBioML discord: https://discord.gg/Y9CN2dUzQJ, we are discussing this project in the **dna-diffusion** channel and we will provide instructions on how to get involved.
 
 ## Known contributors 
 
