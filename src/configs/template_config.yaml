@@ -1,3 +1,6 @@
+ckpt: null # path to checkpoint
+seed: 42
+
 model:
   target: models.diffusion.DDPM
   params:
@@ -29,17 +32,28 @@ model:
         resnet_block_groups: 8
         learned_sinusoidal_dim: 16
 
-data:
-  target: data.celeba.CelebADataModule
-  params:
-    batch_size: 2048
-    num_workers: 4
+train_dl:
+  _target_: src.data.sequence_dataloader.SequenceDataModule
+  train_path: # add training dataset path
+  batch_size: 32
+  num_workers: 4
+  transform:
+    _target_: # directly reference transforms -> torchvision.transforms.ToTensor
+
+val_dl:
+  _target_: src.data.sequence_dataloader.SequenceDataModule
+  val_path: # add validation dataset path
+  batch_size: 32
+  num_workers: 4
+  transform:
+    _target_: # directly reference transforms -> torchvision.transforms.ToTensor
 
 lightning:
   callbacks:
     save_checkpoint:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
+        path: ""
         monitor: val_loss
         mode: min
         save_top_k: 10
@@ -51,6 +65,7 @@ lightning:
 
   trainer:
     benchmark: True
+    ckpt_dir:
     accelerator: gpu
     strategy: ddp
     min_epochs: 5
@@ -61,3 +76,7 @@ lightning:
     check_val_every_n_epoch: 1 #for debug purposes
     save_last: True
     precision: 32
+
+  hydra:
+    run:
+      dir:
