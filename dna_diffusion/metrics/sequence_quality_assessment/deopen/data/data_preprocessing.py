@@ -8,32 +8,34 @@ def generate_pos_bed(data, sequence_length, output=None):
     """
     This function transforms a given DHS .csv file to the required .BED file in preparation for training Deopen.
     """
-    data = data[['seqname', 'start', 'end']]
+    data = data[['seqname', 'start', 'end', 'summit']]
     starts = data['start'].tolist()
     ends = data['end'].tolist()
-    starts, ends = trim_sequence_length(starts, ends, sequence_length)
+    summits = data['summit'].tolist()
+    starts, ends = trim_sequence_length(starts, ends, summits, sequence_length)
     data['start'] = starts
     data['end'] = ends
+    data = data.drop(columns=['summit'])
     if output:
         data.to_csv(f'{output}/positive.bed', sep='\t', header=False, index=False)
-        print(f"BED file succesfully saved to {output}/positive.bed")
+        print(f"BED file successfully saved to {output}/positive.bed")
     else:
         data.to_csv('positive.bed', sep='\t', header=False, index=False)
         path = os.path.dirname(os.path.abspath(__file__))
-        print(f"BED file succesfully saved to {path}/positive.bed")
+        print(f"BED file successfully saved to {path}/positive.bed")
 
 
-def trim_sequence_length(start_arr, end_arr, seq_len):
+def trim_sequence_length(start_arr, end_arr, summit_arr, seq_len):
     """
-    This functions centers the start and end positions of the sequences around the sequence centers and trims the
+    This functions centers the start and end positions of the sequences around the sequence summits and trims the
     sequences to the specified length.
     """
     starts = []
     ends = []
-    for start, end in zip(start_arr, end_arr):
+    for i, (start, end) in enumerate(zip(start_arr, end_arr)):
         act_len = int(end) - int(start)
         if act_len != seq_len:
-            mid_idx = math.floor(act_len / 2)
+            mid_idx = int(summit_arr[i])
             start_new = start + mid_idx - math.floor(seq_len / 2)
             end_new = start + mid_idx + math.ceil(seq_len / 2)
         starts.append(start_new)
