@@ -38,8 +38,11 @@ def trim_sequence_length(start_arr, end_arr, summit_arr, seq_len):
             mid_idx = int(summit_arr[i])
             start_new = start + mid_idx - math.floor(seq_len / 2)
             end_new = start + mid_idx + math.ceil(seq_len / 2)
-        starts.append(start_new)
-        ends.append(end_new)
+            starts.append(start_new)
+            ends.append(end_new)
+        else:
+            starts.append(start)
+            ends.append(end)
     return starts, ends
 
 
