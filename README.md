@@ -91,7 +91,7 @@ Please find these data, along with a data dictionary, [here](https://www.meulema
 
 - DNA-sequences data corresponding to annotated regulatory sequences such as gene promoters or distal regulatory sequences such as enhancers annotated (based on chromatin marks or accessibility) for hundreds of cells by the NHGRI funded projects like ENCODE or Roadmap Epigenomics. 
 
-- Data from MPRA assays that test the regulatory potential of hundred of DNA sequences in parallel (https://elifesciences.org/articles/69479.pdf , )
+- Data from MPRA assays that test the regulatory potential of hundred of DNA sequences in parallel (https://elifesciences.org/articles/69479.pdf , https://www.nature.com/articles/s41588-021-01009-4 , ... )
 
 - MIAA assays that test the ability of open chromatin within a given cell type.
 
