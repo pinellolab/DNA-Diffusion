@@ -9,12 +9,9 @@ def generate_pos_bed(data, sequence_length, output=None):
     This function transforms a given DHS .csv file to the required .BED file in preparation for training Deopen.
     """
     data = data[['seqname', 'start', 'end', 'summit']]
-    starts = data['start'].tolist()
-    ends = data['end'].tolist()
-    summits = data['summit'].tolist()
+    starts, ends, summits = data['start'].tolist(), data['end'].tolist(), data['summit'].tolist()
     starts, ends = trim_sequence_length(starts, ends, summits, sequence_length)
-    data['start'] = starts
-    data['end'] = ends
+    data['start'], data['end'] = starts, ends
     data = data.drop(columns=['summit'])
     if output:
         data.to_csv(f'{output}/positive.bed', sep='\t', header=False, index=False)
@@ -50,7 +47,7 @@ if __name__ == "__main__":
     pd.options.mode.chained_assignment = None  # Supress unnecessary warnings
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data', dest='data', type=str, help='The dataset (csv) to prepare for Deopen training.')
+    parser.add_argument('-data', dest='data', type=str, help='The dataset (.csv) to prepare for Deopen training.')
     parser.add_argument('-seq_len', dest='seq_len', type=int, default=200, help='The length of the sequence to use '
                                                                                 'for training. Default is 200.')
     parser.add_argument('-out', help="Output location of the BED file.")
