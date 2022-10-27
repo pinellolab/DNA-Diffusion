@@ -1,0 +1,4 @@
+h5py
+hickle
+Scikit-learn==0.18.2
+nolearn==0.6.0
