@@ -44,6 +44,10 @@ class SequenceDatasetBase(Dataset):
         if not set("".join(self.data["raw_sequence"])).issubset(set(self.alphabet)):
             raise ValueError(f"Sequence contains invalid characters.")
 
+        uniq_raw_seq_len = self.data["raw_sequence"].str.len().unique()
+        if len(uniq_raw_seq_len) != 1 or uniq_raw_seq_len[0] != self.sequence_length:
+            raise ValueError(f"The sequence length does not match the data.")
+
     def encode_sequence(self, seq, encoding):
         """
         Encodes a sequence using the given encoding scheme ("polar", "onehot", "ordinal").
