@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import torch
 from src.data.sequence_dataloader import SequenceDataModule
 
 
@@ -85,16 +86,24 @@ def test_train_val_test_data_split():
     seen_nucleotide_idxs = set()
     for dl_idx, dataloader in enumerate([datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]):
         dataloader_iter = iter(dataloader)
+
         # first batch
         batch = next(dataloader_iter)
+        assert len(batch) == 2
+        assert isinstance(batch[0], torch.Tensor)
+        assert isinstance(batch[1], torch.Tensor)
         assert batch[0].shape == (3, 4, 10)
         assert batch[1].shape == (3,)
         uniq_nucleotides = batch[0].max(dim=1).indices.unique().tolist()
         seen_nucleotide_idxs.update(uniq_nucleotides)
         assert len(uniq_nucleotides) == 1
         assert (batch[1] == dl_idx).all()
+
         # second batch
         batch = next(dataloader_iter)
+        assert len(batch) == 2
+        assert isinstance(batch[0], torch.Tensor)
+        assert isinstance(batch[1], torch.Tensor)
         assert batch[0].shape == (1, 4, 10)
         assert batch[1].shape == (1,)
         assert batch[0].max(dim=1).indices.unique().tolist() == uniq_nucleotides
@@ -127,6 +136,9 @@ def test_polar_encoding():
     assert len(datamodule.test_data) == 4
     for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
         for batch in dataloader:
+            assert len(batch) == 2
+            assert isinstance(batch[0], torch.Tensor)
+            assert isinstance(batch[1], torch.Tensor)
             assert batch[0].shape == (2, 4, 12)
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 1).all()
@@ -159,6 +171,9 @@ def test_onehot_encoding():
     assert len(datamodule.test_data) == 4
     for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
         for batch in dataloader:
+            assert len(batch) == 2
+            assert isinstance(batch[0], torch.Tensor)
+            assert isinstance(batch[1], torch.Tensor)
             assert batch[0].shape == (2, 4, 12)
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 1).all()
@@ -191,6 +206,9 @@ def test_ordinal_encoding():
     assert len(datamodule.test_data) == 4
     for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
         for batch in dataloader:
+            assert len(batch) == 2
+            assert isinstance(batch[0], torch.Tensor)
+            assert isinstance(batch[1], torch.Tensor)
             assert batch[0].shape == (2, 12)
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 3).all()
@@ -226,6 +244,9 @@ def test_polar_transforms():
     for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
         seen_cell_type_ids = set()
         for batch in dataloader:
+            assert len(batch) == 2
+            assert isinstance(batch[0], torch.Tensor)
+            assert isinstance(batch[1], torch.Tensor)
             assert batch[0].shape == (2, 4, 12)
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 2).all()
@@ -265,6 +286,9 @@ def test_onehot_transforms():
     for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
         seen_cell_type_ids = set()
         for batch in dataloader:
+            assert len(batch) == 2
+            assert isinstance(batch[0], torch.Tensor)
+            assert isinstance(batch[1], torch.Tensor)
             assert batch[0].shape == (2, 4, 12)
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 2).all()
@@ -304,6 +328,9 @@ def test_ordinal_transforms():
     for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
         seen_cell_type_ids = set()
         for batch in dataloader:
+            assert len(batch) == 2
+            assert isinstance(batch[0], torch.Tensor)
+            assert isinstance(batch[1], torch.Tensor)
             assert batch[0].shape == (2, 12)
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 4).all()
