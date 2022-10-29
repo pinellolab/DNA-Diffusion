@@ -47,22 +47,23 @@ class SequenceDatasetBase(Dataset):
 
 
 class SequenceDatasetTrain(SequenceDatasetBase):
-    def __init__(self, **kwargs):
-        super().__init__(data_path="", **kwargs)
+    def __init__(self, data_path="", **kwargs):
+        super().__init__(data_path=data_path, **kwargs)
 
 class SequenceDatasetValidation(SequenceDatasetBase):
-    def __init__(self, **kwargs):
-        super().__init__(data_path="", **kwargs)
+    def __init__(self, data_path="", **kwargs):
+        super().__init__(data_path=data_path, **kwargs)
 
 class SequenceDatasetTest(SequenceDatasetBase):
-    def __init__(self, **kwargs):
-        super().__init__(data_path="", **kwargs)
+    def __init__(self, data_path="", **kwargs):
+        super().__init__(data_path=data_path, **kwargs)
 
 
 class SequenceDataModule(pl.LightningDataModule):
     def __init__(self, train_path=None, val_path=None, test_path=None, transform=None, batch_size=None, num_workers=None):
         super().__init__()
         self.datasets = dict()
+        self.train_dataloader, self.val_dataloader, self.test_dataloader = None, None, None
 
         if train_path:
             self.datasets["train"] = train_path
