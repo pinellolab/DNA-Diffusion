@@ -4,14 +4,28 @@ import torch
 from src.data.sequence_dataloader import SequenceDataModule
 
 
-def prepare_dummy_data(path):
+def prepare_default_data(path):
     """Prepares dummy data for testing."""
     pd.DataFrame({
         "raw_sequence": ["ATCGATCGATCG", "GGTGAACGATTA", "AATCGTATCGCG", "CTTATCGATCCG"],
         "component": [1, 2, 1, 10],
     }).to_csv(path, index=False, sep="\t")
 
-def test_invalid_data():
+def prepare_high_diversity_datasets(train_data_path, val_data_path, test_data_path):
+    pd.DataFrame({
+        "raw_sequence": ["AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA"],
+        "component": [0, 0, 0, 0],
+    }).to_csv(train_data_path, index=False, sep="\t")
+    pd.DataFrame({
+        "raw_sequence": ["CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC"],
+        "component": [1, 1, 1, 1],
+    }).to_csv(val_data_path, index=False, sep="\t")
+    pd.DataFrame({
+        "raw_sequence": ["TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT"],
+        "component": [2, 2, 2, 2],
+    }).to_csv(test_data_path, index=False, sep="\t")
+
+def test_invalid_sequence_letters():
     # prepare invalid data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
     pd.DataFrame({
@@ -31,7 +45,60 @@ def test_invalid_data():
     # check that invalid data is detected
     try:
         datamodule.setup()
-        assert False, "Invalid data should have been detected."
+        assert False, "Invalid sequence letters should have been detected."
+    except ValueError:
+        pass
+
+    # remove dummy data
+    os.remove(dummy_data_path)
+
+def test_invalid_sequence_lengths():
+    # prepare dummy data
+    dummy_data_path = "_tmp_seq_dataloader_data.csv"
+    # second sequence too short
+    pd.DataFrame({
+        "raw_sequence": ["ATCG", "GGT", "AATC", "CTTA"],
+        "component": [1, 2, 1, 10],
+    }).to_csv(dummy_data_path, index=False, sep="\t")
+
+    # prepare data module
+    datamodule = SequenceDataModule(
+        train_path=dummy_data_path,
+        val_path=None,
+        test_path=None,
+        sequence_length=4,
+        sequence_encoding="polar",
+        batch_size=2,
+        num_workers=1,
+    )
+    try:
+        datamodule.setup()
+        assert False, "Invalid sequence length should have been detected."
+    except ValueError:
+        pass
+
+    # remove dummy data
+    os.remove(dummy_data_path)
+
+    # fourth sequence too long
+    pd.DataFrame({
+        "raw_sequence": ["ATCG", "GGT", "AATC", "CTTAT"],
+        "component": [1, 2, 1, 10],
+    }).to_csv(dummy_data_path, index=False, sep="\t")
+
+    # prepare data module
+    datamodule = SequenceDataModule(
+        train_path=dummy_data_path,
+        val_path=None,
+        test_path=None,
+        sequence_length=4,
+        sequence_encoding="polar",
+        batch_size=2,
+        num_workers=1,
+    )
+    try:
+        datamodule.setup()
+        assert False, "Invalid sequence length should have been detected."
     except ValueError:
         pass
 
@@ -43,18 +110,7 @@ def test_train_val_test_data_split():
     dummy_train_data_path = "_tmp_seq_dataloader_train_data.csv"
     dummy_val_data_path = "_tmp_seq_dataloader_val_data.csv"
     dummy_test_data_path = "_tmp_seq_dataloader_test_data.csv"
-    pd.DataFrame({
-        "raw_sequence": ["AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA"],
-        "component": [0, 0, 0, 0],
-    }).to_csv(dummy_train_data_path, index=False, sep="\t")
-    pd.DataFrame({
-        "raw_sequence": ["CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC"],
-        "component": [1, 1, 1, 1],
-    }).to_csv(dummy_val_data_path, index=False, sep="\t")
-    pd.DataFrame({
-        "raw_sequence": ["TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT"],
-        "component": [2, 2, 2, 2],
-    }).to_csv(dummy_test_data_path, index=False, sep="\t")
+    prepare_high_diversity_datasets(dummy_train_data_path, dummy_val_data_path, dummy_test_data_path)
 
     # check loading of only a single data set
     datamodule = SequenceDataModule(
@@ -116,7 +172,7 @@ def test_train_val_test_data_split():
 def test_polar_encoding():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
-    prepare_dummy_data(dummy_data_path)
+    prepare_default_data(dummy_data_path)
 
     # prepare data module
     datamodule = SequenceDataModule(
@@ -151,7 +207,7 @@ def test_polar_encoding():
 def test_onehot_encoding():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
-    prepare_dummy_data(dummy_data_path)
+    prepare_default_data(dummy_data_path)
 
     # prepare data module
     datamodule = SequenceDataModule(
@@ -186,7 +242,7 @@ def test_onehot_encoding():
 def test_ordinal_encoding():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
-    prepare_dummy_data(dummy_data_path)
+    prepare_default_data(dummy_data_path)
 
     # prepare data module
     datamodule = SequenceDataModule(
@@ -221,7 +277,7 @@ def test_ordinal_encoding():
 def test_polar_transforms():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
-    prepare_dummy_data(dummy_data_path)
+    prepare_default_data(dummy_data_path)
 
     # prepare data module
     datamodule = SequenceDataModule(
@@ -263,7 +319,7 @@ def test_polar_transforms():
 def test_onehot_transforms():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
-    prepare_dummy_data(dummy_data_path)
+    prepare_default_data(dummy_data_path)
 
     # prepare data module
     datamodule = SequenceDataModule(
@@ -305,7 +361,7 @@ def test_onehot_transforms():
 def test_ordinal_transforms():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
-    prepare_dummy_data(dummy_data_path)
+    prepare_default_data(dummy_data_path)
 
     # prepare data module
     datamodule = SequenceDataModule(
