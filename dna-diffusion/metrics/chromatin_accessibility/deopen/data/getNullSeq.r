@@ -1,3 +1,5 @@
+#!/usr/lib/R/bin Rscript
+
 #==================================================================
 # Title     : getNullSeq function, part of MotifRaptor2 repository.
 # Author    : Manuel Tognon
@@ -5,9 +7,14 @@
 #==================================================================
 
 if (requireNamespace("GenomicRanges", quietly = TRUE)&
+    install.packages("GenomicRanges")&
     requireNamespace("rtracklayer", quietly = TRUE)&
-    requireNamespace("BSgenome", quietly = TRUE)){
-  
+    install.packages("rtracklayer")&
+    requireNamespace("BSgenome", quietly = TRUE)&
+    install.packages("BSgenome")&
+    !require("BiocManager", quietly = TRUE)&
+    install.packages("BiocManager")){
+
 genNullSeqs = function(
   inputBedFN, 
   genomeVersion='hg19', 
@@ -24,7 +31,7 @@ genNullSeqs = function(
 ){
     
     #inputBedFile = '~/Downloads/ctcfpos.bed'
-    #xfold = 1; 
+    xfold = 1; 
     if(is.null(genome)){  
       if(toupper(genomeVersion)=='HG18'){
         if(requireNamespace("BSgenome.Hsapiens.UCSC.hg18.masked", quietly = TRUE)){
@@ -296,4 +303,3 @@ if (length(args)==0) {
 } 
 
 genNullSeqs(args[1], nMaxTrials=args[2], xfold=1, genome=BSgenome.Hsapiens.UCSC.hg38.masked);
-ls
