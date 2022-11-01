@@ -16,10 +16,10 @@ genNullSeqs = function(
   outputNegFastaFN = 'negSet.fa', 
   xfold = 1, 
   repeat_match_tol = 0.02, 
-  GC_match_tol = 0.02, 
-  length_match_tol = 0.02, 
-  batchsize = 5000, 
-  nMaxTrials = 20, 
+  GC_match_tol = 0.05,
+  length_match_tol = 0.1,
+  batchsize = 10000,
+  nMaxTrials = 100,
   genome = NULL  # if genome is provided, genome version is ignored 
 ){
     
@@ -292,7 +292,7 @@ library(BSgenome.Hsapiens.UCSC.hg38.masked)
 if (length(args)==0) {
   stop("At least one argument must be supplied (Bed File)", call.=FALSE)
 } else if (length(args)==1) {
-  args[2]=10
+  args[2]=100
 } 
 
 genNullSeqs(args[1], nMaxTrials=args[2], xfold=1, genome=BSgenome.Hsapiens.UCSC.hg38.masked);
