@@ -13,6 +13,7 @@ def generate_pos_bed(data, sequence_length, output=None):
     starts, ends = trim_sequence_length(starts, ends, summits, sequence_length)
     data['start'], data['end'] = starts, ends
     data = data.drop(columns=['summit'])
+    data = delete_duplicate_entries(data)
     if output:
         data.to_csv(f'{output}/positive.bed', sep='\t', header=False, index=False)
         print(f"BED file successfully saved to {output}/positive.bed")
@@ -20,6 +21,8 @@ def generate_pos_bed(data, sequence_length, output=None):
         data.to_csv('positive.bed', sep='\t', header=False, index=False)
         path = os.path.dirname(os.path.abspath(__file__))
         print(f"BED file successfully saved to {path}/positive.bed")
+
+    return data
 
 
 def trim_sequence_length(start_arr, end_arr, summit_arr, seq_len):
@@ -43,6 +46,13 @@ def trim_sequence_length(start_arr, end_arr, summit_arr, seq_len):
     return starts, ends
 
 
+def delete_duplicate_entries(data):
+    """
+    This function deletes duplicate entries in the DHS .csv file.
+    """
+    return data.drop_duplicates(subset=['seqname', 'start', 'end'])
+
+
 if __name__ == "__main__":
     pd.options.mode.chained_assignment = None  # Supress unnecessary warnings
 
@@ -57,8 +67,8 @@ if __name__ == "__main__":
     debug = False
     if not debug:
         df = pd.read_csv(args.data, sep="\t")
+        generate_pos_bed(df, args.seq_len, args.out)
     else:
         df = pd.read_csv('train_all_classifier_light.csv', sep="\t")
+        generate_pos_bed(df, 200, "")
     ####################################
-
-    generate_pos_bed(df, args.seq_len, args.out)
