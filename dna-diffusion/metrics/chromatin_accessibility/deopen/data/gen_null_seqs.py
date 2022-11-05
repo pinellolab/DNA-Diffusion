@@ -96,6 +96,15 @@ def parse_commandline() -> argparse.ArgumentParser:
         const=0.02,
         nargs="?",
     )
+    parser.add_argument(
+        "--outformat",
+        type=str,
+        metavar="OUTPUT FORMAT",
+        help="Output file format (FASTA or BED)",
+        default="fasta",
+        const="fasta",
+        nargs="?",
+    )
     args = parser.parse_args()  # parse arguments
     __check_args_consistency(args)  # check args consistency
     return args
@@ -133,6 +142,10 @@ def __check_args_consistency(args: argparse.ArgumentParser) -> None:
     if args.repeats < 0:
         raise ValueError(
             f"Forbidden repeats content tolerance threshold ({args.repeats})"
+        )
+    if args.outformat.upper() != "FASTA" and args.outformat.upper() != "BED":
+        raise ValueError(
+            f"Forbidden output file format ({args.outformat}). Please, choose between FASTA or BED"
         )
 
 
@@ -677,7 +690,10 @@ def random_sequences() -> None:
                         outbed_rnd.append(str(line))
                 unmatched_sequences = np.delete(unmatched_sequences, idxs)
     bed_rnd = BedTool("".join(outbed_rnd), from_string=True)
-    __write_sequences(bed_rnd, args.genome, args.out)
+    if args.outformat.upper() == "FASTA":  # write the sequences to a FASTA file
+        __write_sequences(bed_rnd, args.genome, args.out)
+    else:  # write sequences to a BED file
+        bed_rnd.saveas(f"{args.out}")
 
 
 # -> script entry point <-
