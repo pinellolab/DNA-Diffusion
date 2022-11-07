@@ -12,10 +12,10 @@ The random sequences are stored in the FASTA file provided as argument by the
 user.
 """
 
-
 from typing import Any, Dict, List, Optional
 from pybedtools import BedTool
 from Bio.SeqUtils import GC
+from tqdm import tqdm
 
 import numpy as np
 
@@ -190,7 +190,7 @@ def recover_sequences(bed: BedTool, genome: str) -> List[List[str]]:
 
 
 def fasta_contig_length(
-    fastafile: str, fasta_index: Optional[str] = None
+        fastafile: str, fasta_index: Optional[str] = None
 ) -> Dict[str, int]:
     """The function counts the number of base pairs in each contig of the input
     FASTA file. The contig lengths are stored in a dictionary, with the contig
@@ -257,7 +257,7 @@ def gc_content(sequences: List[List[str]]) -> List[float]:
 
 
 def compute_repeats_ratio(
-    sequences: List[List[str]], repeat_mask: BedTool, bed: BedTool
+        sequences: List[List[str]], repeat_mask: BedTool, bed: BedTool
 ) -> Dict[str, float]:
     """The function computes the percentage of each genomic coordinate in the
     input BED file overlapping the repetitive elements provided as genomic
@@ -265,12 +265,12 @@ def compute_repeats_ratio(
     ...
     Parameters
     ----------
-    chroms
-        Seqnames (unique set)
     sequences
         Input sequences
     repeat_mask
         Repeat mask (BED file)
+    bed
+        Input BED file
     Returns
     -------
     Dict[str, float]
@@ -284,25 +284,27 @@ def compute_repeats_ratio(
         )
     if not isinstance(bed, BedTool):
         raise TypeError(f"Expected {BedTool.__name__}, got {type(bed).__name__}")
+    seqnames = np.array(sequences[0])
     # store repeats in each genomic coordinate defined in the BED file
-    repeats = {seqname: 0 for seqname in sequences[0]}
+    repeats = np.array([0.0 for seqname in seqnames])
     # recover regions width
-    widths = {seqname: len(sequences[1][i]) for i, seqname in enumerate(sequences[0])}
+    widths = [len(sequence) for sequence in sequences[1]]
     # compute overlaps between query BED and repeat mask
     overlaps = bed.intersect(repeat_mask, wo=True)
     for overlap in overlaps:
         ov_width = float(overlap[-1])  # overlap width is the last field
         # recover the original genomic region
         query = ":".join([overlap[0], "-".join([overlap[1], overlap[2]])])
-        repeats[query] += ov_width  # compute the overlap between regions and repeats
+        query_idxs = np.where(seqnames == query)[0]
+        repeats[query_idxs] += ov_width
     # compute repeats ratio for each genomic region in the original BED
-    for seqname in repeats:
-        repeats[seqname] /= widths[seqname]
-    return list(repeats.values())
+    for i in range(len(repeats)):
+        repeats[i] /= widths[i]
+    return list(repeats)
 
 
 def __sequence_position(
-    positions: np.ndarray, sequences_positions: List[int]
+        positions: np.ndarray, sequences_positions: List[int]
 ) -> List[int]:
     """(PRIVATE)
     Pick random sequence positions, while maintaining chromosome location.
@@ -327,18 +329,18 @@ def __sequence_position(
             f"Expected {list.__name__}, got {type(sequences_positions).__name__}"
         )
     idxs_sorted = np.argsort(positions)  # sorted array indexes
-    positions_sorted = sorted(positions)  # sort positions
-    result = [None for _ in range(len(positions_sorted))]
+    positions = sorted(positions)  # sort positions
+    result = [None for _ in range(len(positions))]
     j = 0
-    for i in range(len(positions_sorted)):
-        while positions_sorted[i] > sequences_positions[j]:
+    for i in range(len(positions)):
+        while positions[i] > sequences_positions[j]:
             j += 1
         result[idxs_sorted[i]] = j
     return result
 
 
 def generate_random_sequences(
-    sequences_len: List[int], contigs_len: Dict[str, int]
+        sequences_len: List[int], contigs_len: Dict[str, int]
 ) -> BedTool:
     """The function generates random genomic coordinates from the original
     coordinates stored in the input BED file.
@@ -458,15 +460,15 @@ def __switch_index(x: np.ndarray, sort_idxs: np.ndarray, y: List[Any]) -> np.nda
 
 
 def match_sequence_features(
-    gc_ref: List[float],
-    gc_shuffle: List[float],
-    len_ref: List[int],
-    len_shuffle: List[int],
-    rr_ref: List[float],
-    rr_shuffle: List[float],
-    gc_threshold: Optional[float] = 0.02,
-    len_threshold: Optional[float] = 0.02,
-    rr_threshold: Optional[float] = 0.02,
+        gc_ref: List[float],
+        gc_shuffle: List[float],
+        len_ref: List[int],
+        len_shuffle: List[int],
+        rr_ref: List[float],
+        rr_shuffle: List[float],
+        gc_threshold: Optional[float] = 0.02,
+        len_threshold: Optional[float] = 0.02,
+        rr_threshold: Optional[float] = 0.02,
 ) -> np.ndarray:
     """
     ...
@@ -532,7 +534,7 @@ def match_sequence_features(
     match_ref = [None for _ in range(n_ref)]
     match_shuffle = [0 for _ in range(n_shuffle)]
     j = 0
-    for i in range(n_ref):
+    for i in tqdm(range(n_ref)):
         gc_r = gc_ref[i]
         len_r = len_ref[i]
         rr_r = rr_ref[i]
@@ -542,9 +544,9 @@ def match_sequence_features(
             jj = j
             while gc_shuffle[jj] - gc_r <= gc_threshold:
                 if (
-                    match_shuffle[jj] == 0
-                    and np.abs(len_r - len_shuffle[jj] <= len_threshold[i])
-                    and np.abs(rr_r - rr_shuffle[jj] <= rr_threshold)
+                        match_shuffle[jj] == 0
+                        and np.abs(len_r - len_shuffle[jj] <= len_threshold[i])
+                        and np.abs(rr_r - rr_shuffle[jj] <= rr_threshold)
                 ):
                     match_shuffle[jj] = i
                     match_ref[i] = jj
