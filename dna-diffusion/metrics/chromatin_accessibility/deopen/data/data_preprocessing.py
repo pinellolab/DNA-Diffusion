@@ -63,12 +63,5 @@ if __name__ == "__main__":
     parser.add_argument('-out', help="Output location of the BED file.")
     args = parser.parse_args()
 
-    # TEMPORARY FOR DEBUGGING PURPOSES #
-    debug = False
-    if not debug:
-        df = pd.read_csv(args.data, sep="\t")
-        generate_pos_bed(df, args.seq_len, args.out)
-    else:
-        df = pd.read_csv('train_all_classifier_light.csv', sep="\t")
-        generate_pos_bed(df, 200, "")
-    ####################################
+    df = pd.read_csv(args.data, sep="\t")
+    generate_pos_bed(df, args.seq_len, args.out)
