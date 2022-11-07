@@ -80,7 +80,7 @@ class DDPM(DiffusionModel):
             betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
         )
 
-    def q_sample(self, x_start, t, noise=None):
+    def q_sample(self, x_start: torch.Tensor, t: torch.Tensor, noise=None) -> torch.Tensor:
         if noise is None:
             noise = torch.randn_like(x_start)
 
@@ -88,8 +88,6 @@ class DDPM(DiffusionModel):
         sqrt_one_minus_alphas_cumprod_t = extract(
             self.sqrt_one_minus_alphas_cumprod, t, x_start.shape
         )
-
-        # print  (sqrt_alphas_cumprod_t , sqrt_one_minus_alphas_cumprod_t , t)
 
         return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
