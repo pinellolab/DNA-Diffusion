@@ -1,7 +1,13 @@
 # Deopen
 Deopen is a hybrid deep learning based framework to automatically learn the regulatory code of DNA sequences and predict chromatin accessibility.
 
-# Requirements
+## Setup 
+
+Setting up a clean conda or docker environment is highly recommended for setting up and running this code. Code has been tested in conda environment and installations, where possible, were carried out via Bioconda.
+
+## Requirements
+*Base requirements*
+
 - h5py
 - hickle
 - Scikit-learn=0.18.2
@@ -15,18 +21,30 @@ NOTE: You need to download the most recent version of Theano and Lasagne 0.2.dev
 
 `pip install --upgrade https://github.com/Lasagne/Lasagne/archive/master.zip`.  
 
-# Installation
-Download Deopen by
+*DNA Diffusion specific requirements*
+
+For preprocessing and training data generation specific to the DNA diffusion project, some additional packages are needed. These packages are used in `data_preprocessing.py` and `gen_null_seqs.py`. The additional packages and their versions have been frozen in this [requirements.txt](https://github.com/pinellolab/DNA-Diffusion/files/9954336/requirements.txt) file.
+
+## Instructions 
+*Data generation*
+
+The first step is to run the script is generating the positive.bed and negative.bed file for the regulatory regions we want to train on from the raw genomic coordinate dataset. The dataset used to train the model for this project can be found [here](https://www.meuleman.org/research/synthseqs/#material). Note that this dataset must contain a `seqname`, `start`, `end` and `summit` column indicating the genomic coordinate information. We can process this data into a .bed file accepted by Deopen by running in our conda environment the python script `data_preprocessing.py` with the following command: 
+
 ```shell
-git clone https://github.com/kimmo1019/Deopen
+python data_preprocessing.py --data <raw_data.csv>
 ```
-Installation has been tested in a Linux/MacOS platform with Python2.7.
 
-# Instructions
+Optional flags: 
+```shell
+--seqlen <type: int> (default: 200)
+```
 
- 
+```shell
+--out <output_path> (default: working directory)
+```
 
-Preprocessing data for model training
+
+*Preprocessing data for model training*
 ```shell
 python Gen_data.py <options> -pos <positive_bed_file> -neg <negative_bed_file> -out <outputfile>
 ```
@@ -66,7 +84,7 @@ THEANO_FLAGS='device=gpu,floatX=float32' python Deopen_regression.py -in <inputf
   readsfile: reads count for each sample (hkl format)  
   outputfile: trained model to be saved (hkl format)
 ```
-# Citation
+## Citation
 Liu, Qiao, et al. "Chromatin accessibility prediction via a hybrid deep convolutional neural network." Bioinformatics 34.5 (2017): 732-738.
 
 ```
@@ -82,5 +100,5 @@ Liu, Qiao, et al. "Chromatin accessibility prediction via a hybrid deep convolut
 }
 ```
 
-# License
+## License
 This project is licensed under the MIT License - see the LICENSE.md file for details
