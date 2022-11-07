@@ -63,7 +63,7 @@ class DDPM(DiffusionModel):
         # Define Beta Schedule
         self.set_noise_schedule(self.betas)
 
-    def set_noise_schedule(self, betas):
+    def set_noise_schedule(self, betas: torch.Tensor) -> None:
         # define alphas
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, axis=0)
@@ -73,8 +73,6 @@ class DDPM(DiffusionModel):
 
         # calculations for diffusion q(x_t | x_{t-1}) and others
         self.sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
-
-        # sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
 
         # calculations for posterior q(x_{t-1} | x_t, x_0)
