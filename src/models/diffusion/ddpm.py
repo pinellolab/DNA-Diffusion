@@ -3,6 +3,8 @@ import torch
 from torch import nn
 from torch.nn.functional import F
 
+from typing import Optional
+
 from models.diffusion.diffusion import DiffusionModel
 
 from utils.schedules import (
@@ -80,7 +82,12 @@ class DDPM(DiffusionModel):
             betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
         )
 
-    def q_sample(self, x_start: torch.Tensor, t: torch.Tensor, noise=None) -> torch.Tensor:
+    def q_sample(
+        self,
+        x_start: torch.Tensor,
+        t: torch.Tensor,
+        noise: Optional[None, torch.Tensor] = None,
+    ) -> torch.Tensor:
         if noise is None:
             noise = torch.randn_like(x_start)
 
@@ -92,13 +99,12 @@ class DDPM(DiffusionModel):
         return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
     @torch.no_grad()
-    def p_sample(self, x, t, t_index):
+    def p_sample(self, x: torch.Tensor, t: torch.Tensor, t_index) -> torch.Tensor:
         betas_t = extract(self.betas, t, x.shape)
         sqrt_one_minus_alphas_cumprod_t = extract(
             self.sqrt_one_minus_alphas_cumprod, t, x.shape
         )
 
-        # print (x.shape, 'x_shape')
         sqrt_recip_alphas_t = extract(self.sqrt_recip_alphas, t, x.shape)
 
         # Equation 11 in the paper
