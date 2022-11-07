@@ -21,7 +21,6 @@ class DDPM(DiffusionModel):
         image_size,
         timesteps=1000,
         noise_schedule="cosine",
-        time_difference=0.0,
         bit_scale=1,
         unet_config: dict,
         is_conditional: bool,
@@ -48,27 +47,21 @@ class DDPM(DiffusionModel):
         )
 
         self.image_size = image_size
+        self.bit_scale = bit_scale
+        self.timesteps = timesteps
 
         if noise_schedule == "linear":
             self.log_snr = beta_linear_log_snr
+            self.betas = linear_beta_schedule(timesteps=timesteps, beta_end=0.05)
         elif noise_schedule == "cosine":
+            # Refer to Section 3.2 of https://arxiv.org/abs/2102.09672 for details
             self.log_snr = alpha_cosine_log_snr
+            self.betas = cosine_beta_schedule(timesteps=timesteps, s=0.0001)
         else:
             raise ValueError(f"invalid noise schedule {noise_schedule}")
 
-        self.bit_scale = bit_scale
-
-        self.timesteps = timesteps
-
-        # define beta schedule
-        self.betas = linear_beta_schedule(timesteps=timesteps, beta_end=0.05)
+        # Define Beta Schedule
         self.set_noise_schedule(self.betas)
-        # betas = cosine_beta_schedule(timesteps=timesteps,  s=0.0001 )
-
-        # proposed in the paper, summed to time_next
-        # as a way to fix a deficiency in self-conditioning and lower FID when the number of sampling timesteps is < 400
-
-        self.time_difference = time_difference
 
     def set_noise_schedule(self, betas):
         # define alphas
