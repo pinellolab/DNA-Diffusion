@@ -23,7 +23,6 @@ class DDPM(DiffusionModel):
         image_size,
         timesteps=1000,
         noise_schedule="cosine",
-        bit_scale=1,
         unet_config: dict,
         is_conditional: bool,
         logdir: str,
@@ -49,7 +48,6 @@ class DDPM(DiffusionModel):
         )
 
         self.image_size = image_size
-        self.bit_scale = bit_scale
         self.timesteps = timesteps
 
         if noise_schedule == "linear":
