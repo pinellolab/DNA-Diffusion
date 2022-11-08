@@ -105,15 +105,14 @@ class DDPM(DiffusionModel):
 
         sqrt_recip_alphas_t = extract(self.sqrt_recip_alphas, t, x.shape)
 
-        # Equation 11 in the paper
-        # Use our model (noise predictor) to predict the mean
+        # Eqn 11 from https://arxiv.org/abs/2006.11239v2
         model_mean = sqrt_recip_alphas_t * (
             x - betas_t * self.model(x, t) / sqrt_one_minus_alphas_cumprod_t
         )
 
         posterior_variance_t = extract(self.posterior_variance, t, x.shape)
         noise = torch.randn_like(x)
-        # Algorithm 2 line 4:
+
         return model_mean + torch.sqrt(posterior_variance_t) * noise
 
     @torch.no_grad()
