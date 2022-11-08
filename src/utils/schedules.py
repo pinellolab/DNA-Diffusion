@@ -1,14 +1,16 @@
 import math
-from math import log, exp
+from math import exp
 import torch
 
 
 def beta_linear_log_snr(t):
-    return -torch.log(exp(1e-4 + 10 * (t ** 2)))
+    return -torch.log(exp(1e-4 + 10 * (t**2)))
 
 
 def alpha_cosine_log_snr(t, s: float = 0.008):
-    return -log((torch.cos((t + s) / (1 + s) * math.pi * 0.5) ** -2) - 1, eps = 1e-5) # not sure if this accounts for beta being clipped to 0.999 in discrete version
+    return -torch.log(
+        (torch.cos((t + s) / (1 + s) * math.pi * 0.5) ** -2) - 1, eps=1e-5
+    )  # not sure if this accounts for beta being clipped to 0.999 in discrete version
 
 
 def log_snr_to_alpha_sigma(log_snr):
