@@ -136,7 +136,9 @@ class DDPM(DiffusionModel):
         return imgs
 
     @torch.no_grad()
-    def sample(self, batch, channels=3, nucleotides=4):
+    def sample(
+        self, batch: torch.Tensor, channels: int = 3, nucleotides: int = 4
+    ) -> List:
         return self.p_sample_loop(
             shape=(batch.shape[0], channels, nucleotides, self.image_size)
         )
