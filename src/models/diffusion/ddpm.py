@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from torch.nn.functional import F
 
-from typing import Optional
+from typing import Optional, List
 
 from models.diffusion.diffusion import DiffusionModel
 
@@ -116,7 +116,7 @@ class DDPM(DiffusionModel):
         return model_mean + torch.sqrt(posterior_variance_t) * noise
 
     @torch.no_grad()
-    def p_sample_loop(self, shape):
+    def p_sample_loop(self, shape: torch.Size) -> List:
         device = next(self.model.parameters()).device
 
         b = shape[0]
@@ -130,7 +130,7 @@ class DDPM(DiffusionModel):
             total=self.timesteps,
         ):
             img = self.p_sample(
-                img, torch.full((b,), i, device=device, dtype=torch.long), i
+                x=img, t=torch.full((b,), i, device=device, dtype=torch.long)
             )
             imgs.append(img.cpu().numpy())
         return imgs
