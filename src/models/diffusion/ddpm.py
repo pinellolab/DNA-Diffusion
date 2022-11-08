@@ -97,7 +97,7 @@ class DDPM(DiffusionModel):
         return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
     @torch.no_grad()
-    def p_sample(self, x: torch.Tensor, t: torch.Tensor, t_index) -> torch.Tensor:
+    def p_sample(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         betas_t = extract(self.betas, t, x.shape)
         sqrt_one_minus_alphas_cumprod_t = extract(
             self.sqrt_one_minus_alphas_cumprod, t, x.shape
@@ -111,13 +111,10 @@ class DDPM(DiffusionModel):
             x - betas_t * self.model(x, t) / sqrt_one_minus_alphas_cumprod_t
         )
 
-        if t_index == 0:
-            return model_mean
-        else:
-            posterior_variance_t = extract(self.posterior_variance, t, x.shape)
-            noise = torch.randn_like(x)
-            # Algorithm 2 line 4:
-            return model_mean + torch.sqrt(posterior_variance_t) * noise
+        posterior_variance_t = extract(self.posterior_variance, t, x.shape)
+        noise = torch.randn_like(x)
+        # Algorithm 2 line 4:
+        return model_mean + torch.sqrt(posterior_variance_t) * noise
 
     @torch.no_grad()
     def p_sample_loop(self, shape):
