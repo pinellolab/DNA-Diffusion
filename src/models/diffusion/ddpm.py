@@ -143,15 +143,17 @@ class DDPM(DiffusionModel):
             shape=(batch.shape[0], channels, nucleotides, self.image_size)
         )
 
-    def training_step(self, batch: torch.Tensor, batch_idx: int):
-        if noise is None:
-            noise = torch.randn_like(batch)
-        x_noisy = self.q_sample(x_start=batch, t=self.timesteps, noise=noise)
+    def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
+        if self.training_custom_noise is None:
+            self.training_custom_noise = torch.randn_like(batch)
+        x_noisy = self.q_sample(
+            x_start=batch, t=self.timesteps, noise=self.training_custom_noise
+        )
 
         # calculating generic loss function, we'll add it to the class constructor once we have the code
         # we should log more metrics at train and validation e.g. l1, l2 and other suggestions
         predicted_noise = self.model(x_noisy, self.timesteps)
-        loss = self.criterion(predicted_noise, noise)
+        loss = self.criterion(predicted_noise, self.training_custom_noise)
         self.log("train", loss, batch_size=batch.shape[0])
 
         return loss
