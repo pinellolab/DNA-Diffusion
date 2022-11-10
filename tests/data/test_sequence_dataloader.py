@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import torch
+from torchvision import transforms
 from src.data.sequence_dataloader import SequenceDataModule
 
 
@@ -290,8 +291,12 @@ def test_polar_transforms():
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="polar",
-        sequence_transform=seg_transform,
-        cell_type_transform=cell_type_transform,
+        sequence_transform=transforms.Compose([
+            transforms.Lambda(seg_transform),
+        ]),
+        cell_type_transform=transforms.Compose([
+            transforms.Lambda(cell_type_transform),
+        ]),
         batch_size=2,
         num_workers=1,
     )
@@ -336,8 +341,12 @@ def test_onehot_transforms():
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="onehot",
-        sequence_transform=seg_transform,
-        cell_type_transform=cell_type_transform,
+        sequence_transform=transforms.Compose([
+            transforms.Lambda(seg_transform),
+        ]),
+        cell_type_transform=transforms.Compose([
+            transforms.Lambda(cell_type_transform),
+        ]),
         batch_size=2,
         num_workers=1,
     )
@@ -382,8 +391,12 @@ def test_ordinal_transforms():
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="ordinal",
-        sequence_transform=seg_transform,
-        cell_type_transform=cell_type_transform,
+        sequence_transform=transforms.Compose([
+            transforms.Lambda(seg_transform),
+        ]),
+        cell_type_transform=transforms.Compose([
+            transforms.Lambda(cell_type_transform),
+        ]),
         batch_size=2,
         num_workers=1,
     )
