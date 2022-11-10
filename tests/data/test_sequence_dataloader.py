@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import torch
+from torchvision import transforms
 from src.data.sequence_dataloader import SequenceDataModule
 
 
@@ -280,16 +281,24 @@ def test_polar_transforms():
     prepare_default_data(dummy_data_path)
 
     # prepare data module
+    def seg_transform(seq):
+        return seq + 1
+    def cell_type_transform(cell_type):
+        return cell_type + 20
     datamodule = SequenceDataModule(
         train_path=dummy_data_path,
         val_path=dummy_data_path,
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="polar",
-        sequence_transform=lambda x: x + 1,
-        cell_type_transform=lambda x: x + 20,
+        sequence_transform=transforms.Compose([
+            transforms.Lambda(seg_transform),
+        ]),
+        cell_type_transform=transforms.Compose([
+            transforms.Lambda(cell_type_transform),
+        ]),
         batch_size=2,
-        num_workers=1,
+        num_workers=0,
     )
     datamodule.setup()
 
@@ -297,9 +306,9 @@ def test_polar_transforms():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
+    for dataloader in [datamodule.train_dataloader, datamodule.val_dataloader, datamodule.test_dataloader]:
         seen_cell_type_ids = set()
-        for batch in dataloader:
+        for batch in dataloader():
             assert len(batch) == 2
             assert isinstance(batch[0], torch.Tensor)
             assert isinstance(batch[1], torch.Tensor)
@@ -322,16 +331,24 @@ def test_onehot_transforms():
     prepare_default_data(dummy_data_path)
 
     # prepare data module
+    def seg_transform(seq):
+        return seq + 1
+    def cell_type_transform(cell_type):
+        return cell_type + 20
     datamodule = SequenceDataModule(
         train_path=dummy_data_path,
         val_path=dummy_data_path,
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="onehot",
-        sequence_transform=lambda x: x + 1,
-        cell_type_transform=lambda x: x + 20,
+        sequence_transform=transforms.Compose([
+            transforms.Lambda(seg_transform),
+        ]),
+        cell_type_transform=transforms.Compose([
+            transforms.Lambda(cell_type_transform),
+        ]),
         batch_size=2,
-        num_workers=1,
+        num_workers=0,
     )
     datamodule.setup()
 
@@ -339,9 +356,9 @@ def test_onehot_transforms():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
+    for dataloader in [datamodule.train_dataloader, datamodule.val_dataloader, datamodule.test_dataloader]:
         seen_cell_type_ids = set()
-        for batch in dataloader:
+        for batch in dataloader():
             assert len(batch) == 2
             assert isinstance(batch[0], torch.Tensor)
             assert isinstance(batch[1], torch.Tensor)
@@ -364,16 +381,24 @@ def test_ordinal_transforms():
     prepare_default_data(dummy_data_path)
 
     # prepare data module
+    def seg_transform(seq):
+        return seq + 1
+    def cell_type_transform(cell_type):
+        return cell_type + 20
     datamodule = SequenceDataModule(
         train_path=dummy_data_path,
         val_path=dummy_data_path,
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="ordinal",
-        sequence_transform=lambda x: x + 1,
-        cell_type_transform=lambda x: x + 20,
+        sequence_transform=transforms.Compose([
+            transforms.Lambda(seg_transform),
+        ]),
+        cell_type_transform=transforms.Compose([
+            transforms.Lambda(cell_type_transform),
+        ]),
         batch_size=2,
-        num_workers=1,
+        num_workers=0,
     )
     datamodule.setup()
 
@@ -381,9 +406,9 @@ def test_ordinal_transforms():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
+    for dataloader in [datamodule.train_dataloader, datamodule.val_dataloader, datamodule.test_dataloader]:
         seen_cell_type_ids = set()
-        for batch in dataloader:
+        for batch in dataloader():
             assert len(batch) == 2
             assert isinstance(batch[0], torch.Tensor)
             assert isinstance(batch[1], torch.Tensor)
