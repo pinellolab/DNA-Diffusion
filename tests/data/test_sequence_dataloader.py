@@ -298,7 +298,7 @@ def test_polar_transforms():
             transforms.Lambda(cell_type_transform),
         ]),
         batch_size=2,
-        num_workers=1,
+        num_workers=0,
     )
     datamodule.setup()
 
@@ -348,7 +348,7 @@ def test_onehot_transforms():
             transforms.Lambda(cell_type_transform),
         ]),
         batch_size=2,
-        num_workers=1,
+        num_workers=0,
     )
     datamodule.setup()
 
@@ -398,7 +398,7 @@ def test_ordinal_transforms():
             transforms.Lambda(cell_type_transform),
         ]),
         batch_size=2,
-        num_workers=1,
+        num_workers=0,
     )
     datamodule.setup()
 
