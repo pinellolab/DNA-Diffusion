@@ -1,4 +1,4 @@
 
-*.fa
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/hg38.fa
 
-*.fai
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/hg38.fa.fai
