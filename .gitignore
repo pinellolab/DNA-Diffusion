@@ -2,3 +2,15 @@
 dna-diffusion/metrics/chromatin_accessibility/deopen/data/hg38.fa
 
 dna-diffusion/metrics/chromatin_accessibility/deopen/data/hg38.fa.fai
+
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/test_beds/negative.bed
+
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/test_beds/positive.bed
+
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/train_beds/negative.bed
+
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/train_beds/positive.bed
+
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/validation_beds/negative.bed
+
+dna-diffusion/metrics/chromatin_accessibility/deopen/data/validation_beds/positive.bed

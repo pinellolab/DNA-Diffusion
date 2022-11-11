@@ -291,7 +291,8 @@ def compute_repeats_ratio(
     widths = [len(sequence) for sequence in sequences[1]]
     # compute overlaps between query BED and repeat mask
     overlaps = bed.intersect(repeat_mask, wo=True)
-    for overlap in overlaps:
+    print("Computing repeat ratios...")
+    for overlap in tqdm(overlaps, total=len(overlaps)):
         ov_width = float(overlap[-1])  # overlap width is the last field
         # recover the original genomic region
         query = ":".join([overlap[0], "-".join([overlap[1], overlap[2]])])
