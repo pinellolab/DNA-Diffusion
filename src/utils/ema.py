@@ -1,25 +1,27 @@
-import torch
-from copy import deepcopy
+#https://github.com/dome272/Diffusion-Models-pytorch/blob/main/modules.py
+class EMA:  
+    def __init__(self, beta):
+        super().__init__()
+        self.beta = beta
+        self.step = 0
 
-class EMA(torch.nn.Module):
-    """Model Exponential Moving Average V2"""
+    def update_model_average(self, ma_model, current_model):
+        for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
+            old_weight, up_weight = ma_params.data, current_params.data
+            ma_params.data = self.update_average(old_weight, up_weight)
 
-    def __init__(self, model, decay=0.9999):
-        super(EMA, self).__init__()
-        # make a copy of the model for accumulating moving average of weights
-        self.module = deepcopy(model)
-        self.module.requires_grad_(False)
-        self.module.eval()
-        self.decay = decay
+    def update_average(self, old, new):
+        if old is None:
+            return new
+        return old * self.beta + (1 - self.beta) * new
 
-    def _update(self, model, update_fn):
-        with torch.no_grad():
-            for ema_v, model_v in zip(
-                self.module.state_dict().values(), model.state_dict().values()
-            ):
-                ema_v.copy_(update_fn(ema_v, model_v))
+    def step_ema(self, ema_model, model, step_start_ema=2000):
+        if self.step < step_start_ema:
+            self.reset_parameters(ema_model, model)
+            self.step += 1
+            return
+        self.update_model_average(ema_model, model)
+        self.step += 1
 
-    def update(self, model):
-        self._update(
-            model, update_fn=lambda e, m: self.decay * e + (1.0 - self.decay) * m
-        )
+    def reset_parameters(self, ema_model, model):
+        ema_model.load_state_dict(model.state_dict())
