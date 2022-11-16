@@ -22,3 +22,7 @@ dna-diffusion/metrics/chromatin_accessibility/deopen/data/debug.py
 dna-diffusion/metrics/chromatin_accessibility/deopen/data/hg38.fa.flat
 
 dna-diffusion/metrics/chromatin_accessibility/deopen/data/hg38.fa.gdx
+
+dna-diffusion/metrics/chromatin_accessibility/deopen/src/error/
+
+*.ipynb
