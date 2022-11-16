@@ -21,10 +21,12 @@ from lasagne.layers import ConcatLayer
 try:
     from lasagne.layers.dnn import Conv2DDNNLayer as Conv2DLayer
     from lasagne.layers.dnn import MaxPool2DDNNLayer as MaxPool2DLayer
+    from lasagne.layers.dnn import get_output_shape
     print 'Using Lasagne.layers.dnn (faster)'
 except ImportError:
     from lasagne.layers import Conv2DLayer
     from lasagne.layers import MaxPool2DLayer
+    from lasagne.layers import get_output_shape
     print 'Using Lasagne.layers (slower)'
 from lasagne.nonlinearities import softmax
 from lasagne.updates import adam
@@ -120,7 +122,7 @@ def create_network():
     test_size3 = 5
     kernel1 = 128
     kernel2 = 128
-    kernel3 = 128
+    kernel3 = 64
     layer1 = InputLayer(shape=(None, 1, 4, l+1024))
     layer2_1 = SliceLayer(layer1, indices=slice(0, l), axis = -1)
     layer2_2 = SliceLayer(layer1, indices=slice(l, None), axis = -1)
@@ -133,14 +135,19 @@ def create_network():
     layer7 = Conv2DLayer(layer6,num_filters = kernel2, filter_size = (1,test_size2))
     layer8 = Conv2DLayer(layer7,num_filters = kernel2, filter_size = (1,test_size2))
     layer9 = Conv2DLayer(layer8,num_filters = kernel2, filter_size = (1,test_size2))
+    # print("Layer 9 output shape:" + str(get_output_shape(layer9)))
     layer10 = MaxPool2DLayer(layer9, pool_size = (1,pool_size))
-    layer11 = Conv2DLayer(layer10,num_filters = kernel3, filter_size = (1,test_size3))
-    layer12 = Conv2DLayer(layer11,num_filters = kernel3, filter_size = (1,test_size3))
-    layer13 = Conv2DLayer(layer12,num_filters = kernel3, filter_size = (1,test_size3))
-    layer14 = MaxPool2DLayer(layer13, pool_size = (1,pool_size))
-    layer14_d = DenseLayer(layer14, num_units= 256)
+    # print("Layer 10 output shape:" + str(get_output_shape(layer10)))
+    # layer11 = Conv2DLayer(layer10,num_filters = kernel3, filter_size = (1,test_size3))
+    # print("Layer 11 output shape:" + str(get_output_shape(layer11)))
+    # layer12 = Conv2DLayer(layer11,num_filters = kernel3, filter_size = (1,test_size3))
+    # layer13 = Conv2DLayer(layer12,num_filters = kernel3, filter_size = (1,test_size3))
+    # layer14 = MaxPool2DLayer(layer13, pool_size = (1,pool_size))
+    # layer14_d = DenseLayer(layer14, num_units= 256)
+    layer10_d = DenseLayer(layer10, num_units= 256)
     layer3_2 = DenseLayer(layer2_f, num_units = 128)
-    layer15 = ConcatLayer([layer14_d,layer3_2])
+    # layer15 = ConcatLayer([layer14_d,layer3_2])
+    layer15 = ConcatLayer([layer10_d,layer3_2])
     layer16 = DropoutLayer(layer15,p=0.5)
     layer17 = DenseLayer(layer16, num_units=256)
     network = DenseLayer(layer17, num_units= 2, nonlinearity=softmax)
