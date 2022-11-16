@@ -1,9 +1,9 @@
 import math
 from functools import partial
 from einops import rearrange
+from typing import Optional, List
 
 import torch
-from torch import nn
 from torch import nn, einsum
 
 from utils.misc import default
@@ -17,7 +17,7 @@ class Residual(nn.Module):
 
     def forward(self, x, *args, **kwargs):
         return self.fn(x, *args, **kwargs) + x
-
+   
 
 class LayerNorm(nn.Module):
     def __init__(self, dim):
@@ -30,7 +30,7 @@ class LayerNorm(nn.Module):
         mean = torch.mean(x, dim = 1, keepdim = True)
         return (x - mean) * (var + eps).rsqrt() * self.g
 
-
+    
 class PreNorm(nn.Module):
     def __init__(self, dim, fn):
         super().__init__()
@@ -41,10 +41,9 @@ class PreNorm(nn.Module):
         x = self.norm(x)
         return self.fn(x)
 
+    
 # positional embeds
-
-
-class LearnedSinusoidalPosEmb(nn.Module):
+class LearnedSinusoidalPositionalEmbedding(nn.Module):
     """ following @crowsonkb 's lead with learned sinusoidal pos emb """
     """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
 
@@ -61,8 +60,8 @@ class LearnedSinusoidalPosEmb(nn.Module):
         fouriered = torch.cat((x, fouriered), dim = -1)
         return fouriered
 
+    
 # building block modules
-
 class Block(nn.Module):
     def __init__(self, dim, dim_out, groups = 8):
         super().__init__()
@@ -81,7 +80,7 @@ class Block(nn.Module):
         x = self.act(x)
         return x
 
-
+    
 class ResnetBlock(nn.Module):
     def __init__(self, dim, dim_out, *, time_emb_dim = None, groups = 8):
         super().__init__()
@@ -108,7 +107,7 @@ class ResnetBlock(nn.Module):
 
         return h + self.res_conv(x)
 
-
+    
 class LinearAttention(nn.Module):
     def __init__(self, dim, heads = 4, dim_head = 32):
         super().__init__()
@@ -116,7 +115,6 @@ class LinearAttention(nn.Module):
         self.heads = heads
         hidden_dim = dim_head * heads
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias = False)
-
         self.to_out = nn.Sequential(
             nn.Conv2d(hidden_dim, dim, 1),
             LayerNorm(dim)
@@ -139,7 +137,7 @@ class LinearAttention(nn.Module):
         out = rearrange(out, 'b h c (x y) -> b (h c) x y', h = self.heads, x = h, y = w)
         return self.to_out(out)
 
-
+    
 class Attention(nn.Module):
     def __init__(self, dim, heads = 4, dim_head = 32, scale = 10):
         super().__init__()
@@ -166,139 +164,123 @@ class Attention(nn.Module):
 class UNetLucas(nn.Module):
     def __init__(
         self,
-        dim,
-        init_dim = None,
-        dim_mults=(1, 2, 4),
-        channels = 1,
-        resnet_block_groups = 8,
-        learned_sinusoidal_dim = 16
+        dim: int,
+        init_dim: int = None,
+        dim_mults: Optional[int, list] = (1, 2, 4),
+        channels: int =  1,
+        resnet_block_groups: int = 8,
+        learned_sinusoidal_dim: int = 18,
+        num_classes: int = 10,
+        self_conditioned: bool = False,
     ):
         super().__init__()
 
-        # determine dimensions
-
-        channels =1
+        channels = 1
         self.channels = channels
 
-        input_channels = channels * 2
-        #print ('input channels',input_channels)
+        input_channels = channels
+        if self_conditioned:
+            input_channels = channels * 2
 
         init_dim = default(init_dim, dim)
-        print (init_dim, 'init_dim')
-        #self.init_conv = nn.Conv2d(input_channels, init_dim, 7, padding = 3) # original
-        self.init_conv = nn.Conv2d(input_channels, init_dim, (7,7), padding = 3) #How to  
+        self.init_conv = nn.Conv2d(input_channels, init_dim, (7,7), padding=3)
 
-        #print (self.init_conv)
         dims = [init_dim, *map(lambda m: dim * m, dim_mults)]
-        #print (dims)
-
 
         in_out = list(zip(dims[:-1], dims[1:]))
-        #print (in_out)
-        block_klass = partial(ResnetBlock, groups = resnet_block_groups)
 
-        # time embeddings
+        resnet_block = partial(ResnetBlock, groups=resnet_block_groups)
 
         time_dim = dim * 4
 
-        sinu_pos_emb = LearnedSinusoidalPosEmb(learned_sinusoidal_dim)
+        sinu_pos_emb = LearnedSinusoidalPositionalEmbedding(learned_sinusoidal_dim)
         fourier_dim = learned_sinusoidal_dim + 1
-
+        
         self.time_mlp = nn.Sequential(
             sinu_pos_emb,
             nn.Linear(fourier_dim, time_dim),
             nn.GELU(),
             nn.Linear(time_dim, time_dim)
         )
-
-        # layers
+        
+        if num_classes is not None:
+            self.label_emb = nn.Embedding(num_classes, time_dim)
 
         self.downs = nn.ModuleList([])
         self.ups = nn.ModuleList([])
         num_resolutions = len(in_out)
 
-        for ind, (dim_in, dim_out) in enumerate(in_out):
-            is_last = ind >= (num_resolutions - 1)
+        for index, (dim_in, dim_out) in enumerate(in_out):
+            is_last = index >= (num_resolutions - 1)
 
             self.downs.append(nn.ModuleList([
-                block_klass(dim_in, dim_in, time_emb_dim = time_dim),
-                block_klass(dim_in, dim_in, time_emb_dim = time_dim),
-                Residual(PreNorm(dim_in, LinearAttention(dim_in))),
-                Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding = 1)
+                resnet_block(dim_in, dim_in, time_emb_dim = time_dim),
+                resnet_block(dim_in, dim_in, time_emb_dim = time_dim),
+                
+                (PreNorm(dim_in, LinearAttention(dim_in))),
+                Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding=1)
             ]))
 
         mid_dim = dims[-1]
-        self.mid_block1 = block_klass(mid_dim, mid_dim, time_emb_dim = time_dim)
+        self.mid_block1 = resnet_block(mid_dim, mid_dim, time_emb_dim = time_dim)
         self.mid_attn = Residual(PreNorm(mid_dim, Attention(mid_dim)))
-        self.mid_block2 = block_klass(mid_dim, mid_dim, time_emb_dim = time_dim)
+        self.mid_block2 = resnet_block(mid_dim, mid_dim, time_emb_dim = time_dim)
 
-        for ind, (dim_in, dim_out) in enumerate(reversed(in_out)):
-            is_last = ind == (len(in_out) - 1)
+        for index, (dim_in, dim_out) in enumerate(reversed(in_out)):
+            is_last = index == (len(in_out) - 1)
 
             self.ups.append(nn.ModuleList([
-                block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
-                block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
+                resnet_block(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
+                resnet_block(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
                 Residual(PreNorm(dim_out, LinearAttention(dim_out))),
-                Upsample(dim_out, dim_in) if not is_last else  nn.Conv2d(dim_out, dim_in, 3, padding = 1)
+                Upsample(dim_out, dim_in) if not is_last else  nn.Conv2d(dim_out, dim_in, 3, padding=1)
             ]))
 
-        self.final_res_block = block_klass(dim * 2, dim, time_emb_dim = time_dim)
-        #self.final_res_block = block_klass(1, dim, time_emb_dim = time_dim)
-
-        #self.final_conv = nn.Conv2d(dim, channels, 1)
+        self.final_res_block = resnet_block(dim * 2, dim, time_emb_dim = time_dim)
         self.final_conv = nn.Conv2d(dim, 1, 1)
-        #print('self.final_conv' , self.final_conv)
-
-
-        print ('final',dim, channels, self.final_conv)
-
-    def forward(self, x, time, x_self_cond = None):
-        #print (x.shape ,'in_shape')
-        x_self_cond = default(x_self_cond, lambda: torch.zeros_like(x))
-        x = torch.cat((x_self_cond, x), dim = 1)
-
+        
+    def forward(self, x, time, classes, x_self_cond = None):
         x = self.init_conv(x)
-        #print ('init_conv', x.shape)
         r = x.clone()
 
-        t = self.time_mlp(time)
+        t_start = self.time_mlp(time)
+        t_mid = t_start.clone()
+        t_end = t_start.clone()
+        
+        if classes is not None:
+            t_start += self.label_emb(classes)
+            t_mid += self.label_emb(classes)
+            t_end += self.label_emb(classes)
 
         h = []
 
         for block1, block2, attn, downsample in self.downs:
-            x = block1(x, t)
+            x = block1(x, t_start)
             h.append(x)
 
-            x = block2(x, t)
+            x = block2(x, t_start)
             x = attn(x)
             h.append(x)
 
             x = downsample(x)
 
-        x = self.mid_block1(x, t)
+        x = self.mid_block1(x, t_mid)
         x = self.mid_attn(x)
-        x = self.mid_block2(x, t)
+        x = self.mid_block2(x, t_mid)
 
         for block1, block2, attn, upsample in self.ups:
             x = torch.cat((x, h.pop()), dim = 1)
-            x = block1(x, t)
+            x = block1(x, t_mid)
 
             x = torch.cat((x, h.pop()), dim = 1)
-            x = block2(x, t)
+            x = block2(x, t_mid)
             x = attn(x)
 
             x = upsample(x)
 
-        
-        #print('x torch_after_upsamples',x.shape)
-
         x = torch.cat((x, r), dim = 1)
-        #print('x tochcat', x.shape)
 
-        x = self.final_res_block(x, t)
-        #print(self.final_res_block)
-        #print('x from res_block before final_conv',x.shape)
-        #print (self.final_conv(x).shape)
+        x = self.final_res_block(x, t_end)
         x = self.final_conv(x)
-        #print ('FINAL X', x.shape)
+
         return x
