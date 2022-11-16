@@ -113,7 +113,7 @@ def data_split(inputfile):
 
 #define the network architecture
 def create_network():
-    l = 1000
+    l = 200
     pool_size = 5
     test_size1 = 13
     test_size2 = 7
@@ -167,6 +167,8 @@ def model_initial(X_train,y_train,max_iter = 5):
                 on_training_finished=[SaveTrainHistory(iteration = iteration)],
                 verbose=0)
         net_init.initialize()
+        print(X_train.shape)
+        print(y_train.shape)
         net_init.fit(X_train, y_train)
         
 #model training         
@@ -214,7 +216,7 @@ if  __name__ == "__main__" :
     X_train, y_train, X_test, y_test = data_split(args.input)
     model_initial(X_train,y_train,5)
     model = model_train(X_train, y_train)
-    #save_model(model, args.output)
+    save_model(model, args.output)
     model_test(model, X_test, y_test,args.output)
 
 
