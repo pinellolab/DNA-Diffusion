@@ -135,19 +135,17 @@ def create_network():
     layer7 = Conv2DLayer(layer6,num_filters = kernel2, filter_size = (1,test_size2))
     layer8 = Conv2DLayer(layer7,num_filters = kernel2, filter_size = (1,test_size2))
     layer9 = Conv2DLayer(layer8,num_filters = kernel2, filter_size = (1,test_size2))
-    # print("Layer 9 output shape:" + str(get_output_shape(layer9)))
+    print("Layer 9 output shape:" + str(get_output_shape(layer9)))
     layer10 = MaxPool2DLayer(layer9, pool_size = (1,pool_size))
-    # print("Layer 10 output shape:" + str(get_output_shape(layer10)))
+    print("Layer 10 output shape:" + str(get_output_shape(layer10)))
     # layer11 = Conv2DLayer(layer10,num_filters = kernel3, filter_size = (1,test_size3))
     # print("Layer 11 output shape:" + str(get_output_shape(layer11)))
     # layer12 = Conv2DLayer(layer11,num_filters = kernel3, filter_size = (1,test_size3))
     # layer13 = Conv2DLayer(layer12,num_filters = kernel3, filter_size = (1,test_size3))
     # layer14 = MaxPool2DLayer(layer13, pool_size = (1,pool_size))
-    # layer14_d = DenseLayer(layer14, num_units= 256)
-    layer10_d = DenseLayer(layer10, num_units= 256)
-    layer3_2 = DenseLayer(layer2_f, num_units = 128)
-    # layer15 = ConcatLayer([layer14_d,layer3_2])
-    layer15 = ConcatLayer([layer10_d,layer3_2])
+    layer14_d = DenseLayer(layer10, num_units= 256)
+    layer3_2 = DenseLayer(layer2_f, num_units=128)
+    layer15 = ConcatLayer([layer14_d,layer3_2])
     layer16 = DropoutLayer(layer15,p=0.5)
     layer17 = DenseLayer(layer16, num_units=256)
     network = DenseLayer(layer17, num_units= 2, nonlinearity=softmax)
@@ -216,6 +214,7 @@ def save_model(model,outputfile):
 
 
 if  __name__ == "__main__" :
+    print("Loading data...")
     parser = argparse.ArgumentParser(description='Deopen classication model') 
     parser.add_argument('-in', dest='input', type=str, help='inputfile')
     parser.add_argument('-out', dest='output', type=str, help='outputfile')
@@ -225,5 +224,3 @@ if  __name__ == "__main__" :
     model = model_train(X_train, y_train)
     save_model(model, args.output)
     model_test(model, X_test, y_test,args.output)
-
-
