@@ -12,7 +12,7 @@ from utils.schedules import (
     alpha_cosine_log_snr,
     linear_beta_schedule,
 )
-from utils.misc import extract
+from utils.misc import extract, mean_flat
 
 
 class DDPM(DiffusionModel):
@@ -33,6 +33,9 @@ class DDPM(DiffusionModel):
         use_ema: bool = True,
         ema_decay: float = 0.9999,
         lr_warmup=0,
+        use_p2_weigthing=False,
+        p2_gamma: float = 0.5,
+        p2_k: float = 1,
     ):
         super().__init__(
             unet_config,
@@ -62,11 +65,16 @@ class DDPM(DiffusionModel):
 
         # Define Beta Schedule
         self.set_noise_schedule(self.betas)
+        
+        if self.use_p2_weighting:
+            self.p2_gamma = p2_gamma
+            self.p2_k = p2_k
+            self.snr = 1.0 / (1 - self.alphas_cumprod) - 1
 
     def set_noise_schedule(self, betas: torch.Tensor) -> None:
         # define alphas
         alphas = 1.0 - betas
-        alphas_cumprod = torch.cumprod(alphas, axis=0)
+        self.alphas_cumprod = torch.cumprod(alphas, axis=0)
         alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.0)
 
         self.sqrt_recip_alphas = torch.sqrt(1.0 / alphas)
@@ -142,6 +150,17 @@ class DDPM(DiffusionModel):
         return self.p_sample_loop(
             shape=(batch.shape[0], channels, nucleotides, self.image_size)
         )
+    
+    def p2_weighting(self, x_t, ts, target, prediction):
+        """
+        From Perception Prioritized Training of Diffusion Models: https://arxiv.org/abs/2204.00227.
+        """
+        weight =   (
+            1 / (self.p2_k + self.snr) ** self.p2_gamma, ts, x_t.shape
+        )
+        loss_batch = mean_flat(weight * (target - prediction) ** 2)
+        loss = torch.mean(loss_batch)
+        return loss
 
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
         if self.training_custom_noise is None:
@@ -153,7 +172,12 @@ class DDPM(DiffusionModel):
         # calculating generic loss function, we'll add it to the class constructor once we have the code
         # we should log more metrics at train and validation e.g. l1, l2 and other suggestions
         predicted_noise = self.model(x_noisy, self.timesteps)
-        loss = self.criterion(predicted_noise, self.training_custom_noise)
+        
+        if self.use_p2_weighting:
+            loss = 0 # Need to figure out how to use p2 weighting in DNA context
+        else:
+            loss = self.criterion(predicted_noise, self.training_custom_noise)
+            
         self.log("train", loss, batch_size=batch.shape[0])
 
         return loss
