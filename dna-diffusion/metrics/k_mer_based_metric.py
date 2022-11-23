@@ -20,7 +20,9 @@ def compare_two_sequences_and_return_similarity(seq:str, seq2:str, k:int, n:int)
 
 def average_similarity(seq:pd.Series, seq2:pd.Series, number_of_hashes:int = 20000, k_sizes:list = [3,7,20]):
   average_similarities = []
+  sequence_1 = sequence_1.sample(frac=1, random_state=42).reset_index(drop=True)
   sequence_1 = seq.tolist()
+  sequence_2 = sequence_2.sample(frac=1, random_state=42).reset_index(drop=True)
   sequence_2 = seq2.tolist()
   for k in k_sizes:
     similarity = compare_two_sequences_and_return_similarity(sequence_1, sequence_2, k, number_of_hashes)
