@@ -67,3 +67,10 @@ def get_obj_from_str(string, reload=False):
         module_to_reload = importlib.import_module(module)
         importlib.reload(module_to_reload)
     return getattr(importlib.import_module(module, package=None), class_)
+
+def mean_flat(tensor):
+    """
+    Take the mean over all non-batch dimensions.
+    From Perception Prioritized Training of Diffusion Models: https://arxiv.org/abs/2204.00227.
+    """
+    return tensor.mean(dim=list(range(1, len(tensor.shape))))
