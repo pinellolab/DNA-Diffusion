@@ -18,6 +18,10 @@ class EnformerDataLoader:
     The dataloader should take in a gene name (or list of gene names) as Ensembl IDs and return a one-hot encoded
     196,608 length sequence centred around the TSS of the gene(s).
     """
+    # TODO Low Priority: Add a type checker that checks if the input genes are valid Ensembl IDs. For now we assume
+    # TODO Low Priority: that we get a DataFrame as input (ABC data) and that we need to convert the gene names to
+    # TODO Low Priority: Ensembl IDs.
+
     def __init__(self, data: pd.DataFrame):
         self.data = get_abc_data(data)  # NOTE: This is temporary while working with abc_data. Needs changing once
         # we switch to full data.
