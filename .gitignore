@@ -28,3 +28,5 @@ dna-diffusion/metrics/chromatin_accessibility/deopen/src/error/
 *.ipynb
 
 dna-diffusion/metrics/gene_expression/enformer/meuleman_data/
+
+dna-diffusion/metrics/gene_expression/enformer/abc_data
