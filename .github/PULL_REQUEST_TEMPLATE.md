@@ -8,6 +8,8 @@ Fixes `#<issue_number>`
 
 - [ ] This change is discussed in a Github **issue/discussion** (`#<link>`).
 - [ ] Did you **document** your changes? (if necessary)
+- [ ] Have you **documented (doc strings)** your code ? (if necessary)
+- [ ] Have you added type hints to your code ? (if necessary)
 - [ ] Did you write any **new necessary high-coverage tests**?
 - [ ] Did you verify new and **existing tests pass** locally with your changes?
 
