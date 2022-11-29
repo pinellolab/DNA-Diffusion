@@ -19,6 +19,7 @@ class EnformerDataLoader:
     The dataloader should take in a gene name (or list of gene names) as Ensembl IDs and return a one-hot encoded
     196,608 length sequence centred around the TSS of the gene(s).
     """
+
     # TODO Low Priority: Add a type checker that checks if the input genes are valid Ensembl IDs. For now we assume
     # TODO Low Priority: that we get a DataFrame as input (ABC data) and that we need to convert the gene names to
     # TODO Low Priority: Ensembl IDs.
@@ -28,9 +29,9 @@ class EnformerDataLoader:
         # we switch to full data.
         self.genes = None
         self.gene_coordinates = self.fetch_gene_coordinates()
+        # TODO 1: Get 200 kb sequence centred around TSS from the given genomic coordinates for GRCh38 for all the genes.
 
     def fetch_gene_coordinates(self):
-        # TODO 1: Extract gene coordinates from the decoded data.
         self.genes = self.data['TargetGene'].values
         gene2ensembl, ensembl2gene, ensemble_ids = self.get_ensembl_ids()
         gene_coordinates = {}
@@ -44,13 +45,14 @@ class EnformerDataLoader:
                 r.raise_for_status()
                 sys.exit()
             decoded = r.json()
-            start, end, orientation = decoded['start'], decoded['end'], decoded['strand']
+            start, end, chromosome, orientation = decoded['start'], decoded['end'], int(decoded['seq_region_name']), \
+                                                  decoded['strand']
             assembly_name = decoded['assembly_name']
             if assembly_name != 'GRCh38':
                 # TODO Low Priority: Convert start, end coordinates to GRCh38 rather than skipping.
                 warnings.warn(f'Assembly in Ensembl database for {gene} is not built with GRCh38. Skipping...')
                 continue
-            gene_coordinates[gene] = [start, end, orientation]
+            gene_coordinates[gene] = [start, end, chromosome, orientation]
         return gene_coordinates
 
     def get_ensembl_ids(self):
