@@ -4,6 +4,7 @@ import mygene
 from tqdm import tqdm
 import requests
 import sys
+import warnings
 
 
 def get_abc_data(_data) -> pd.DataFrame:
@@ -32,6 +33,7 @@ class EnformerDataLoader:
         # TODO 1: Extract gene coordinates from the decoded data.
         self.genes = self.data['TargetGene'].values
         gene2ensembl, ensembl2gene, ensemble_ids = self.get_ensembl_ids()
+        gene_coordinates = {}
         print('Fetching gene coordinates for the given Ensembl ID(s)...')
         print(ensemble_ids)
         for gene in ensemble_ids:
@@ -42,8 +44,14 @@ class EnformerDataLoader:
                 r.raise_for_status()
                 sys.exit()
             decoded = r.json()
-            print(repr(decoded))
-        return 0
+            start, end, orientation = decoded['start'], decoded['end'], decoded['strand']
+            assembly_name = decoded['assembly_name']
+            if assembly_name != 'GRCh38':
+                # TODO Low Priority: Convert start, end coordinates to GRCh38 rather than skipping.
+                warnings.warn(f'Assembly in Ensembl database for {gene} is not built with GRCh38. Skipping...')
+                continue
+            gene_coordinates[gene] = [start, end, orientation]
+        return gene_coordinates
 
     def get_ensembl_ids(self):
         # TODO Low Priority: Save ensembl ids to file so we don't have to fetch them every time. Might not be necessary
