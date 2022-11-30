@@ -5,6 +5,7 @@ from tqdm import tqdm
 import requests
 import sys
 import warnings
+from pybedtools import BedTool
 
 
 def get_abc_data(_data) -> pd.DataFrame:
@@ -29,7 +30,29 @@ class EnformerDataLoader:
         # we switch to full data.
         self.genes = None
         self.gene_coordinates = self.fetch_gene_coordinates()
+        self.sequence = self.fetch_sequence()
+
         # TODO 1: Get 200 kb sequence centred around TSS from the given genomic coordinates for GRCh38 for all the genes.
+
+    def fetch_sequence(self):
+        gene_coordinates = self.gene_coordinates
+        gene_ids = list(gene_coordinates.keys())
+        for gene in gene_ids:
+            start, end, chromosome, orientation = gene_coordinates[gene]
+            if orientation == 1:
+                orientation = '+'
+            elif orientation == -1:
+                orientation = '-'
+            else:
+                orientation = '.'
+            with open('temp.bed', 'w') as f:
+                f.write(f'{chromosome}\t{start}\t{end}\t{orientation}')
+            bed = BedTool('temp.bed')
+            fasta = bed.sequence(fi='GRCh38.fa')
+            print(fasta)
+            # TODO 1: Download the GRCh38 genome sequence as fasta file to use pybedtools sequence fetcher
+
+        return 0
 
     def fetch_gene_coordinates(self):
         self.genes = self.data['TargetGene'].values
@@ -48,6 +71,7 @@ class EnformerDataLoader:
             start, end, chromosome, orientation = decoded['start'], decoded['end'], int(decoded['seq_region_name']), \
                                                   decoded['strand']
             assembly_name = decoded['assembly_name']
+
             if assembly_name != 'GRCh38':
                 # TODO Low Priority: Convert start, end coordinates to GRCh38 rather than skipping.
                 warnings.warn(f'Assembly in Ensembl database for {gene} is not built with GRCh38. Skipping...')
