@@ -26,19 +26,21 @@ class EnformerDataLoader:
     # TODO Low Priority: Ensembl IDs.
 
     def __init__(self, data: pd.DataFrame):
+        self.SEQ_LEN = 196608
+
         self.data = get_abc_data(data)  # NOTE: This is temporary while working with abc_data. Needs changing once
         # we switch to full data.
         self.genes = None
         self.gene_coordinates = self.fetch_gene_coordinates()
         self.sequence = self.fetch_sequence()
 
-        # TODO 1: Get 200 kb sequence centred around TSS from the given genomic coordinates for GRCh38 for all the genes.
+        # TODO 1: Get 200 kb sequence centred around TSS from the given genomic coordinates for GRCh38 for all the
+        # TODO 1: genes.
 
     def fetch_sequence(self):
-        gene_coordinates = self.gene_coordinates
-        gene_ids = list(gene_coordinates.keys())
+        gene_ids = list(self.gene_coordinates.keys())
         for gene in gene_ids:
-            start, end, chromosome, orientation = gene_coordinates[gene]
+            start, end, chromosome, orientation = self.gene_coordinates[gene]
             if orientation == 1:
                 orientation = '+'
             elif orientation == -1:
@@ -48,18 +50,14 @@ class EnformerDataLoader:
             with open('temp.bed', 'w') as f:
                 f.write(f'{chromosome}\t{start}\t{end}\t{orientation}')
             bed = BedTool('temp.bed')
-            fasta = bed.sequence(fi='GRCh38.fa')
-            print(fasta)
-            # TODO 1: Download the GRCh38 genome sequence as fasta file to use pybedtools sequence fetcher
-
-        return 0
+            fasta = bed.sequence(fi='hg38.fa')  # NOTE: you must have a local copy of hg38.fa in cwd for this to work
+        return fasta
 
     def fetch_gene_coordinates(self):
         self.genes = self.data['TargetGene'].values
         gene2ensembl, ensembl2gene, ensemble_ids = self.get_ensembl_ids()
         gene_coordinates = {}
         print('Fetching gene coordinates for the given Ensembl ID(s)...')
-        print(ensemble_ids)
         for gene in ensemble_ids:
             time.sleep(0.5)
             url = f"https://rest.ensembl.org/lookup/id/{gene}?expand=1"
@@ -68,16 +66,33 @@ class EnformerDataLoader:
                 r.raise_for_status()
                 sys.exit()
             decoded = r.json()
-            start, end, chromosome, orientation = decoded['start'], decoded['end'], int(decoded['seq_region_name']), \
-                                                  decoded['strand']
+            start, end, chromosome, orientation = decoded['start'], decoded['end'], \
+                                                  f"chr{int(decoded['seq_region_name'])}", decoded['strand']
             assembly_name = decoded['assembly_name']
-
+            start, end = self.extend_gene_coordinates(start, end, chromosome)
             if assembly_name != 'GRCh38':
                 # TODO Low Priority: Convert start, end coordinates to GRCh38 rather than skipping.
                 warnings.warn(f'Assembly in Ensembl database for {gene} is not built with GRCh38. Skipping...')
                 continue
             gene_coordinates[gene] = [start, end, chromosome, orientation]
         return gene_coordinates
+
+    def extend_gene_coordinates(self, start, end, chromosome):
+        with open('chromosome_lengths.txt', 'r') as f:
+            chromosome_lengths = {}
+            for line in f:
+                chromosome_lengths[line.split(",")[0]] = int(line.split(",")[1])
+        # TODO 2: check if the 196kb gene length around the TSS is within the chromosome boundaries. If this is not the
+        # TODO 2: case, trim it around the TSS to fit in the chromosome boundaries. If the sequence length has to be
+        # TODO 2: changes throw an error and exit.
+        chr_start = chromosome_lengths[chromosome]
+        next_chr = chromosome[:-1] + str(int(chromosome[-1]) + 1)
+        chr_end = chromosome_lengths[next_chr]
+        len_left = (self.SEQ_LEN - (end - start)) // 2
+        len_right = self.SEQ_LEN - (end - start) - len_left
+        start -= len_left
+        end += len_right
+        return start, end
 
     def get_ensembl_ids(self):
         # TODO Low Priority: Save ensembl ids to file so we don't have to fetch them every time. Might not be necessary
