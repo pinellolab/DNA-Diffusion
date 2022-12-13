@@ -36,3 +36,15 @@ dna-diffusion/metrics/gene_expression/enformer/abc_data
 dna-diffusion/metrics/gene_expression/enformer/hg38.fa
 
 dna-diffusion/metrics/gene_expression/enformer/hg38.fa.fai
+
+.idea/
+
+dna-diffusion/.DS_Store
+
+dna-diffusion/metrics/.DS_Store
+
+dna-diffusion/metrics/gene_expression/.DS_Store
+
+dna-diffusion/metrics/gene_expression/enformer/.DS_Store
+
+.DS_Store
