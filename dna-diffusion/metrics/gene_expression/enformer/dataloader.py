@@ -84,10 +84,34 @@ class EnformerDataLoader:
                 chromosome_lengths[line.split(",")[0]] = int(line.split(",")[1])
         # TODO 2: check if the 196kb gene length around the TSS is within the chromosome boundaries. If this is not the
         # TODO 2: case, trim it around the TSS to fit in the chromosome boundaries. If the sequence length has to be
-        # TODO 2: changes throw an error and exit.
-        chr_start = chromosome_lengths[chromosome]
-        next_chr = chromosome[:-1] + str(int(chromosome[-1]) + 1)
-        chr_end = chromosome_lengths[next_chr]
+        # TODO 2: changes throw an error and exit. Explicitly: find way to query chromosome boundaries from bedtools or
+        # TODO 2: alternatively do this manually while making sure the boundaries line up with the ones in bedtools.
+
+        # transform the chromosome_lengths dictionary to be additive, meaning that chromosome one is the start until end
+        # of chromosome one, chromosome two is the end of chromosome one/start of chromosome two until etc.
+        additive_chromosome_lengths = {}
+        for _chr, length in chromosome_lengths.items():
+            prev_chrom = _chr[3:]
+            if prev_chrom == 'X':
+                prev_chrom = 22
+            elif prev_chrom == 'Y':
+                prev_chrom = 'X'
+            else:
+                prev_chrom = int(prev_chrom) - 1
+            if prev_chrom == 0:
+                additive_chromosome_lengths[_chr] = 0, length
+            else:
+                additive_chromosome_lengths[_chr] = additive_chromosome_lengths[f'chr{prev_chrom}'][1] + 1, length + \
+                                                                additive_chromosome_lengths[f'chr{prev_chrom}'][1]
+
+        print(additive_chromosome_lengths)
+        print(chromosome)
+        print(start)
+        print(end)
+        chr_start = additive_chromosome_lengths[chromosome][0]
+        chr_end = additive_chromosome_lengths[chromosome][1]
+        print(chr_start)
+        print(chr_end)
         len_left = (self.SEQ_LEN - (end - start)) // 2
         len_right = self.SEQ_LEN - (end - start) - len_left
         start -= len_left
