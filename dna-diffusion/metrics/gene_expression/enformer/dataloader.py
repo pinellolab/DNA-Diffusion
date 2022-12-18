@@ -4,13 +4,14 @@ import mygene
 from tqdm import tqdm
 import requests
 import sys
+import os
 import warnings
 from pybedtools import BedTool
 
 
 def get_abc_data(_data) -> pd.DataFrame:
     df = _data.sort_values(by='ABC_Score', ascending=False)
-    df = df.drop_duplicates(subset=['TargetGene']).head(1)
+    df = df.drop_duplicates(subset=['TargetGene']).head(5)
     df = df[['chr', 'start', 'end', 'TargetGene']]
     return df
 
@@ -30,12 +31,13 @@ class EnformerDataLoader:
 
         self.data = get_abc_data(data)  # NOTE: This is temporary while working with abc_data. Needs changing once
         # we switch to full data.
-        self.genes = None
+        self.genes = self.data['TargetGene'].values
+        self.gene2ensembl, self.ensembl2gene, self.ensemble_ids = self.get_ensembl_ids()
         self.gene_coordinates = self.fetch_gene_coordinates()
-        self.sequence = self.fetch_sequence()
+        self.seq = self.fetch_sequence()
 
-        # TODO 1: Get 200 kb sequence centred around TSS from the given genomic coordinates for GRCh38 for all the
-        # TODO 1: genes.
+        # TODO 1: Add a function that converts the sequence to a one-hot encoded vector.
+        # TODO 2: Implement Enformer model and test it on the data.
 
     def fetch_sequence(self):
         gene_ids = list(self.gene_coordinates.keys())
@@ -49,16 +51,22 @@ class EnformerDataLoader:
                 orientation = '.'
             with open('temp.bed', 'w') as f:
                 f.write(f'{chromosome}\t{start}\t{end}\t{orientation}')
+            f.close()
             bed = BedTool('temp.bed')
-            fasta = bed.sequence(fi='hg38.fa')  # NOTE: you must have a local copy of hg38.fa in cwd for this to work
+            try:
+                fasta = bed.sequence(fi='hg38.fa', fo=f'sequences/{gene}|{self.ensembl2gene[gene]}.fa')
+            except:
+                warnings.warn(f'Out-of-bounds error for {gene} / {self.ensembl2gene[gene]}. This means that the gene is'
+                              f' located to close to the telomeres in order to extend a 196,608 window around the TSS. '
+                              f'Skipping...')
+            os.remove('temp.bed')
+        print(f'Fetched all sequences and saved to sequences folder!')
         return fasta
 
     def fetch_gene_coordinates(self):
-        self.genes = self.data['TargetGene'].values
-        gene2ensembl, ensembl2gene, ensemble_ids = self.get_ensembl_ids()
         gene_coordinates = {}
         print('Fetching gene coordinates for the given Ensembl ID(s)...')
-        for gene in ensemble_ids:
+        for gene in self.ensemble_ids:
             time.sleep(0.5)
             url = f"https://rest.ensembl.org/lookup/id/{gene}?expand=1"
             r = requests.get(url, headers={"Content-Type": "application/json"})
@@ -67,7 +75,7 @@ class EnformerDataLoader:
                 sys.exit()
             decoded = r.json()
             start, end, chromosome, orientation = decoded['start'], decoded['end'], \
-                                                  f"chr{int(decoded['seq_region_name'])}", decoded['strand']
+                f"chr{int(decoded['seq_region_name'])}", decoded['strand']
             assembly_name = decoded['assembly_name']
             start, end = self.extend_gene_coordinates(start, end, chromosome)
             if assembly_name != 'GRCh38':
@@ -82,36 +90,7 @@ class EnformerDataLoader:
             chromosome_lengths = {}
             for line in f:
                 chromosome_lengths[line.split(",")[0]] = int(line.split(",")[1])
-        # TODO 2: check if the 196kb gene length around the TSS is within the chromosome boundaries. If this is not the
-        # TODO 2: case, trim it around the TSS to fit in the chromosome boundaries. If the sequence length has to be
-        # TODO 2: changes throw an error and exit. Explicitly: find way to query chromosome boundaries from bedtools or
-        # TODO 2: alternatively do this manually while making sure the boundaries line up with the ones in bedtools.
 
-        # transform the chromosome_lengths dictionary to be additive, meaning that chromosome one is the start until end
-        # of chromosome one, chromosome two is the end of chromosome one/start of chromosome two until etc.
-        additive_chromosome_lengths = {}
-        for _chr, length in chromosome_lengths.items():
-            prev_chrom = _chr[3:]
-            if prev_chrom == 'X':
-                prev_chrom = 22
-            elif prev_chrom == 'Y':
-                prev_chrom = 'X'
-            else:
-                prev_chrom = int(prev_chrom) - 1
-            if prev_chrom == 0:
-                additive_chromosome_lengths[_chr] = 0, length
-            else:
-                additive_chromosome_lengths[_chr] = additive_chromosome_lengths[f'chr{prev_chrom}'][1] + 1, length + \
-                                                                additive_chromosome_lengths[f'chr{prev_chrom}'][1]
-
-        print(additive_chromosome_lengths)
-        print(chromosome)
-        print(start)
-        print(end)
-        chr_start = additive_chromosome_lengths[chromosome][0]
-        chr_end = additive_chromosome_lengths[chromosome][1]
-        print(chr_start)
-        print(chr_end)
         len_left = (self.SEQ_LEN - (end - start)) // 2
         len_right = self.SEQ_LEN - (end - start) - len_left
         start -= len_left

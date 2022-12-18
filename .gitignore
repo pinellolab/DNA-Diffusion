@@ -48,3 +48,5 @@ dna-diffusion/metrics/gene_expression/.DS_Store
 dna-diffusion/metrics/gene_expression/enformer/.DS_Store
 
 .DS_Store
+
+dna-diffusion/metrics/gene_expression/enformer/sequences/
