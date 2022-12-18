@@ -86,11 +86,6 @@ class EnformerDataLoader:
         return gene_coordinates
 
     def extend_gene_coordinates(self, start, end, chromosome):
-        with open('chromosome_lengths.txt', 'r') as f:
-            chromosome_lengths = {}
-            for line in f:
-                chromosome_lengths[line.split(",")[0]] = int(line.split(",")[1])
-
         len_left = (self.SEQ_LEN - (end - start)) // 2
         len_right = self.SEQ_LEN - (end - start) - len_left
         start -= len_left
