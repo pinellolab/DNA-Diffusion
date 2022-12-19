@@ -3,7 +3,6 @@ import torch.nn as nn
 import pytorch_lightning as pl
 
 from utils.ema import EMA
-from utils.misc import instantiate_from_config
 
 class DiffusionModel(pl.LightningModule):
     def __init__(
@@ -11,6 +10,7 @@ class DiffusionModel(pl.LightningModule):
         unet_config: dict,
         timesteps: int,
         is_conditional: bool,
+        use_fp16: bool,
         logdir: str,
         image_size: int,
         optimizer_config: dict,
@@ -32,6 +32,7 @@ class DiffusionModel(pl.LightningModule):
         if self.use_ema:
             self.eps_model_ema = EMA(self.model, decay=ema_decay)
         self.is_conditional = is_conditional
+        self.use_fp16 = use_fp16
         self.image_size = image_size
         self.lr_scheduler_config = lr_scheduler_config
         self.optimizer_config = optimizer_config
