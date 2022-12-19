@@ -50,3 +50,5 @@ dna-diffusion/metrics/gene_expression/enformer/.DS_Store
 .DS_Store
 
 dna-diffusion/metrics/gene_expression/enformer/sequences/
+
+dna-diffusion/metrics/gene_expression/enformer/enformer_lucidrains_pytorch/enformer_pytorch/__pycache__/

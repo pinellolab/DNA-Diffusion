@@ -7,9 +7,9 @@ from torch.utils.checkpoint import checkpoint_sequential
 from einops import rearrange, reduce
 from einops.layers.torch import Rearrange
 
-from enformer_pytorch.data import str_to_one_hot, seq_indices_to_one_hot
+from enformer_lucidrains_pytorch.enformer_pytorch.data import str_to_one_hot, seq_indices_to_one_hot
 
-from enformer_pytorch.config_enformer import EnformerConfig
+from enformer_lucidrains_pytorch.enformer_pytorch.config_enformer import EnformerConfig
 
 from transformers import PreTrainedModel
 

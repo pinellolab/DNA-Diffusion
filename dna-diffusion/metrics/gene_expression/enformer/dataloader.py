@@ -7,6 +7,8 @@ import sys
 import os
 import warnings
 from pybedtools import BedTool
+from Bio import SeqIO
+from enformer_lucidrains_pytorch.enformer_pytorch.data import str_to_one_hot
 
 
 def get_abc_data(_data) -> pd.DataFrame:
@@ -59,9 +61,19 @@ class EnformerDataLoader:
                 warnings.warn(f'Out-of-bounds error for {gene} / {self.ensembl2gene[gene]}. This means that the gene is'
                               f' located to close to the telomeres in order to extend a 196,608 window around the TSS. '
                               f'Skipping...')
+                os.remove(f'sequences/{gene}|{self.ensembl2gene[gene]}.fa')
             os.remove('temp.bed')
         print(f'Fetched all sequences and saved to sequences folder!')
-        return fasta
+        sequences = os.listdir('sequences')
+        seqs = {}
+        for s in sequences:
+            for record in SeqIO.parse(f'sequences/{s}', 'fasta'):
+                seqs[s.split('.')[0]] = str(record.seq)
+        seqs_one_hot = {}
+        for s in seqs:
+            seqs_one_hot[s] = str_to_one_hot(seqs[s])
+        print(seqs_one_hot)
+        return seqs_one_hot
 
     def fetch_gene_coordinates(self):
         gene_coordinates = {}
