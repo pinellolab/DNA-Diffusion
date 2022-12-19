@@ -1,7 +1,23 @@
 import math
 import importlib
-
 import torch
+import random
+import os
+import numpy as np
+
+
+def seed_everything(seed):
+    """"
+    Seed everything.
+    """   
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+
 
 def exists(x):
     return x is not None
@@ -44,7 +60,21 @@ def convert_image_to(img_type, image):
     return image
 
 
+def one_hot_encode(seq, nucleotides, max_seq_len):
+    """
+    One-hot encode a sequence of nucleotides.
+    """
+    seq_len = len(seq)
+    seq_array = np.zeros((max_seq_len, len(nucleotides)))
+    for i in range(seq_len):
+        seq_array[i, nucleotides.index(seq[i])] = 1
+    return seq_array
+
+
 def log(t, eps = 1e-20):
+    """
+    Toch log for the purporses of diffusion time steps t.
+    """
     return torch.log(t.clamp(min = eps))
 
 

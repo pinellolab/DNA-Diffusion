@@ -1,23 +1,22 @@
 import math
-from math import exp
+from math import log, exp
 import torch
 
 
 def beta_linear_log_snr(t):
-    return -torch.log(exp(1e-4 + 10 * (t**2)))
+    return -torch.log(exp(1e-4 + 10 * (t ** 2)))
 
 
 def alpha_cosine_log_snr(t, s: float = 0.008):
-    return -torch.log(
-        (torch.cos((t + s) / (1 + s) * math.pi * 0.5) ** -2) - 1, eps=1e-5
-    )  # not sure if this accounts for beta being clipped to 0.999 in discrete version
+    # not sure if this accounts for beta being clipped to 0.999 in discrete version
+    return -log((torch.cos((t + s) / (1 + s) * math.pi * 0.5) ** -2) - 1, eps = 1e-5)
 
 
 def log_snr_to_alpha_sigma(log_snr):
     return torch.sqrt(torch.sigmoid(log_snr)), torch.sqrt(torch.sigmoid(-log_snr))
 
 
-def cosine_beta_schedule(timesteps, s=0.008) -> torch.Tensor:
+def cosine_beta_schedule(timesteps, s=0.008):
     """
     cosine schedule as proposed in https://arxiv.org/abs/2102.09672
     """
@@ -29,18 +28,18 @@ def cosine_beta_schedule(timesteps, s=0.008) -> torch.Tensor:
     return torch.clip(betas, 0.0001, 0.9999)
 
 
-def linear_beta_schedule(timesteps, beta_end=0.005) -> torch.Tensor:
+def linear_beta_schedule(timesteps, beta_end=0.005):
     beta_start = 0.0001
     return torch.linspace(beta_start, beta_end, timesteps)
 
 
-def quadratic_beta_schedule(timesteps) -> torch.Tensor:
+def quadratic_beta_schedule(timesteps):
     beta_start = 0.0001
     beta_end = 0.02
     return torch.linspace(beta_start**0.5, beta_end**0.5, timesteps) ** 2
 
 
-def sigmoid_beta_schedule(timesteps) -> torch.Tensor:
+def sigmoid_beta_schedule(timesteps):
     beta_start = 0.001
     beta_end = 0.02
     betas = torch.linspace(-6, 6, timesteps)

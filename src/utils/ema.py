@@ -1,5 +1,4 @@
-#https://github.com/dome272/Diffusion-Models-pytorch/blob/main/modules.py
-class EMA:  
+class EMA:
     def __init__(self, beta):
         super().__init__()
         self.beta = beta
