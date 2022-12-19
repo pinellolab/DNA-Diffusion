@@ -38,8 +38,7 @@ class EnformerDataLoader:
         self.gene_coordinates = self.fetch_gene_coordinates()
         self.seq = self.fetch_sequence()
 
-        # TODO 1: Add a function that converts the sequence to a one-hot encoded vector.
-        # TODO 2: Implement Enformer model and test it on the data.
+        # TODO 1: Implement Enformer model and test it on the data.
 
     def fetch_sequence(self):
         gene_ids = list(self.gene_coordinates.keys())
@@ -72,7 +71,7 @@ class EnformerDataLoader:
         seqs_one_hot = {}
         for s in seqs:
             seqs_one_hot[s] = str_to_one_hot(seqs[s])
-        print(seqs_one_hot)
+        print("Sequences one-hot encoded!")
         return seqs_one_hot
 
     def fetch_gene_coordinates(self):
