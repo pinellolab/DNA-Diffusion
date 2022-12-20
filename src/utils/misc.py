@@ -6,7 +6,7 @@ import os
 import numpy as np
 
 
-def seed_everything(seed):
+def seed_everything(seed: int) -> None:
     """ "
     Seed everything.
     """
@@ -60,7 +60,7 @@ def convert_image_to(img_type, image):
     return image
 
 
-def one_hot_encode(seq, nucleotides, max_seq_len):
+def one_hot_encode(seq, nucleotides, max_seq_len: int) -> np.ndarray:
     """
     One-hot encode a sequence of nucleotides.
     """
@@ -71,7 +71,7 @@ def one_hot_encode(seq, nucleotides, max_seq_len):
     return seq_array
 
 
-def log(t, eps=1e-20):
+def log(t: torch.Tensor, eps=1e-20) -> torch.Tensor:
     """
     Toch log for the purporses of diffusion time steps t.
     """
