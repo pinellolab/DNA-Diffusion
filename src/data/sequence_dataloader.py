@@ -12,11 +12,11 @@ class SequenceDatasetBase(Dataset):
     def __init__(
         self,
         data_path,
-        sequence_length=200,
-        sequence_encoding="polar",
+        sequence_length: int = 200,
+        sequence_encoding: str = "polar",
         sequence_transform=None,
         cell_type_transform=None,
-    ):
+    ) -> None:
         super().__init__()
         self.data = pd.read_csv(data_path, sep="\t")
         self.sequence_length = sequence_length
@@ -26,7 +26,7 @@ class SequenceDatasetBase(Dataset):
         self.alphabet = ["A", "C", "T", "G"]
         self.check_data_validity()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.data)
 
     def __getitem__(self, index):
@@ -45,7 +45,7 @@ class SequenceDatasetBase(Dataset):
 
             return X_seq, X_cell_type
 
-    def check_data_validity(self):
+    def check_data_validity(self) -> None:
         """
         Checks if the data is valid.
         """
@@ -72,7 +72,7 @@ class SequenceDatasetBase(Dataset):
         return seq
 
     # Function for one hot encoding each line of the sequence dataset
-    def one_hot_encode(self, seq):
+    def one_hot_encode(self, seq) -> np.ndarray:
         """
         One-hot encoding a sequence
         """
@@ -84,17 +84,17 @@ class SequenceDatasetBase(Dataset):
 
 
 class SequenceDatasetTrain(SequenceDatasetBase):
-    def __init__(self, data_path="", **kwargs):
+    def __init__(self, data_path="", **kwargs) -> None:
         super().__init__(data_path=data_path, **kwargs)
 
 
 class SequenceDatasetValidation(SequenceDatasetBase):
-    def __init__(self, data_path="", **kwargs):
+    def __init__(self, data_path="", **kwargs) -> None:
         super().__init__(data_path=data_path, **kwargs)
 
 
 class SequenceDatasetTest(SequenceDatasetBase):
-    def __init__(self, data_path="", **kwargs):
+    def __init__(self, data_path="", **kwargs) -> None:
         super().__init__(data_path=data_path, **kwargs)
 
 
@@ -104,13 +104,13 @@ class SequenceDataModule(pl.LightningDataModule):
         train_path=None,
         val_path=None,
         test_path=None,
-        sequence_length=200,
-        sequence_encoding="polar",
+        sequence_length: int = 200,
+        sequence_encoding: str = "polar",
         sequence_transform=None,
         cell_type_transform=None,
         batch_size=None,
-        num_workers=1,
-    ):
+        num_workers: int = 1,
+    ) -> None:
         super().__init__()
         self.datasets = dict()
         self.train_dataloader, self.val_dataloader, self.test_dataloader = (
