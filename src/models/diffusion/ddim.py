@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 import pytorch_lightning as pl
 
@@ -12,12 +13,12 @@ class DDIM(DiffusionModel):
         model,
         *,
         image_size,
-        timesteps=1000,
-        use_ddim=False,
-        noise_schedule="cosine",
-        time_difference=0.0,
-        bit_scale=1.0,
-    ):
+        timesteps: int = 1000,
+        use_ddim: bool = False,
+        noise_schedule: str = "cosine",
+        time_difference: float = 0.0,
+        bit_scale: float = 1.0,
+    ) -> None:
         super().__init__()
         self.model = model
         self.channels = self.model.channels
@@ -106,7 +107,7 @@ class DDIM(DiffusionModel):
         sample_fn = self.ddpm_sample if not self.use_ddim else self.ddim_sample
         return sample_fn((batch_size, 8, 4, image_size), classes=classes)  # Lucas
 
-    def forward(self, img, class_enc, *args, **kwargs):
+    def forward(self, img, class_enc, *args, **kwargs) -> torch.Tensor:
         batch, c, h, w, device, img_size, = (
             *img.shape,
             img.device,
