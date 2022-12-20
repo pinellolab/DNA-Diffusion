@@ -6,6 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 import os
+from typing import Callable, Dict
 
 
 def motif_scoring_KL_divergence(
@@ -27,11 +28,11 @@ def motif_scoring_KL_divergence(
 
 
 def compare_motif_list(
-    df_motifs_a,
-    df_motifs_b,
-    motif_scoring_metric=motif_scoring_KL_divergence,
-    plot_motif_probs=False,
-):
+    df_motifs_a: pd.DataFrame,
+    df_motifs_b: pd.DataFrame,
+    motif_scoring_metric: Callable = motif_scoring_KL_divergence,
+    plot_motif_probs: bool = False,
+) -> torch.Tensor:
     """
     This function encapsulates the logic of evaluating the difference between the distribution
     of frequencies between generated (diffusion/df_motifs_a) and the input (training/df_motifs_b) for an arbitrary metric ("motif_scoring_metric")
@@ -143,8 +144,12 @@ def sampling_to_metric(
 
 
 def metric_comparison_between_components(
-    original_data, generated_data, x_label_plot, y_label_plot, cell_components
-):
+    original_data: Dict,
+    generated_data: Dict,
+    x_label_plot: str,
+    y_label_plot: str,
+    cell_components,
+) -> None:
     """
     This functions takes as inputs dictionaries, which contain as keys different components (cell types)
     and as values the distribution of occurances of different motifs. These two dictionaries represent two different datasets, i.e.
