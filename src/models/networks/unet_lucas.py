@@ -1,7 +1,7 @@
 import math
 from functools import partial
 from einops import rearrange
-from typing import Optional, List
+from typing import Optional, List, Callable
 
 import torch
 from torch import nn, einsum
@@ -11,20 +11,20 @@ from utils.network import l2norm, Upsample, Downsample
 
 
 class Residual(nn.Module):
-    def __init__(self, fn):
+    def __init__(self, fn: Callable) -> None:
         super().__init__()
         self.fn = fn
 
-    def forward(self, x, *args, **kwargs):
+    def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return self.fn(x, *args, **kwargs) + x
 
 
 class LayerNorm(nn.Module):
-    def __init__(self, dim):
+    def __init__(self, dim: int) -> None:
         super().__init__()
         self.g = nn.Parameter(torch.ones(1, dim, 1, 1))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         eps = 1e-5 if x.dtype == torch.float32 else 1e-3
         var = torch.var(x, dim=1, unbiased=False, keepdim=True)
         mean = torch.mean(x, dim=1, keepdim=True)
@@ -32,12 +32,12 @@ class LayerNorm(nn.Module):
 
 
 class PreNorm(nn.Module):
-    def __init__(self, dim, fn):
+    def __init__(self, dim: int, fn) -> None:
         super().__init__()
         self.fn = fn
         self.norm = LayerNorm(dim)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.norm(x)
         return self.fn(x)
 
@@ -48,13 +48,13 @@ class LearnedSinusoidalPositionalEmbedding(nn.Module):
 
     """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
 
-    def __init__(self, dim):
+    def __init__(self, dim: int) -> None:
         super().__init__()
         assert (dim % 2) == 0
         half_dim = dim // 2
         self.weights = nn.Parameter(torch.randn(half_dim))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = rearrange(x, "b -> b 1")
         freqs = x * rearrange(self.weights, "d -> 1 d") * 2 * math.pi
         fouriered = torch.cat((freqs.sin(), freqs.cos()), dim=-1)
@@ -64,13 +64,13 @@ class LearnedSinusoidalPositionalEmbedding(nn.Module):
 
 # building block modules
 class Block(nn.Module):
-    def __init__(self, dim, dim_out, groups=8):
+    def __init__(self, dim: int, dim_out: int, groups: int = 8) -> None:
         super().__init__()
         self.proj = nn.Conv2d(dim, dim_out, 3, padding=1)
         self.norm = nn.GroupNorm(groups, dim_out)
         self.act = nn.SiLU()
 
-    def forward(self, x, scale_shift=None):
+    def forward(self, x: torch.Tensor, scale_shift=None) -> torch.Tensor:
         x = self.proj(x)
         x = self.norm(x)
 
@@ -83,7 +83,14 @@ class Block(nn.Module):
 
 
 class ResnetBlock(nn.Module):
-    def __init__(self, dim, dim_out, *, time_emb_dim=None, groups=8):
+    def __init__(
+        self,
+        dim: int,
+        dim_out: int,
+        *,
+        time_emb_dim: Optional[int] = None,
+        groups: int = 8
+    ) -> None:
         super().__init__()
         self.mlp = (
             nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))
@@ -95,7 +102,7 @@ class ResnetBlock(nn.Module):
         self.block2 = Block(dim_out, dim_out, groups=groups)
         self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
 
-    def forward(self, x, time_emb=None):
+    def forward(self, x: torch.Tensor, time_emb=None) -> torch.Tensor:
 
         scale_shift = None
         if exists(self.mlp) and exists(time_emb):
@@ -111,7 +118,7 @@ class ResnetBlock(nn.Module):
 
 
 class LinearAttention(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=32):
+    def __init__(self, dim: int, heads: int = 4, dim_head: int = 32) -> None:
         super().__init__()
         self.scale = dim_head**-0.5
         self.heads = heads
@@ -119,7 +126,7 @@ class LinearAttention(nn.Module):
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
         self.to_out = nn.Sequential(nn.Conv2d(hidden_dim, dim, 1), LayerNorm(dim))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
         q, k, v = map(
@@ -140,7 +147,9 @@ class LinearAttention(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=32, scale=10):
+    def __init__(
+        self, dim: int, heads: int = 4, dim_head: int = 32, scale: int = 10
+    ) -> None:
         super().__init__()
         self.scale = scale
         self.heads = heads
@@ -148,7 +157,7 @@ class Attention(nn.Module):
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
         self.to_out = nn.Conv2d(hidden_dim, dim, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
         q, k, v = map(
@@ -175,7 +184,7 @@ class UNetLucas(nn.Module):
         learned_sinusoidal_dim: int = 18,
         num_classes: int = 10,
         self_conditioned: bool = False,
-    ):
+    ) -> None:
         super().__init__()
 
         channels = 1
@@ -253,7 +262,7 @@ class UNetLucas(nn.Module):
         self.final_res_block = resnet_block(dim * 2, dim, time_emb_dim=time_dim)
         self.final_conv = nn.Conv2d(dim, 1, 1)
 
-    def forward(self, x, time, classes, x_self_cond=None):
+    def forward(self, x: torch.Tensor, time, classes, x_self_cond=None) -> torch.Tensor:
         x = self.init_conv(x)
         r = x.clone()
 
