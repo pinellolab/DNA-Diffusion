@@ -1,7 +1,7 @@
 import math
 from einops import rearrange
 from functools import partial
-from typing import Optional, List
+from typing import Optional, List, Callable
 
 import torch
 from torch import nn, einsum
@@ -13,31 +13,31 @@ from utils.network import l2norm, Upsample, Downsample
 
 
 class Residual(nn.Module):
-    def __init__(self, fn):
+    def __init__(self, fn: Callable) -> None:
         super().__init__()
         self.fn = fn
 
-    def forward(self, x, *args, **kwargs):
+    def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return self.fn(x, *args, **kwargs) + x
 
 
-def Upsample(dim, dim_out=None):
+def Upsample(dim: int, dim_out: Optional[int] = None):
     return nn.Sequential(
         nn.Upsample(scale_factor=2, mode="nearest"),
         nn.Conv2d(dim, default(dim_out, dim), 3, padding=1),
     )
 
 
-def Downsample(dim, dim_out=None):
+def Downsample(dim: int, dim_out: Optional[int] = None):
     return nn.Conv2d(dim, default(dim_out, dim), 4, 2, 1)
 
 
 class LayerNorm(nn.Module):
-    def __init__(self, dim):
+    def __init__(self, dim: int) -> None:
         super().__init__()
         self.g = nn.Parameter(torch.ones(1, dim, 1, 1))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         eps = 1e-5 if x.dtype == torch.float32 else 1e-3
         var = torch.var(x, dim=1, unbiased=False, keepdim=True)
         mean = torch.mean(x, dim=1, keepdim=True)
@@ -45,12 +45,12 @@ class LayerNorm(nn.Module):
 
 
 class PreNorm(nn.Module):
-    def __init__(self, dim, fn):
+    def __init__(self, dim: int, fn: Callable) -> None:
         super().__init__()
         self.fn = fn
         self.norm = LayerNorm(dim)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.norm(x)
         return self.fn(x)
 
@@ -63,13 +63,13 @@ class LearnedSinusoidalPosEmb(nn.Module):
 
     """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
 
-    def __init__(self, dim):
+    def __init__(self, dim: int) -> None:
         super().__init__()
         assert (dim % 2) == 0
         half_dim = dim // 2
         self.weights = nn.Parameter(torch.randn(half_dim))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = rearrange(x, "b -> b 1")
         freqs = x * rearrange(self.weights, "d -> 1 d") * 2 * math.pi
         fouriered = torch.cat((freqs.sin(), freqs.cos()), dim=-1)
@@ -78,7 +78,7 @@ class LearnedSinusoidalPosEmb(nn.Module):
 
 
 class EmbedFC(nn.Module):
-    def __init__(self, input_dim, emb_dim):
+    def __init__(self, input_dim: int, emb_dim: int) -> None:
         super(EmbedFC, self).__init__()
         """
         generic one layer FC NN for embedding things  
@@ -87,7 +87,7 @@ class EmbedFC(nn.Module):
         layers = [nn.Linear(input_dim, emb_dim), nn.GELU(), nn.Linear(emb_dim, emb_dim)]
         self.model = nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
 
 
@@ -95,13 +95,13 @@ class EmbedFC(nn.Module):
 
 
 class Block(nn.Module):
-    def __init__(self, dim, dim_out, groups=8):
+    def __init__(self, dim: int, dim_out: int, groups: int = 8) -> None:
         super().__init__()
         self.proj = nn.Conv2d(dim, dim_out, 3, padding=1)
         self.norm = nn.GroupNorm(groups, dim_out)
         self.act = nn.SiLU()
 
-    def forward(self, x, scale_shift=None):
+    def forward(self, x: torch.Tensor, scale_shift=None) -> torch.Tensor:
         x = self.proj(x)
         x = self.norm(x)
 
@@ -117,7 +117,9 @@ class Block(nn.Module):
 
 
 class ResnetBlock(nn.Module):
-    def __init__(self, dim, dim_out, *, time_emb_dim=None, groups=8):
+    def __init__(
+        self, dim: int, dim_out: int, *, time_emb_dim=None, groups: int = 8
+    ) -> None:
         super().__init__()
         self.mlp = (
             nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))
@@ -129,7 +131,7 @@ class ResnetBlock(nn.Module):
         self.block2 = Block(dim_out, dim_out, groups=groups)
         self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
 
-    def forward(self, x, time_emb=None):
+    def forward(self, x: torch.Tensor, time_emb=None) -> torch.Tensor:
 
         scale_shift = None
         if exists(self.mlp) and exists(time_emb):
@@ -149,8 +151,15 @@ class ResnetBlock(nn.Module):
 
 class ResnetBlockClassConditioned(ResnetBlock):
     def __init__(
-        self, dim, dim_out, *, num_classes, class_embed_dim, time_emb_dim=None, groups=8
-    ):
+        self,
+        dim: int,
+        dim_out: int,
+        *,
+        num_classes: int,
+        class_embed_dim: int,
+        time_emb_dim=None,
+        groups: int = 8
+    ) -> None:
         super().__init__(
             dim=dim + class_embed_dim,
             dim_out=dim_out,
@@ -159,7 +168,7 @@ class ResnetBlockClassConditioned(ResnetBlock):
         )
         self.class_mlp = EmbedFC(num_classes, class_embed_dim)
 
-    def forward(self, x, time_emb=None, c=None):
+    def forward(self, x: torch.Tensor, time_emb=None, c=None) -> torch.Tensor:
         emb_c = self.class_mlp(c)
         emb_c = emb_c.view(*emb_c.shape, 1, 1)
         emb_c = emb_c.expand(-1, -1, x.shape[-2], x.shape[-1])
@@ -172,7 +181,7 @@ class ResnetBlockClassConditioned(ResnetBlock):
 
 
 class LinearAttention(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=32):
+    def __init__(self, dim: int, heads: int = 4, dim_head: int = 32) -> None:
         super().__init__()
         self.scale = dim_head**-0.5
         self.heads = heads
@@ -180,7 +189,7 @@ class LinearAttention(nn.Module):
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
         self.to_out = nn.Sequential(nn.Conv2d(hidden_dim, dim, 1), LayerNorm(dim))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
         q, k, v = map(
@@ -201,7 +210,9 @@ class LinearAttention(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(self, dim, heads=4, dim_head=32, scale=10):
+    def __init__(
+        self, dim: int, heads: int = 4, dim_head: int = 32, scale: int = 10
+    ) -> None:
         super().__init__()
         self.scale = scale
         self.heads = heads
@@ -209,7 +220,7 @@ class Attention(nn.Module):
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
         self.to_out = nn.Conv2d(hidden_dim, dim, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
         q, k, v = map(
@@ -243,7 +254,7 @@ class UNet(nn.Module):
         learned_sinusoidal_dim: int = 18,
         num_classes: int = 10,
         class_embed_dim: bool = 3,
-    ):
+    ) -> None:
         super().__init__()
 
         self.channels = channels
@@ -321,7 +332,7 @@ class UNet(nn.Module):
 
     # Additional code to the https://github.com/lucidrains/bit-diffusion/blob/main/bit_diffusion/bit_diffusion.py mostly in forward method.
 
-    def forward(self, x, time, classes, x_self_cond=None):
+    def forward(self, x: torch.Tensor, time, classes, x_self_cond=None) -> torch.Tensor:
         x = self.init_conv(x)
         r = x.clone()
 
