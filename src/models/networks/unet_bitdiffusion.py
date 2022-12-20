@@ -7,13 +7,13 @@ class UNet(nn.Module):
         dim,
         init_dim=None,
         dim_mults=(1, 2, 4, 8),
-        channels=3,
+        channels: int = 3,
         bits=BITS,
-        resnet_block_groups=8,
-        learned_sinusoidal_dim=16,
-        num_classes=10,
-        class_embed_dim=3,
-    ):
+        resnet_block_groups: int = 8,
+        learned_sinusoidal_dim: int = 16,
+        num_classes: int = 10,
+        class_embed_dim: int = 3,
+    ) -> None:
         super().__init__()
 
         # determine dimensions
@@ -97,7 +97,7 @@ class UNet(nn.Module):
         # self.final_conv = nn.Conv2d(dim, 1, 1) #lucas
         self.final_conv = nn.Conv2d(dim, 8, 1)
 
-    def forward(self, x, time, c, x_self_cond=None):
+    def forward(self, x, time, c, x_self_cond=None) -> torch.Tensor:
         # print(x.shape)
         # c = torch.zeros_like(c) # removing the conditioning LUCAS
 
