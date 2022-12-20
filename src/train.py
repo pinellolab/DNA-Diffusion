@@ -9,6 +9,7 @@ import argparse
 
 logger = logging.getLogger()
 
+
 def get_parser(**parser_kwargs):
     parser = argparse.ArgumentParser(**parser_kwargs)
     parser.add_argument(
@@ -23,13 +24,19 @@ def get_parser(**parser_kwargs):
     )
     return parser
 
+
 @hydra.main(config_path="configs", config_name="train")
 def train(cfg: DictConfig):
     parser = get_parser()
-    
+
     # Keeping track of current config settings in logger
     logger.info(f"Training with config:\n{OmegaConf.to_yaml(cfg)}")
-    run = wandb.init(name=parser.logdir, save_dir=parser.logdir, project=cfg.logger.wandb.project, config=cfg)
+    run = wandb.init(
+        name=parser.logdir,
+        save_dir=parser.logdir,
+        project=cfg.logger.wandb.project,
+        config=cfg,
+    )
 
     # Placeholder for what loss or metric values we plan to track with wandb
     wandb.log({"loss": loss})
@@ -48,10 +55,11 @@ def train(cfg: DictConfig):
         callbacks=cfg.callbacks,
         accelerator=cfg.accelerator,
         devices=cfg.devices,
-        logger=cfg.logger.wandb
+        logger=cfg.logger.wandb,
     )
 
     trainer.fit(model, train_dl, val_dl)
+
 
 if __name__ == "__main__":
     train()

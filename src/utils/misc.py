@@ -7,11 +7,11 @@ import numpy as np
 
 
 def seed_everything(seed):
-    """"
+    """ "
     Seed everything.
-    """   
+    """
     random.seed(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -71,11 +71,11 @@ def one_hot_encode(seq, nucleotides, max_seq_len):
     return seq_array
 
 
-def log(t, eps = 1e-20):
+def log(t, eps=1e-20):
     """
     Toch log for the purporses of diffusion time steps t.
     """
-    return torch.log(t.clamp(min = eps))
+    return torch.log(t.clamp(min=eps))
 
 
 def right_pad_dims_to(x, t):
@@ -97,6 +97,7 @@ def get_obj_from_str(string, reload=False):
         module_to_reload = importlib.import_module(module)
         importlib.reload(module_to_reload)
     return getattr(importlib.import_module(module, package=None), class_)
+
 
 def mean_flat(tensor):
     """

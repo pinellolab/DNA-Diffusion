@@ -4,6 +4,7 @@ import pytorch_lightning as pl
 
 from utils.ema import EMA
 
+
 class DiffusionModel(pl.LightningModule):
     def __init__(
         self,

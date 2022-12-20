@@ -7,32 +7,54 @@ from src.data.sequence_dataloader import SequenceDataModule
 
 def prepare_default_data(path):
     """Prepares dummy data for testing."""
-    pd.DataFrame({
-        "raw_sequence": ["ATCGATCGATCG", "GGTGAACGATTA", "AATCGTATCGCG", "CTTATCGATCCG"],
-        "component": [1, 2, 1, 10],
-    }).to_csv(path, index=False, sep="\t")
+    pd.DataFrame(
+        {
+            "raw_sequence": [
+                "ATCGATCGATCG",
+                "GGTGAACGATTA",
+                "AATCGTATCGCG",
+                "CTTATCGATCCG",
+            ],
+            "component": [1, 2, 1, 10],
+        }
+    ).to_csv(path, index=False, sep="\t")
+
 
 def prepare_high_diversity_datasets(train_data_path, val_data_path, test_data_path):
-    pd.DataFrame({
-        "raw_sequence": ["AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA"],
-        "component": [0, 0, 0, 0],
-    }).to_csv(train_data_path, index=False, sep="\t")
-    pd.DataFrame({
-        "raw_sequence": ["CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC"],
-        "component": [1, 1, 1, 1],
-    }).to_csv(val_data_path, index=False, sep="\t")
-    pd.DataFrame({
-        "raw_sequence": ["TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT"],
-        "component": [2, 2, 2, 2],
-    }).to_csv(test_data_path, index=False, sep="\t")
+    pd.DataFrame(
+        {
+            "raw_sequence": ["AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA", "AAAAAAAAAA"],
+            "component": [0, 0, 0, 0],
+        }
+    ).to_csv(train_data_path, index=False, sep="\t")
+    pd.DataFrame(
+        {
+            "raw_sequence": ["CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC", "CCCCCCCCCC"],
+            "component": [1, 1, 1, 1],
+        }
+    ).to_csv(val_data_path, index=False, sep="\t")
+    pd.DataFrame(
+        {
+            "raw_sequence": ["TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT", "TTTTTTTTTT"],
+            "component": [2, 2, 2, 2],
+        }
+    ).to_csv(test_data_path, index=False, sep="\t")
+
 
 def test_invalid_sequence_letters():
     # prepare invalid data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
-    pd.DataFrame({
-        "raw_sequence": ["ZCCCACTGACTG", "ACTGACTGACTG", "AAAACCCCTTTT", "ABCDEFGHIJKL"],
-        "component": [1, 2, 1, 10],
-    }).to_csv(dummy_data_path, index=False, sep="\t")
+    pd.DataFrame(
+        {
+            "raw_sequence": [
+                "ZCCCACTGACTG",
+                "ACTGACTGACTG",
+                "AAAACCCCTTTT",
+                "ABCDEFGHIJKL",
+            ],
+            "component": [1, 2, 1, 10],
+        }
+    ).to_csv(dummy_data_path, index=False, sep="\t")
 
     datamodule = SequenceDataModule(
         train_path=dummy_data_path,
@@ -53,14 +75,17 @@ def test_invalid_sequence_letters():
     # remove dummy data
     os.remove(dummy_data_path)
 
+
 def test_invalid_sequence_lengths():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
     # second sequence too short
-    pd.DataFrame({
-        "raw_sequence": ["ATCG", "GGT", "AATC", "CTTA"],
-        "component": [1, 2, 1, 10],
-    }).to_csv(dummy_data_path, index=False, sep="\t")
+    pd.DataFrame(
+        {
+            "raw_sequence": ["ATCG", "GGT", "AATC", "CTTA"],
+            "component": [1, 2, 1, 10],
+        }
+    ).to_csv(dummy_data_path, index=False, sep="\t")
 
     # prepare data module
     datamodule = SequenceDataModule(
@@ -82,10 +107,12 @@ def test_invalid_sequence_lengths():
     os.remove(dummy_data_path)
 
     # fourth sequence too long
-    pd.DataFrame({
-        "raw_sequence": ["ATCG", "GGT", "AATC", "CTTAT"],
-        "component": [1, 2, 1, 10],
-    }).to_csv(dummy_data_path, index=False, sep="\t")
+    pd.DataFrame(
+        {
+            "raw_sequence": ["ATCG", "GGT", "AATC", "CTTAT"],
+            "component": [1, 2, 1, 10],
+        }
+    ).to_csv(dummy_data_path, index=False, sep="\t")
 
     # prepare data module
     datamodule = SequenceDataModule(
@@ -106,19 +133,22 @@ def test_invalid_sequence_lengths():
     # remove dummy data
     os.remove(dummy_data_path)
 
+
 def test_train_val_test_data_split():
     # prepare dummy data
     dummy_train_data_path = "_tmp_seq_dataloader_train_data.csv"
     dummy_val_data_path = "_tmp_seq_dataloader_val_data.csv"
     dummy_test_data_path = "_tmp_seq_dataloader_test_data.csv"
-    prepare_high_diversity_datasets(dummy_train_data_path, dummy_val_data_path, dummy_test_data_path)
+    prepare_high_diversity_datasets(
+        dummy_train_data_path, dummy_val_data_path, dummy_test_data_path
+    )
 
     # check loading of only a single data set
     datamodule = SequenceDataModule(
         train_path=None,
         val_path=dummy_val_data_path,
         test_path=None,
-        sequence_length=10
+        sequence_length=10,
     )
     datamodule.setup()
     assert datamodule.train_dataloader is None
@@ -141,7 +171,13 @@ def test_train_val_test_data_split():
     assert len(datamodule.val_dataloader()) == 2
     assert len(datamodule.test_dataloader()) == 2
     seen_nucleotide_idxs = set()
-    for dl_idx, dataloader in enumerate([datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]):
+    for dl_idx, dataloader in enumerate(
+        [
+            datamodule.train_dataloader(),
+            datamodule.val_dataloader(),
+            datamodule.test_dataloader(),
+        ]
+    ):
         dataloader_iter = iter(dataloader)
 
         # first batch
@@ -170,6 +206,7 @@ def test_train_val_test_data_split():
     for path in [dummy_train_data_path, dummy_val_data_path, dummy_test_data_path]:
         os.remove(path)
 
+
 def test_polar_encoding():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
@@ -191,7 +228,11 @@ def test_polar_encoding():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
+    for dataloader in [
+        datamodule.train_dataloader(),
+        datamodule.val_dataloader(),
+        datamodule.test_dataloader(),
+    ]:
         for batch in dataloader:
             assert len(batch) == 2
             assert isinstance(batch[0], torch.Tensor)
@@ -204,6 +245,7 @@ def test_polar_encoding():
 
     # remove dummy data
     os.remove(dummy_data_path)
+
 
 def test_onehot_encoding():
     # prepare dummy data
@@ -226,7 +268,11 @@ def test_onehot_encoding():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
+    for dataloader in [
+        datamodule.train_dataloader(),
+        datamodule.val_dataloader(),
+        datamodule.test_dataloader(),
+    ]:
         for batch in dataloader:
             assert len(batch) == 2
             assert isinstance(batch[0], torch.Tensor)
@@ -239,6 +285,7 @@ def test_onehot_encoding():
 
     # remove dummy data
     os.remove(dummy_data_path)
+
 
 def test_ordinal_encoding():
     # prepare dummy data
@@ -261,7 +308,11 @@ def test_ordinal_encoding():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader(), datamodule.val_dataloader(), datamodule.test_dataloader()]:
+    for dataloader in [
+        datamodule.train_dataloader(),
+        datamodule.val_dataloader(),
+        datamodule.test_dataloader(),
+    ]:
         for batch in dataloader:
             assert len(batch) == 2
             assert isinstance(batch[0], torch.Tensor)
@@ -275,6 +326,7 @@ def test_ordinal_encoding():
     # remove dummy data
     os.remove(dummy_data_path)
 
+
 def test_polar_transforms():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
@@ -283,20 +335,26 @@ def test_polar_transforms():
     # prepare data module
     def seg_transform(seq):
         return seq + 1
+
     def cell_type_transform(cell_type):
         return cell_type + 20
+
     datamodule = SequenceDataModule(
         train_path=dummy_data_path,
         val_path=dummy_data_path,
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="polar",
-        sequence_transform=transforms.Compose([
-            transforms.Lambda(seg_transform),
-        ]),
-        cell_type_transform=transforms.Compose([
-            transforms.Lambda(cell_type_transform),
-        ]),
+        sequence_transform=transforms.Compose(
+            [
+                transforms.Lambda(seg_transform),
+            ]
+        ),
+        cell_type_transform=transforms.Compose(
+            [
+                transforms.Lambda(cell_type_transform),
+            ]
+        ),
         batch_size=2,
         num_workers=0,
     )
@@ -306,7 +364,11 @@ def test_polar_transforms():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader, datamodule.val_dataloader, datamodule.test_dataloader]:
+    for dataloader in [
+        datamodule.train_dataloader,
+        datamodule.val_dataloader,
+        datamodule.test_dataloader,
+    ]:
         seen_cell_type_ids = set()
         for batch in dataloader():
             assert len(batch) == 2
@@ -325,6 +387,7 @@ def test_polar_transforms():
     # remove dummy data
     os.remove(dummy_data_path)
 
+
 def test_onehot_transforms():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
@@ -333,20 +396,26 @@ def test_onehot_transforms():
     # prepare data module
     def seg_transform(seq):
         return seq + 1
+
     def cell_type_transform(cell_type):
         return cell_type + 20
+
     datamodule = SequenceDataModule(
         train_path=dummy_data_path,
         val_path=dummy_data_path,
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="onehot",
-        sequence_transform=transforms.Compose([
-            transforms.Lambda(seg_transform),
-        ]),
-        cell_type_transform=transforms.Compose([
-            transforms.Lambda(cell_type_transform),
-        ]),
+        sequence_transform=transforms.Compose(
+            [
+                transforms.Lambda(seg_transform),
+            ]
+        ),
+        cell_type_transform=transforms.Compose(
+            [
+                transforms.Lambda(cell_type_transform),
+            ]
+        ),
         batch_size=2,
         num_workers=0,
     )
@@ -356,7 +425,11 @@ def test_onehot_transforms():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader, datamodule.val_dataloader, datamodule.test_dataloader]:
+    for dataloader in [
+        datamodule.train_dataloader,
+        datamodule.val_dataloader,
+        datamodule.test_dataloader,
+    ]:
         seen_cell_type_ids = set()
         for batch in dataloader():
             assert len(batch) == 2
@@ -375,6 +448,7 @@ def test_onehot_transforms():
     # remove dummy data
     os.remove(dummy_data_path)
 
+
 def test_ordinal_transforms():
     # prepare dummy data
     dummy_data_path = "_tmp_seq_dataloader_data.csv"
@@ -383,20 +457,26 @@ def test_ordinal_transforms():
     # prepare data module
     def seg_transform(seq):
         return seq + 1
+
     def cell_type_transform(cell_type):
         return cell_type + 20
+
     datamodule = SequenceDataModule(
         train_path=dummy_data_path,
         val_path=dummy_data_path,
         test_path=dummy_data_path,
         sequence_length=12,
         sequence_encoding="ordinal",
-        sequence_transform=transforms.Compose([
-            transforms.Lambda(seg_transform),
-        ]),
-        cell_type_transform=transforms.Compose([
-            transforms.Lambda(cell_type_transform),
-        ]),
+        sequence_transform=transforms.Compose(
+            [
+                transforms.Lambda(seg_transform),
+            ]
+        ),
+        cell_type_transform=transforms.Compose(
+            [
+                transforms.Lambda(cell_type_transform),
+            ]
+        ),
         batch_size=2,
         num_workers=0,
     )
@@ -406,7 +486,11 @@ def test_ordinal_transforms():
     assert len(datamodule.train_data) == 4
     assert len(datamodule.val_data) == 4
     assert len(datamodule.test_data) == 4
-    for dataloader in [datamodule.train_dataloader, datamodule.val_dataloader, datamodule.test_dataloader]:
+    for dataloader in [
+        datamodule.train_dataloader,
+        datamodule.val_dataloader,
+        datamodule.test_dataloader,
+    ]:
         seen_cell_type_ids = set()
         for batch in dataloader():
             assert len(batch) == 2
