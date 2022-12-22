@@ -37,8 +37,6 @@ class EnformerDataLoader:
         self.gene2ensembl, self.ensembl2gene, self.ensemble_ids = self.get_ensembl_ids()
         self.gene_coordinates = self.fetch_gene_coordinates()
 
-        # TODO 1: Implement Enformer model and test it on the DNA diffusion data.
-
     def fetch_sequence(self):
         gene_ids = list(self.gene_coordinates.keys())
         for gene in gene_ids:

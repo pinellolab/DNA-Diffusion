@@ -52,3 +52,7 @@ dna-diffusion/metrics/gene_expression/enformer/.DS_Store
 dna-diffusion/metrics/gene_expression/enformer/sequences/
 
 dna-diffusion/metrics/gene_expression/enformer/enformer_lucidrains_pytorch/enformer_pytorch/__pycache__/
+
+dna-diffusion/metrics/gene_expression/enformer/genomic_track_type_data.xlsx
+
+dna-diffusion/metrics/gene_expression/enformer/__pycache__/
