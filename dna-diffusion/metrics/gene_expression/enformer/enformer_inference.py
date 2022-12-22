@@ -14,13 +14,5 @@ class EnformerInference:
         self.model = Enformer.from_pretrained(model_path)
         self.data = EnformerDataLoader(pd.read_csv(data_path, sep="\t"))
 
-    def predict(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x.to(self.device))
-
-    def forward(self, x):
-        seq = torch.randint(0, 5, (1, 196_608))
-        one_hot = seq_indices_to_one_hot(seq)
-
-        output = self.model(one_hot)
-
-        return output

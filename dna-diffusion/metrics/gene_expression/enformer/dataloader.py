@@ -36,7 +36,6 @@ class EnformerDataLoader:
         self.genes = self.data['TargetGene'].values
         self.gene2ensembl, self.ensembl2gene, self.ensemble_ids = self.get_ensembl_ids()
         self.gene_coordinates = self.fetch_gene_coordinates()
-        self.seq = self.fetch_sequence()
 
         # TODO 1: Implement Enformer model and test it on the data.
 
@@ -121,8 +120,3 @@ class EnformerDataLoader:
                     ensemble_ids.append(hit["ensembl"]["gene"])
                     processed_genes.append(gene)
         return gene2ensembl, ensembl2gene, ensemble_ids
-
-
-# DEBUGGING PURPOSES ONLY #
-if __name__ == "__main__":
-    loader = EnformerDataLoader(pd.read_csv("abc_data/K562.PositivePredictions.txt", sep="\t"))
