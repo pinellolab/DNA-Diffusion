@@ -8,12 +8,6 @@ if __name__ == "__main__":
 
     for gene, seq in one_hot_seqs.items():
         output = model.forward(seq)
-        print(output)
-        output_human = output['human']
-        '''
-        get the shape of the output_human tensor 
-        '''
-        print(output_human.shape)
 
         # TODO 1: Import supplementary data table 2 from paper in order to get the cell types and genomic track type.
 
