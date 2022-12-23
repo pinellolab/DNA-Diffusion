@@ -8,6 +8,7 @@ import os
 import warnings
 from pybedtools import BedTool
 from Bio import SeqIO
+import torch
 from enformer_lucidrains_pytorch.enformer_pytorch.data import str_to_one_hot
 
 
@@ -67,7 +68,7 @@ class EnformerDataLoader:
                 seqs[s.split('.')[0]] = str(record.seq)
         seqs_one_hot = {}
         for s in seqs:
-            seqs_one_hot[s] = str_to_one_hot(seqs[s])
+            seqs_one_hot[s] = str_to_one_hot(seqs[s]).type(torch.float32)
         print("Sequences one-hot encoded!")
         return seqs_one_hot
 
