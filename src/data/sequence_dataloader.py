@@ -4,11 +4,19 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 import torch.nn.functional as F
-import pytorch_lightning as pl 
-from torch.utils.data import Dataset, DataLoader 
+import pytorch_lightning as pl
+from torch.utils.data import Dataset, DataLoader
+
 
 class SequenceDatasetBase(Dataset):
-    def __init__(self, data_path, sequence_length=200, sequence_encoding="polar", sequence_transform=None, cell_type_transform=None):
+    def __init__(
+        self,
+        data_path,
+        sequence_length: int = 200,
+        sequence_encoding: str = "polar",
+        sequence_transform=None,
+        cell_type_transform=None,
+    ) -> None:
         super().__init__()
         self.data = pd.read_csv(data_path, sep="\t")
         self.sequence_length = sequence_length
@@ -18,18 +26,18 @@ class SequenceDatasetBase(Dataset):
         self.alphabet = ["A", "C", "T", "G"]
         self.check_data_validity()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.data)
-    
+
     def __getitem__(self, index):
         # Iterating through DNA sequences from dataset and one-hot encoding all nucleotides
         current_seq = self.data["raw_sequence"][index]
-        if 'N' not in current_seq: 
+        if "N" not in current_seq:
             X_seq = self.encode_sequence(current_seq, encoding=self.sequence_encoding)
-            
+
             # Reading cell component at current index
             X_cell_type = self.data["component"][index]
-            
+
             if self.sequence_transform is not None:
                 X_seq = self.sequence_transform(X_seq)
             if self.cell_type_transform is not None:
@@ -37,7 +45,7 @@ class SequenceDatasetBase(Dataset):
 
             return X_seq, X_cell_type
 
-    def check_data_validity(self):
+    def check_data_validity(self) -> None:
         """
         Checks if the data is valid.
         """
@@ -64,7 +72,7 @@ class SequenceDatasetBase(Dataset):
         return seq
 
     # Function for one hot encoding each line of the sequence dataset
-    def one_hot_encode(self, seq):
+    def one_hot_encode(self, seq) -> np.ndarray:
         """
         One-hot encoding a sequence
         """
@@ -76,15 +84,17 @@ class SequenceDatasetBase(Dataset):
 
 
 class SequenceDatasetTrain(SequenceDatasetBase):
-    def __init__(self, data_path="", **kwargs):
+    def __init__(self, data_path="", **kwargs) -> None:
         super().__init__(data_path=data_path, **kwargs)
+
 
 class SequenceDatasetValidation(SequenceDatasetBase):
-    def __init__(self, data_path="", **kwargs):
+    def __init__(self, data_path="", **kwargs) -> None:
         super().__init__(data_path=data_path, **kwargs)
 
+
 class SequenceDatasetTest(SequenceDatasetBase):
-    def __init__(self, data_path="", **kwargs):
+    def __init__(self, data_path="", **kwargs) -> None:
         super().__init__(data_path=data_path, **kwargs)
 
 
@@ -94,16 +104,20 @@ class SequenceDataModule(pl.LightningDataModule):
         train_path=None,
         val_path=None,
         test_path=None,
-        sequence_length=200,
-        sequence_encoding="polar",
+        sequence_length: int = 200,
+        sequence_encoding: str = "polar",
         sequence_transform=None,
         cell_type_transform=None,
         batch_size=None,
-        num_workers=1
-    ):
+        num_workers: int = 1,
+    ) -> None:
         super().__init__()
         self.datasets = dict()
-        self.train_dataloader, self.val_dataloader, self.test_dataloader = None, None, None
+        self.train_dataloader, self.val_dataloader, self.test_dataloader = (
+            None,
+            None,
+            None,
+        )
 
         if train_path:
             self.datasets["train"] = train_path
@@ -131,7 +145,7 @@ class SequenceDataModule(pl.LightningDataModule):
                 sequence_length=self.sequence_length,
                 sequence_encoding=self.sequence_encoding,
                 sequence_transform=self.sequence_transform,
-                cell_type_transform=self.cell_type_transform
+                cell_type_transform=self.cell_type_transform,
             )
         if "validation" in self.datasets:
             self.val_data = SequenceDatasetValidation(
@@ -139,7 +153,7 @@ class SequenceDataModule(pl.LightningDataModule):
                 sequence_length=self.sequence_length,
                 sequence_encoding=self.sequence_encoding,
                 sequence_transform=self.sequence_transform,
-                cell_type_transform=self.cell_type_transform
+                cell_type_transform=self.cell_type_transform,
             )
         if "test" in self.datasets:
             self.test_data = SequenceDatasetTest(
@@ -147,27 +161,32 @@ class SequenceDataModule(pl.LightningDataModule):
                 sequence_length=self.sequence_length,
                 sequence_encoding=self.sequence_encoding,
                 sequence_transform=self.sequence_transform,
-                cell_type_transform=self.cell_type_transform
+                cell_type_transform=self.cell_type_transform,
             )
 
     def _train_dataloader(self):
-        return DataLoader(self.train_data,
-                          self.batch_size, 
-                          shuffle=True, 
-                          num_workers=self.num_workers, 
-                          pin_memory=True)
+        return DataLoader(
+            self.train_data,
+            self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+            pin_memory=True,
+        )
 
     def _val_dataloader(self):
-        return DataLoader(self.val_data,
-                          self.batch_size, 
-                          shuffle=True,
-                          num_workers=self.num_workers,
-                          pin_memory=True)
+        return DataLoader(
+            self.val_data,
+            self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+            pin_memory=True,
+        )
 
     def _test_dataloader(self):
-        return DataLoader(self.test_data,
-                          self.batch_size, 
-                          shuffle=True, 
-                          num_workers=self.num_workers, 
-                          pin_memory=True)
-
+        return DataLoader(
+            self.test_data,
+            self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+            pin_memory=True,
+        )

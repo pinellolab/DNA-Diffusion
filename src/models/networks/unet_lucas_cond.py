@@ -1,13 +1,15 @@
 import math
-from functools import partial
 from einops import rearrange
+from functools import partial
 from typing import Optional, List, Callable
 
 import torch
 from torch import nn, einsum
 
-from utils.misc import default
+from utils.misc import default, exists
 from utils.network import l2norm, Upsample, Downsample
+
+# Building blocks of UNET
 
 
 class Residual(nn.Module):
@@ -17,6 +19,17 @@ class Residual(nn.Module):
 
     def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return self.fn(x, *args, **kwargs) + x
+
+
+def Upsample(dim: int, dim_out: Optional[int] = None):
+    return nn.Sequential(
+        nn.Upsample(scale_factor=2, mode="nearest"),
+        nn.Conv2d(dim, default(dim_out, dim), 3, padding=1),
+    )
+
+
+def Downsample(dim: int, dim_out: Optional[int] = None):
+    return nn.Conv2d(dim, default(dim_out, dim), 4, 2, 1)
 
 
 class LayerNorm(nn.Module):
@@ -32,7 +45,7 @@ class LayerNorm(nn.Module):
 
 
 class PreNorm(nn.Module):
-    def __init__(self, dim: int, fn) -> None:
+    def __init__(self, dim: int, fn: Callable) -> None:
         super().__init__()
         self.fn = fn
         self.norm = LayerNorm(dim)
@@ -42,8 +55,10 @@ class PreNorm(nn.Module):
         return self.fn(x)
 
 
-# positional embeds
-class LearnedSinusoidalPositionalEmbedding(nn.Module):
+# Building blocks of UNET, positional embeddings
+
+
+class LearnedSinusoidalPosEmb(nn.Module):
     """following @crowsonkb 's lead with learned sinusoidal pos emb"""
 
     """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
@@ -62,7 +77,23 @@ class LearnedSinusoidalPositionalEmbedding(nn.Module):
         return fouriered
 
 
-# building block modules
+class EmbedFC(nn.Module):
+    def __init__(self, input_dim: int, emb_dim: int) -> None:
+        super(EmbedFC, self).__init__()
+        """
+        generic one layer FC NN for embedding things  
+        """
+        self.input_dim = input_dim
+        layers = [nn.Linear(input_dim, emb_dim), nn.GELU(), nn.Linear(emb_dim, emb_dim)]
+        self.model = nn.Sequential(*layers)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.model(x)
+
+
+# Building blocks of UNET, convolution + group norm blocks
+
+
 class Block(nn.Module):
     def __init__(self, dim: int, dim_out: int, groups: int = 8) -> None:
         super().__init__()
@@ -82,14 +113,12 @@ class Block(nn.Module):
         return x
 
 
+# Building blocks of UNET, residual blocks
+
+
 class ResnetBlock(nn.Module):
     def __init__(
-        self,
-        dim: int,
-        dim_out: int,
-        *,
-        time_emb_dim: Optional[int] = None,
-        groups: int = 8
+        self, dim: int, dim_out: int, *, time_emb_dim=None, groups: int = 8
     ) -> None:
         super().__init__()
         self.mlp = (
@@ -115,6 +144,40 @@ class ResnetBlock(nn.Module):
         h = self.block2(h)
 
         return h + self.res_conv(x)
+
+
+# Additional code to the https://github.com/lucidrains/bit-diffusion/blob/main/bit_diffusion/bit_diffusion.py
+
+
+class ResnetBlockClassConditioned(ResnetBlock):
+    def __init__(
+        self,
+        dim: int,
+        dim_out: int,
+        *,
+        num_classes: int,
+        class_embed_dim: int,
+        time_emb_dim=None,
+        groups: int = 8
+    ) -> None:
+        super().__init__(
+            dim=dim + class_embed_dim,
+            dim_out=dim_out,
+            time_emb_dim=time_emb_dim,
+            groups=groups,
+        )
+        self.class_mlp = EmbedFC(num_classes, class_embed_dim)
+
+    def forward(self, x: torch.Tensor, time_emb=None, c=None) -> torch.Tensor:
+        emb_c = self.class_mlp(c)
+        emb_c = emb_c.view(*emb_c.shape, 1, 1)
+        emb_c = emb_c.expand(-1, -1, x.shape[-2], x.shape[-1])
+        x = torch.cat([x, emb_c], axis=1)
+
+        return super().forward(x, time_emb)
+
+
+# Building blocks of UNET, attention modules
 
 
 class LinearAttention(nn.Module):
@@ -173,39 +236,42 @@ class Attention(nn.Module):
         return self.to_out(out)
 
 
-class UNetLucas(nn.Module):
+# Core part of UNET
+
+
+class UNet(nn.Module):
+    """
+    Refer to the main paper for the architecture details https://arxiv.org/pdf/2208.04202.pdf
+    """
+
     def __init__(
         self,
         dim: int,
-        init_dim: int = None,
-        dim_mults: Optional[int, list] = (1, 2, 4),
-        channels: int = 1,
+        init_dim: int = 200,
+        dim_mults: Optional[list] = [1, 2, 4],
+        channels=1,
         resnet_block_groups: int = 8,
         learned_sinusoidal_dim: int = 18,
         num_classes: int = 10,
-        self_conditioned: bool = False,
+        class_embed_dim: bool = 3,
     ) -> None:
         super().__init__()
 
-        channels = 1
         self.channels = channels
-
+        # if you want to do self conditioning uncomment this
+        # input_channels = channels * 2
         input_channels = channels
-        if self_conditioned:
-            input_channels = channels * 2
 
         init_dim = default(init_dim, dim)
         self.init_conv = nn.Conv2d(input_channels, init_dim, (7, 7), padding=3)
-
         dims = [init_dim, *map(lambda m: dim * m, dim_mults)]
-
         in_out = list(zip(dims[:-1], dims[1:]))
 
-        resnet_block = partial(ResnetBlock, groups=resnet_block_groups)
+        block_klass = partial(ResnetBlock, groups=resnet_block_groups)
 
         time_dim = dim * 4
 
-        sinu_pos_emb = LearnedSinusoidalPositionalEmbedding(learned_sinusoidal_dim)
+        sinu_pos_emb = LearnedSinusoidalPosEmb(learned_sinusoidal_dim)
         fourier_dim = learned_sinusoidal_dim + 1
 
         self.time_mlp = nn.Sequential(
@@ -218,19 +284,20 @@ class UNetLucas(nn.Module):
         if num_classes is not None:
             self.label_emb = nn.Embedding(num_classes, time_dim)
 
+        # layers
         self.downs = nn.ModuleList([])
         self.ups = nn.ModuleList([])
         num_resolutions = len(in_out)
 
-        for index, (dim_in, dim_out) in enumerate(in_out):
-            is_last = index >= (num_resolutions - 1)
+        for ind, (dim_in, dim_out) in enumerate(in_out):
+            is_last = ind >= (num_resolutions - 1)
 
             self.downs.append(
                 nn.ModuleList(
                     [
-                        resnet_block(dim_in, dim_in, time_emb_dim=time_dim),
-                        resnet_block(dim_in, dim_in, time_emb_dim=time_dim),
-                        (PreNorm(dim_in, LinearAttention(dim_in))),
+                        block_klass(dim_in, dim_in, time_emb_dim=time_dim),
+                        block_klass(dim_in, dim_in, time_emb_dim=time_dim),
+                        Residual(PreNorm(dim_in, LinearAttention(dim_in))),
                         Downsample(dim_in, dim_out)
                         if not is_last
                         else nn.Conv2d(dim_in, dim_out, 3, padding=1),
@@ -239,18 +306,18 @@ class UNetLucas(nn.Module):
             )
 
         mid_dim = dims[-1]
-        self.mid_block1 = resnet_block(mid_dim, mid_dim, time_emb_dim=time_dim)
+        self.mid_block1 = block_klass(mid_dim, mid_dim, time_emb_dim=time_dim)
         self.mid_attn = Residual(PreNorm(mid_dim, Attention(mid_dim)))
-        self.mid_block2 = resnet_block(mid_dim, mid_dim, time_emb_dim=time_dim)
+        self.mid_block2 = block_klass(mid_dim, mid_dim, time_emb_dim=time_dim)
 
-        for index, (dim_in, dim_out) in enumerate(reversed(in_out)):
-            is_last = index == (len(in_out) - 1)
+        for ind, (dim_in, dim_out) in enumerate(reversed(in_out)):
+            is_last = ind == (len(in_out) - 1)
 
             self.ups.append(
                 nn.ModuleList(
                     [
-                        resnet_block(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
-                        resnet_block(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
+                        block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
+                        block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_out, LinearAttention(dim_out))),
                         Upsample(dim_out, dim_in)
                         if not is_last
@@ -259,8 +326,11 @@ class UNetLucas(nn.Module):
                 )
             )
 
-        self.final_res_block = resnet_block(dim * 2, dim, time_emb_dim=time_dim)
+        self.final_res_block = block_klass(dim * 2, dim, time_emb_dim=time_dim)
         self.final_conv = nn.Conv2d(dim, 1, 1)
+        print("final", dim, channels, self.final_conv)
+
+    # Additional code to the https://github.com/lucidrains/bit-diffusion/blob/main/bit_diffusion/bit_diffusion.py mostly in forward method.
 
     def forward(self, x: torch.Tensor, time, classes, x_self_cond=None) -> torch.Tensor:
         x = self.init_conv(x)
@@ -302,8 +372,7 @@ class UNetLucas(nn.Module):
             x = upsample(x)
 
         x = torch.cat((x, r), dim=1)
-
         x = self.final_res_block(x, t_end)
-        x = self.final_conv(x)
 
+        x = self.final_conv(x)
         return x

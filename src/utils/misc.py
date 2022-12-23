@@ -1,7 +1,23 @@
 import math
 import importlib
-
 import torch
+import random
+import os
+import numpy as np
+
+
+def seed_everything(seed: int) -> None:
+    """ "
+    Seed everything.
+    """
+    random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+
 
 def exists(x):
     return x is not None
@@ -44,8 +60,22 @@ def convert_image_to(img_type, image):
     return image
 
 
-def log(t, eps = 1e-20):
-    return torch.log(t.clamp(min = eps))
+def one_hot_encode(seq, nucleotides, max_seq_len: int) -> np.ndarray:
+    """
+    One-hot encode a sequence of nucleotides.
+    """
+    seq_len = len(seq)
+    seq_array = np.zeros((max_seq_len, len(nucleotides)))
+    for i in range(seq_len):
+        seq_array[i, nucleotides.index(seq[i])] = 1
+    return seq_array
+
+
+def log(t: torch.Tensor, eps=1e-20) -> torch.Tensor:
+    """
+    Toch log for the purporses of diffusion time steps t.
+    """
+    return torch.log(t.clamp(min=eps))
 
 
 def right_pad_dims_to(x, t):
@@ -67,6 +97,7 @@ def get_obj_from_str(string, reload=False):
         module_to_reload = importlib.import_module(module)
         importlib.reload(module_to_reload)
     return getattr(importlib.import_module(module, package=None), class_)
+
 
 def mean_flat(tensor):
     """
