@@ -4,7 +4,7 @@ from enformer_lucidrains_pytorch.enformer_pytorch import Enformer
 from dataloader import EnformerDataLoader
 
 
-class Enformer:
+class EnformerModel:
     def __init__(self, data_path: str, model_path="EleutherAI/enformer-official-rough"):
         if torch.cuda.is_available():
             print("Using NVIDIA GPU")

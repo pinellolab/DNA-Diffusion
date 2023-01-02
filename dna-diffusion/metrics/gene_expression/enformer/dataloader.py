@@ -102,8 +102,6 @@ class EnformerDataLoader:
         return start, end
 
     def get_ensembl_ids(self):
-        # TODO Low Priority: Save ensembl ids to file so we don't have to fetch them every time. Might not be necessary
-        # TODO Low Priority: as we might only use this function during Enformer testing.
         print('Fetching Ensembl IDs for the given list of gene(s)...')
         mg = mygene.MyGeneInfo()
         gene2ensembl = {}
