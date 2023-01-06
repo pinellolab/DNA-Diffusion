@@ -6,6 +6,7 @@ import numpy as np
 import pytorch_lightning as pl
 from torch.utils.data import Dataset, DataLoader
 
+
 class Dataloading():
     """
     Class for loading and preprocessing data. 
@@ -36,6 +37,7 @@ class Dataloading():
         df_train = self.df[~self.df.chr.isin(['chr1', 'chr2'])].reset_index(drop=True)
 
         return df_train, df_validation, df_test
+
 
 class DataPreprocessing():
     """
@@ -89,18 +91,18 @@ class DataPreprocessing():
         return df_seq_motifs_out
 
     def generate_motifs_cells(self, df):
-            """
-            Generating a dictionary with motif components.
-            """
-            final_comp_values = {}
-            for cell, df_subset in df.groupby('TAG'):
-                print(cell)
-                name_c_fasta = self.save_fasta(df_subset, 'temp_cell')
-                final_comp_values[cell] = self.motifs_from_fasta(name_c_fasta)
-            return final_comp_values
+        """
+        Generating a dictionary with motif components.
+        """
+        final_comp_values = {}
+        for cell, df_subset in df.groupby('TAG'):
+            print(cell)
+            name_c_fasta = self.save_fasta(df_subset, 'temp_cell')
+            final_comp_values[cell] = self.motifs_from_fasta(name_c_fasta)
+        return final_comp_values
 
     def generate_motifs_and_fasta(self, df, name):
-        '''
+        """
         Generate a dictionary containing:
         1. Fasta saved.
         2. Motifs.
@@ -110,7 +112,7 @@ class DataPreprocessing():
         Args:
             df (pd.DataFrame): Subsetted dataframe created from the master dataset
             name (str): Name for generated fasta file
-        '''
+        """
         print(f'Generating fasta and motifs: {name}')
         print('---' * 10)
         fasta_saved = self.save_fasta(df, name)
@@ -159,14 +161,14 @@ class SequenceDatasetBase(Dataset):
             X_seq = self.encode_sequence(current_seq, encoding=self.sequence_encoding)
 
             # Reading cell component at current index
-            X_component = self.data["component"][index]
+            X_cell_type = self.data["TAG"][index]
 
             if self.sequence_transform is not None:
                 X_seq = self.sequence_transform(X_seq)
             if self.cell_type_transform is not None:
-                X_component = self.cell_type_transform(X_component)
+                X_cell_type = self.cell_type_transform(X_cell_type)
 
-            return X_seq, X_component
+            return X_seq, X_cell_type
 
     def check_data_validity(self) -> None:
         """
