@@ -206,9 +206,21 @@ class SequenceDatasetBase(Dataset):
         return seq_array
 
 class SequenceDataModule(pl.LightningDataModule):
+    """
+    PyTorch Lightning data module for sequence datasets.
+
+    Args:
+        data_path (str): Path to the data
+        sequence_length (int): Length of the sequence
+        sequence_encoding (str): Encoding scheme for the sequence ("polar", "onehot", "ordinal")
+        sequence_transform (callable): Transformation for the sequence
+        cell_type_transform (callable): Transformation for the cell type
+        batch_size (int): Batch size
+        num_workers (int): Number of workers
+    """
     def __init__(
         self,
-        data_path: str,
+        data_path: str, 
         sequence_length: int = 200,
         sequence_encoding: str = "polar",
         sequence_transform=None,
