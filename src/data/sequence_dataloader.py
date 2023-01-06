@@ -51,6 +51,7 @@ class DataPreprocessing():
                  df_train, 
                  df_val, 
                  df_test) -> None:
+        super().__init__()
         self.df_train = df_train
         self.df_val = df_val
         self.df_test = df_test
