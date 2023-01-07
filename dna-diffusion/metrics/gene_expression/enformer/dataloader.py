@@ -12,8 +12,9 @@ import torch
 from enformer_lucidrains_pytorch.enformer_pytorch.data import str_to_one_hot
 
 
-def get_abc_data(_data) -> pd.DataFrame:
-    df = _data.sort_values(by='ABC_Score', ascending=False)
+def get_abc_data(_data_path) -> pd.DataFrame:
+    df = pd.read_csv(_data_path, sep="\t")
+    df = df.sort_values(by='ABC_Score', ascending=False)
     df = df.drop_duplicates(subset=['TargetGene']).head(5)
     df = df[['chr', 'start', 'end', 'TargetGene']]
     return df
@@ -29,10 +30,10 @@ class EnformerDataloaderABC:
     # TODO Low Priority: that we get a DataFrame as input (ABC data) and that we need to convert the gene names to
     # TODO Low Priority: Ensembl IDs.
 
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data_path: str):
         self.SEQ_LEN = 196608
 
-        self.data = get_abc_data(data)  # NOTE: This is temporary while working with abc_data. Needs changing once
+        self.data = get_abc_data(data_path)  # NOTE: This is temporary while working with abc_data. Needs changing once
         # we switch to full data.
         self.genes = self.data['TargetGene'].values
         self.gene2ensembl, self.ensembl2gene, self.ensemble_ids = self.get_ensembl_ids()
@@ -127,4 +128,7 @@ class EnformerDataloaderDNAse:
     DNAse hits accurately.
     """
 
+    def __init__(self, data_path: str):
+        self.SEQ_LEN = 196608
 
+        self.data = pd.read_csv(data_path, sep='\t')
