@@ -19,7 +19,7 @@ def get_abc_data(_data) -> pd.DataFrame:
     return df
 
 
-class EnformerDataLoader:
+class EnformerDataloaderABC:
     """
     The dataloader should take in a gene name (or list of gene names) as Ensembl IDs and return a one-hot encoded
     196,608 length sequence centred around the TSS of the gene(s).
@@ -117,3 +117,14 @@ class EnformerDataLoader:
                     ensemble_ids.append(hit["ensembl"]["gene"])
                     processed_genes.append(gene)
         return gene2ensembl, ensembl2gene, ensemble_ids
+
+
+class EnformerDataloaderDNAse:
+    """
+    This dataloader takes in the experimental DNAse data containing the DNAse read-outs for four different cell types.
+    We want to map the DNAse hits to the corresponding gene sequence and return a one-hot encoded 196,608 length
+    sequence. This sequence will be used as input to the Enformer model in order to check whether it can predict the
+    DNAse hits accurately.
+    """
+
+

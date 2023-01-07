@@ -29,7 +29,7 @@ dna-diffusion/metrics/chromatin_accessibility/deopen/src/error/
 
 dna-diffusion/metrics/gene_expression/enformer/meuleman_data/
 
-dna-diffusion/metrics/gene_expression/enformer/abc_data
+dna-diffusion/metrics/gene_expression/enformer/data/abc_data
 
 *.bed
 
@@ -60,3 +60,5 @@ dna-diffusion/metrics/gene_expression/enformer/__pycache__/
 dna-diffusion/metrics/gene_expression/enformer/outputs/
 
 meetings/29_12_2022/
+
+dna-diffusion/metrics/gene_expression/enformer/data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt

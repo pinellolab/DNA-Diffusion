@@ -1,7 +1,7 @@
 import torch
 import pandas as pd
 from enformer_lucidrains_pytorch.enformer_pytorch import Enformer
-from dataloader import EnformerDataLoader
+from dataloader import EnformerDataloaderABC
 
 
 class EnformerModel:
@@ -15,7 +15,7 @@ class EnformerModel:
 
         self.device = device
         self.model = Enformer.from_pretrained(model_path).to(device)
-        self.data = EnformerDataLoader(pd.read_csv(data_path, sep="\t"))
+        self.data = EnformerDataloaderABC(pd.read_csv(data_path, sep="\t"))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x.to(self.device))
