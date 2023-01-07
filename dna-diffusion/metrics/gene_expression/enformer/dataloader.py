@@ -123,9 +123,8 @@ class EnformerDataloaderABC:
 class EnformerDataloaderDNAse:
     """
     This dataloader takes in the experimental DNAse data containing the DNAse read-outs for four different cell types.
-    We want to map the DNAse hits to the corresponding gene sequence and return a one-hot encoded 196,608 length
-    sequence. This sequence will be used as input to the Enformer model in order to check whether it can predict the
-    DNAse hits accurately.
+    The dataloader should give the experimental data table and in parallel, process chromosome 1 in order to run
+    Enformer inference for comparison with the experimental data.
     """
 
     def __init__(self, data_path: str):
