@@ -62,3 +62,17 @@ dna-diffusion/metrics/gene_expression/enformer/outputs/
 meetings/29_12_2022/
 
 dna-diffusion/metrics/gene_expression/enformer/data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt
+
+dna-diffusion/metrics/gene_expression/enformer/data/archive/
+
+dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase.bedGraph
+
+dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase.bw
+
+dna-diffusion/metrics/gene_expression/enformer/data/hg38.chrom.sizes
+
+dna-diffusion/metrics/gene_expression/enformer/data/tracks.ini
+
+dna-diffusion/metrics/gene_expression/enformer/exec/bedGraphToBigWig
+
+dna-diffusion/metrics/gene_expression/enformer/exec/fetchChromSizes
