@@ -131,3 +131,11 @@ class EnformerDataloaderDNAse:
         self.SEQ_LEN = 196608
 
         self.data = pd.read_csv(data_path, sep='\t')
+        self.make_bed_file()
+
+    def make_bed_file(self):
+        df = self.data[self.data['chr'] == 'chr1']
+        with open('data/chr1_dnase.bed', 'w') as f:
+            for _, row in df.iterrows():
+                f.write(f'{row["chr"]}\t{row["start"]}\t{row["end"]}\t{row["total_signal"]}\n')
+        f.close()
