@@ -86,9 +86,9 @@ def right_pad_dims_to(x, t):
 
 
 def instantiate_from_config(config, **kwargs):
-    if not "target" in config:
-        raise KeyError("Expected key `target` to instantiate.")
-    return get_obj_from_str(config["target"])(**config.get("params", dict()), **kwargs)
+    if not "_target_" in config:
+        raise KeyError("Expected key `_target_` to instantiate.")
+    return get_obj_from_str(config["_target_"])(**config.get("params", dict()), **kwargs)
 
 
 def get_obj_from_str(string, reload=False):
