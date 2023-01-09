@@ -25,7 +25,7 @@ class DiffusionModel(pl.LightningModule):
         self.save_hyperparameters(ignore=["criterion"])
 
         # create Unet
-        # attempt using hydra.utils.instantiate to instantiate both unet and lr scheduler
+        # attempt using hydra.utils.instantiate to instantiate both unet, lr scheduler and optimizer
         self.model = instantiate_from_config(unet_config)
         self.timesteps = timesteps
 
