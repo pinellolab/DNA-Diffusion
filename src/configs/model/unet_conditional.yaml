@@ -3,7 +3,7 @@ model:
   params:
     beta_end: 0.05
     schedule: linear
-    timestep: 1000
+    timestep: 200
     is_conditional: True
     criterion: utils.metrics.MetricName
     use_ema: True
