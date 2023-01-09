@@ -13,14 +13,8 @@ model:
       params:
         milestones: [5, 10, 20]
         gamma: 0.1
-
-    optimizer_config:
-      target: torch.optim.Adam
-      params:
-        lr: 1e-4
-
     unet_config:
-      target: models.networks.unet_lucas
+      _target_: models.networks.unet_lucas
       params:
         dim: 200
         init_dim: None
@@ -28,3 +22,8 @@ model:
         channels: 1
         resnet_block_groups: 8
         learned_sinusoidal_dim: 16
+
+    optimizer_config:
+      target: torch.optim.Adam
+      params:
+        lr: 1e-4
