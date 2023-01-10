@@ -25,8 +25,6 @@ dna-diffusion/metrics/chromatin_accessibility/deopen/data/hg38.fa.gdx
 
 dna-diffusion/metrics/chromatin_accessibility/deopen/src/error/
 
-*.ipynb
-
 dna-diffusion/metrics/gene_expression/enformer/meuleman_data/
 
 dna-diffusion/metrics/gene_expression/enformer/data/abc_data
