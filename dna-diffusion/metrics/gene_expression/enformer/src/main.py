@@ -2,7 +2,7 @@ from inference import EnformerModel
 from utils import inference
 
 if __name__ == "__main__":
-    data_path = "../data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
+    data_path = "data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
     model = EnformerModel(data_path)
     # one_hot_seqs = model.data.fetch_sequence()  # this is a dictionary with key being Ensembl ID|Gene Name and the value
     # being the one hot encoded sequence as a torch.Tensor

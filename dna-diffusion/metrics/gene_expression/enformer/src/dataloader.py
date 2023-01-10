@@ -65,7 +65,7 @@ class EnformerDataloaderABC:
                 os.remove(f'sequences/{gene}|{self.ensembl2gene[gene]}.fa')
             os.remove('temp.bed')
         print(f'Fetched all sequences and saved to sequences folder!')
-        sequences = os.listdir('../sequences')
+        sequences = os.listdir('sequences')
         seqs = {}
         for s in sequences:
             for record in SeqIO.parse(f'sequences/{s}', 'fasta'):
@@ -138,12 +138,12 @@ class EnformerDataloaderDNAse:
 
     def make_bed_file(self):
         df = self.data[self.data['chr'] == 'chr1']
-        with open('../data/chr1_dnase.bedGraph', 'w') as f:
+        with open('data/chr1_dnase.bedGraph', 'w') as f:
             for _, row in df.iterrows():
                 f.write(f'{row["chr"]}\t{row["start"]}\t{row["end"]}\t{row["total_signal"]}\n')
         f.close()
-        utils.sort_bed_file('../data/chr1_dnase.bedGraph')
-        self.bedGraph2bigwig('../data/chr1_dnase.bedGraph')
+        utils.sort_bed_file('data/chr1_dnase.bedGraph')
+        self.bedGraph2bigwig('data/chr1_dnase.bedGraph')
 
     @staticmethod
     def bedGraph2bigwig(bedgraph_file):
@@ -152,8 +152,8 @@ class EnformerDataloaderDNAse:
         and fetchChromSizes. They can be found here: http://hgdownload.soe.ucsc.edu/admin/exe/. Don't forget to make
         them executable.
         """
-        with open("../data/hg38.chrom.sizes", "w") as f:
+        with open("data/hg38.chrom.sizes", "w") as f:
             subprocess.run(["./exec/fetchChromSizes", "hg38"], stdout=f)
         f.close()
         subprocess.run(["exec/bedGraphToBigWig", bedgraph_file, "data/hg38.chrom.sizes", "data/chr1_dnase.bw"])
-        utils.plot_dnase_track('../data/chr1_dnase.bw')
+        utils.plot_dnase_track('data/chr1_dnase.bw')
