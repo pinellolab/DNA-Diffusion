@@ -7,7 +7,7 @@ import torch
 from torch import nn, einsum
 
 from utils.misc import default
-from utils.network import l2norm, Upsample, Downsample
+from utils.network import l2norm
 
 
 class Residual(nn.Module):
@@ -17,6 +17,17 @@ class Residual(nn.Module):
 
     def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return self.fn(x, *args, **kwargs) + x
+    
+    
+def Upsample(dim: int, dim_out: Optional[int] = None):
+    return nn.Sequential(
+        nn.Upsample(scale_factor=2, mode="nearest"),
+        nn.Conv2d(dim, default(dim_out, dim), 3, padding=1),
+    )
+
+
+def Downsample(dim: int, dim_out: Optional[int] = None):
+    return nn.Conv2d(dim, default(dim_out, dim), 4, 2, 1)
 
 
 class LayerNorm(nn.Module):
