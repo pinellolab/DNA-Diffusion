@@ -2,10 +2,18 @@
 
 ## selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group  
 
+
+### Description  
+Thi dataset is a subset of sequences that are present in four different cell types (__GM12878_ENCLB441ZZZ__  , __hESCT0_ENCLB449ZZZ__   
+,__K562_ENCLB843GMH__   , __HepG2_ENCLB029COU__). Each cell type was selected using a ENCL sample that was choose as the best quality one (based in some critearias defined by Wouter). The first criteria is be present just in one of this four initial samples.
+The final sequence number is balanced using the celltype with smallest number of sequences (GM12878). The  number of remaining sequences is around  ~12k  per celltype. The data is divided in training , validation (chr1), test (chr2). During the sequence selection we ed and selected the sequences having the cell specif peak in one of the four ENCL samples and they were sorted by the prencese of this peak in multiple experiments of the same celltype and reversed sorted by to decreasce the presence of this peak in other experiments of the database (total set with ~700 experiments).
+
+
 4 cell types link (~48 sequences- Single file - 12k seqs per cell) 
 
   -   [Four cell types table](https://drive.google.com/drive/folders/1dBeZIdJZQqaZUzCBVrz_Z2fAV9ePsw7h?usp=sharing)  
   -   File: DNA-Diffusion/dna-diffusion/data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt  
+
   
 __dhs_id__ : dhs id  
 __chr__ :	  chr   
