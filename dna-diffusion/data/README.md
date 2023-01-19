@@ -25,7 +25,7 @@ __HepG2_ENCLB029COU__  : Will be 1 case the cell has a peak
 __TAG__  : The final tag used to classify the cell  
 __addtional_rep_with_this_peak__ : How many replicates for the cell specific peak presents this same peak  
 __other_samples_with_this_peak_not_considering_reps__   : How many of the other total cells in the database has a peak in this sequence  
-__data_label__ : train, validation or test  
+__data_label__ : train, validation (chr1) or test  (chr2)
 
 
 ___
