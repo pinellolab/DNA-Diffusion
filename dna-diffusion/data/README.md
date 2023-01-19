@@ -1,6 +1,6 @@
 # Data
 
-4 cell types link (~48 sequences- Single file)
+4 cell types link (~48 sequences- Single file) File: DNA-Diffusion/dna-diffusion/data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group..txt
 
   -   [Four cell types table](https://drive.google.com/drive/folders/1dBeZIdJZQqaZUzCBVrz_Z2fAV9ePsw7h?usp=sharing) 
   
@@ -23,3 +23,6 @@ __TAG__  : The final tag used to classify the cell
 __addtional_rep_with_this_peak__ : How many replicates for the cell specific peak presents this same peak  
 __other_samples_with_this_peak_not_considering_reps__   : How many of the other total cells in the database has a peak in this sequence  
 __data_label__ : train, validation or test  
+
+
+___
