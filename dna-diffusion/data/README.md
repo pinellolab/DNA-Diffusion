@@ -5,8 +5,11 @@
 
 ### Description  
 Thi dataset is a subset of sequences that are present in four different cell types (__GM12878_ENCLB441ZZZ__  , __hESCT0_ENCLB449ZZZ__   
-,__K562_ENCLB843GMH__   , __HepG2_ENCLB029COU__). Each cell type was selected using a ENCL sample (This specific ENCL sample has the biggest quality when compared with another samples of the same celltype- We can ask the selection criteria to Wouter). The first DHS selection methos is check if the DHS is present in only one of the  four initial samples.
-The final sequence number is balanced using the celltype with smallest number of sequences (GM12878). The  number of remaining sequences is around  ~12k  per celltype. The data is divided in training , validation (chr1), test (chr2). During the sequence selection we ed and selected the sequences having the cell specif peak in one of the four ENCL samples and they were sorted by the prencese of this peak in multiple experiments of the same celltype and reversed sorted by to decreasce the presence of this peak in other experiments of the database (total set with ~700 experiments).
+,__K562_ENCLB843GMH__   , __HepG2_ENCLB029COU__). Each cell type was selected using a ENCL sample (This specific ENCL sample has the biggest quality when compared with another samples of the same celltype- We can ask the selection criteria to Wouter). The first DHS selection method was check if the DHS is present in only one of the  four initial samples.
+  To capture sequences strongly representing a given celltype, we sorted the sequences by the presence of this DHS peak in multiple experiments of the same celltype and reversed sorted  to decreasce the presence of this peak in other experiments of the database (total set with ~700 experiments).  
+ 
+ The final sequence number is balanced using the celltype with smallest number of sequences (GM12878). The  number of remaining sequences is around  ~12k  per celltype. The data is divided in training , validation (chr1), test (chr2). Since we need to balance the class the sorting procedure will give us DHS regions that can represent better a unique celltype.   
+ 
 
 
 4 cell types link (~48 sequences- Single file - 12k seqs per cell) 
