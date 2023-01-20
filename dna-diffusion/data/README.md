@@ -1,6 +1,6 @@
 # Data
 
-## selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group  
+## selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group  (Sequences in the Hg38 verions)
 
 
 ### Description  
@@ -28,7 +28,7 @@ __numsamples__:  Number of samples with this peak (from the ~700 seqs)
 __total_signal__:  Total dhs signal on this peak  
 __component__:  dhs component (Which cells component we find this peak?)   
 __proportion__:   proportion of the component  
-__sequence__  : DNA sequence replresenting 200 bp from the summit of this sequence   
+__sequence__  : DNA sequence replresenting 200 bp from the summit of this sequence .Sequences in the Hg38 verions
 __GM12878_ENCLB441ZZZ__  : Will be 1 case the cell has a peak  
 __hESCT0_ENCLB449ZZZ__  : Will be 1 case the cell has a peak  
 __K562_ENCLB843GMH__  : Will be 1 case the cell has a peak  
