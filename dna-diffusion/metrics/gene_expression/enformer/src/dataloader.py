@@ -1,6 +1,7 @@
 import pandas as pd
 import time
 import mygene
+import pybedtools
 from tqdm import tqdm
 import requests
 import sys
@@ -8,6 +9,7 @@ import os
 import warnings
 from pybedtools import BedTool
 from Bio import SeqIO
+import warnings
 import torch
 import subprocess
 
@@ -90,20 +92,13 @@ class EnformerDataloaderABC:
             start, end, chromosome, orientation = decoded['start'], decoded['end'], \
                 f"chr{int(decoded['seq_region_name'])}", decoded['strand']
             assembly_name = decoded['assembly_name']
-            start, end = self.extend_gene_coordinates(start, end, chromosome)
+            start, end = utils.extend_gene_coordinates(start, end, self.SEQ_LEN)
             if assembly_name != 'GRCh38':
                 # TODO Low Priority: Convert start, end coordinates to GRCh38 rather than skipping.
                 warnings.warn(f'Assembly in Ensembl database for {gene} is not built with GRCh38. Skipping...')
                 continue
             gene_coordinates[gene] = [start, end, chromosome, orientation]
         return gene_coordinates
-
-    def extend_gene_coordinates(self, start, end, chromosome):
-        len_left = (self.SEQ_LEN - (end - start)) // 2
-        len_right = self.SEQ_LEN - (end - start) - len_left
-        start -= len_left
-        end += len_right
-        return start, end
 
     def get_ensembl_ids(self):
         print('Fetching Ensembl IDs for the given list of gene(s)...')
@@ -134,7 +129,9 @@ class EnformerDataloaderDNAse:
         self.SEQ_LEN = 196608
 
         self.data = pd.read_csv(data_path, sep='\t')
-        self.make_bed_file()
+        self.exp_bed = self.make_bed_file()
+        self.chromosome = 'chr1'
+        self.enf_coords = self.get_enformer_coordinates()
 
     def make_bed_file(self):
         df = self.data[self.data['chr'] == 'chr1']
@@ -143,7 +140,10 @@ class EnformerDataloaderDNAse:
                 f.write(f'{row["chr"]}\t{row["start"]}\t{row["end"]}\t{row["total_signal"]}\n')
         f.close()
         utils.sort_bed_file('data/chr1_dnase.bedGraph')
-        self.bedGraph2bigwig('data/chr1_dnase.bedGraph')
+        exp_bed = pd.read_csv('data/chr1_dnase.bedGraph', sep='\t', header=None)
+        # self.bedGraph2bigwig('data/chr1_dnase.bedGraph')
+
+        return exp_bed
 
     @staticmethod
     def bedGraph2bigwig(bedgraph_file):
@@ -157,3 +157,51 @@ class EnformerDataloaderDNAse:
         f.close()
         subprocess.run(["exec/bedGraphToBigWig", bedgraph_file, "data/hg38.chrom.sizes", "data/chr1_dnase.bw"])
         utils.plot_dnase_track('data/chr1_dnase.bw')
+
+    def get_enformer_coordinates(self):
+        """
+        This function takes in the experimental bed and extends the start, end coordinates such that the sequence length
+        totals 196608. The function returns a BedTool object for all the sequences that need to be fetched.
+        """
+        starts, ends = self.exp_bed[1].tolist(), self.exp_bed[2].tolist()
+        bed_df = pd.DataFrame({"chrom": [self.chromosome] * len(starts), "start": starts, "end": ends,
+                               "orientation": '+'})
+        bed_df.index.name = None
+        new_starts = []
+        new_ends = []
+        for _, row in bed_df.iterrows():
+            start, end = utils.extend_gene_coordinates(row['start'], row['end'], self.SEQ_LEN)
+            new_starts.append(start)
+            new_ends.append(end)
+        bed_df['start'] = new_starts
+        bed_df['end'] = new_ends
+        bed = pybedtools.BedTool.from_dataframe(bed_df)
+        return bed
+
+    def fetch_sequences(self):
+        """
+        This function takes in the bed coordinates and retrieves the corresponding nucleotide sequence with
+        fastaFromBed. Consequently, this sequence needs to be one-hot encoded.
+        """
+        trimmed_bed = utils.trim_bed_file(self.enf_coords, 'hg38.fa')
+
+        try:
+            fasta = trimmed_bed.sequence(fi='hg38.fa', fo=f'sequences/enf_dnase_{self.chromosome}.fa')
+        except:
+            warnings.warn(f'Out-of-bounds error for sequences/enf_dnase_{self.chromosome}.fa. This means that the gene '
+                      f'is located to close to the telomeres in order to extend a 196,608 window around the TSS. '
+                      f'Skipping...')
+            os.remove(f'sequences/enf_dnase_{self.chromosome}.fa')
+        print(f'Fetched all sequences and saved to sequences folder!')
+
+        seqs = {}
+        for record in SeqIO.parse(f'sequences/enf_dnase_{self.chromosome}.fa', 'fasta'):
+            seqs[record.id] = str(record.seq)
+
+        seqs_one_hot = {}
+        for s in seqs:
+            seqs_one_hot[s] = str_to_one_hot(seqs[s]).type(torch.float32)
+
+        print(seqs_one_hot)
+        print("Sequences one-hot encoded!")
+        return 0

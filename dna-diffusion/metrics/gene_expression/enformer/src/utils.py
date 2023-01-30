@@ -4,6 +4,7 @@ import torch
 import subprocess
 import requests
 from pybedtools import BedTool
+import pybedtools
 import pandas as pd
 
 
@@ -85,3 +86,28 @@ def get_full_chr_coords(chrom: str):
                 print(f"Chromosome {chrom} not found")
     else:
         print(f"Error: {response.status_code}, {response.reason}")
+
+
+def extend_gene_coordinates(start, end, SEQ_LEN):
+    len_left = (SEQ_LEN - (end - start)) // 2
+    len_right = SEQ_LEN - (end - start) - len_left
+    start -= len_left
+    end += len_right
+    return start, end
+
+
+def trim_bed_file(bed_file, path_to_ref_genome):
+    """
+    Trims a bed file to the coordinates of the reference genome
+    """
+    bed = pybedtools.BedTool(bed_file)
+    chrom_lengths = {}
+
+    with open(path_to_ref_genome, 'r') as f:
+        for line in f:
+            if line[:6] == '>chr1 ':
+                fasta_header = line[1:].strip().split()
+                chrom, length = fasta_header[0], int(fasta_header[1])
+                chrom_lengths[chrom] = int(length)
+    trimmed_bed = bed.filter(lambda x: int(x.end) < chrom_lengths[x.chrom]).saveas('data/chr1_dnase.bedGraph')
+    return trimmed_bed
