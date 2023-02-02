@@ -22,7 +22,7 @@ def get_parser(**parser_kwargs):
         default="",
         help="resume training from given folder or checkpoint",
     )
-    return parser
+    return parser.parse_args()
 
 
 @hydra.main(config_path="configs", config_name="train")
