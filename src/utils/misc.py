@@ -4,7 +4,22 @@ import torch
 import random
 import os
 import numpy as np
+import argparse
+from typing import Any, Dict, Generator
 
+def get_parser(**parser_kwargs):
+    parser = argparse.ArgumentParser(**parser_kwargs)
+    parser.add_argument(
+        "--logdir", type=str, default="logs", help="where to save logs and ckpts"
+    )
+    parser.add_argument("--name", type=str, default="dummy", help="postfix for logdir")
+    parser.add_argument(
+        "--resume",
+        type=str,
+        default="",
+        help="resume training from given folder or checkpoint",
+    )
+    return parser.parse_args()
 
 def seed_everything(seed: int) -> None:
     """ "
@@ -34,6 +49,9 @@ def extract(a, t, x_shape):
     out = a.gather(-1, t.cpu())
     return out.reshape(batch_size, *((1,) * (len(x_shape) - 1))).to(t.device)
 
+
+def extract_data_from_batch():
+    return None 
 
 def cycle(dl):
     while True:
@@ -105,3 +123,25 @@ def mean_flat(tensor):
     From Perception Prioritized Training of Diffusion Models: https://arxiv.org/abs/2204.00227.
     """
     return tensor.mean(dim=list(range(1, len(tensor.shape))))
+
+def load_obj(obj_path: str, default_obj_path: str = '') -> Any:
+    """
+    from
+    https://github.com/Erlemar/pytorch_tempest/blob/3d593b91fc025a2d0bea2342478f811961acf79a/src/utils/technical_utils.py#L11
+    Extract an object from a given path.
+    https://github.com/quantumblacklabs/kedro/blob/9809bd7ca0556531fa4a2fc02d5b2dc26cf8fa97/kedro/utils.py
+        Args:
+            obj_path: Path to an object to be extracted, including the object name.
+            default_obj_path: Default object path.
+        Returns:
+            Extracted object.
+        Raises:
+            AttributeError: When the object does not have the given named attribute.
+    """
+    obj_path_list = obj_path.rsplit('.', 1)
+    obj_path = obj_path_list.pop(0) if len(obj_path_list) > 1 else default_obj_path
+    obj_name = obj_path_list[0]
+    module_obj = importlib.import_module(obj_path)
+    if not hasattr(module_obj, obj_name):
+        raise AttributeError(f'Object `{obj_name}` cannot be loaded from `{obj_path}`.')
+    return getattr(module_obj, obj_name)
