@@ -1,14 +1,17 @@
+import tqdm
+import torch
+from torch import nn
+import torch.nn.functional as F
 from functools import partial
 
-import torch
-import tqdm
-from torch import nn
-from torch.nn.functional import F
-
 from models.diffusion.diffusion import DiffusionModel
+
+from utils.schedules import (
+    beta_linear_log_snr,
+    alpha_cosine_log_snr,
+    linear_beta_schedule,
+)
 from utils.misc import extract, extract_data_from_batch, mean_flat
-from utils.schedules import (alpha_cosine_log_snr, beta_linear_log_snr,
-                             linear_beta_schedule)
 
 
 class DDPM(DiffusionModel):
@@ -19,13 +22,13 @@ class DDPM(DiffusionModel):
         timesteps=50,
         noise_schedule="cosine",
         time_difference=0.0,
-        unet_config: dict,
+        unet: nn.Module,
         is_conditional: bool,
         p_uncond: float = 0.1,
         use_fp16: bool,
         logdir: str,
-        optimizer_config: dict,
-        lr_scheduler_config: dict = None,
+        optimizer: torch.optim.Optimizer,
+        lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
         criterion: nn.Module,
         use_ema: bool = True,
         ema_decay: float = 0.9999,
@@ -35,18 +38,19 @@ class DDPM(DiffusionModel):
         p2_k: float = 1,
     ):
         super().__init__(
-            unet_config,
+            unet,
             is_conditional,
             use_fp16,
             logdir,
-            optimizer_config,
-            lr_scheduler_config,
+            optimizer,
+            lr_scheduler,
             criterion,
             use_ema,
             ema_decay,
             lr_warmup,
         )
-
+        print('saludos del matei')
+        print('\n')
         self.image_size = image_size
 
         if noise_schedule == "linear":

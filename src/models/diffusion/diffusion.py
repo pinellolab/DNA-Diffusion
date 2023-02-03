@@ -1,34 +1,38 @@
-import pytorch_lightning as pl
 import torch
 import torch.nn as nn
-
+import pytorch_lightning as pl
+from hydra.utils import instantiate
 from utils.ema import EMA
 
 
 class DiffusionModel(pl.LightningModule):
     def __init__(
         self,
-        unet_config: dict,
+        unet: nn.Module,
         timesteps: int,
         is_conditional: bool,
         use_fp16: bool,
         logdir: str,
         image_size: int,
-        optimizer_config: dict,
-        lr_scheduler_config: dict,
+        optimizer: torch.optim.Optimizer,
+        lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
         criterion: nn.Module,
         use_ema: bool = True,
         ema_decay: float = 0.9999,
         lr_warmup=0,
     ) -> None:
         super().__init__()
+        print('\n')
+        print('are you working')
+
         self.save_hyperparameters(ignore=["criterion"])
 
         # create Unet
         # attempt using hydra.utils.instantiate to instantiate both unet, lr scheduler and optimizer
-        self.model = instantiate_from_config(unet_config)
+        self.model = instantiate(unet)
+        self.optimizer = instantiate(optimizer)
+        self.lr_scheduler = instantiate(lr_scheduler)
         self.timesteps = timesteps
-
         # training parameters
         self.use_ema = use_ema
         if self.use_ema:
@@ -36,8 +40,8 @@ class DiffusionModel(pl.LightningModule):
         self.is_conditional = is_conditional
         self.use_fp16 = use_fp16
         self.image_size = image_size
-        self.lr_scheduler_config = lr_scheduler_config
-        self.optimizer_config = optimizer_config
+        #self.lr_scheduler= lr_scheduler
+        #self.optimizer = optimizer
         self.lr_warmup = lr_warmup
         self.criterion = criterion
         self.logdir = logdir
@@ -91,12 +95,10 @@ class DiffusionModel(pl.LightningModule):
             self.eps_model_ema.update(self.model)
 
     def configure_optimizers(self):
-        optimizer = instantiate_from_config(
-            self.optimizer_config, params=self.parameters()
-        )
-        if self.lr_scheduler_config is not None:
-            scheduler = instantiate_from_config(
-                self.lr_scheduler_config, optimizer=optimizer
-            )
-            return {"optimizer": optimizer, "lr_scheduler": scheduler}
-        return optimizer
+    #    optimizer = instantiate(
+    #        self.optimizer)
+    #   if self.lr_scheduler is not None:
+    #        scheduler = instantiate(
+    #            self.lr_scheduler, optimizer=optimizer)
+    #        return {"optimizer": optimizer, "lr_scheduler": scheduler}
+        return {"optimizer": self.optimizer, "lr_scheduler": self.scheduler} 

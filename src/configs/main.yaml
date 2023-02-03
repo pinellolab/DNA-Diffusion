@@ -1,0 +1,12 @@
+defaults:
+  - _self_
+  - data: sequence
+  - model: dnadiffusion
+  - logger: wandb
+  - trainer: ddp
+  - callbacks: default
+
+seed: 42
+train: True
+test: True
+ckpt_path: null
