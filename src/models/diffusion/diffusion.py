@@ -8,7 +8,7 @@ from utils.ema import EMA
 class DiffusionModel(pl.LightningModule):
     def __init__(
         self,
-        unet_config: dict,
+        unet: nn.Module,
         timesteps: int,
         is_conditional: bool,
         use_fp16: bool,
@@ -24,15 +24,13 @@ class DiffusionModel(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters(ignore=["criterion"])
 
-        # create Unet
-        # attempt using hydra.utils.instantiate to instantiate both unet, lr scheduler and optimizer
-        self.model = instantiate_from_config(unet_config)
+        self.model = unet
         self.timesteps = timesteps
 
         # training parameters
         self.use_ema = use_ema
         if self.use_ema:
-            self.eps_model_ema = EMA(self.model, decay=ema_decay)
+            self.eps_model_ema = EMA(model=self.model, beta=ema_decay)
         self.is_conditional = is_conditional
         self.use_fp16 = use_fp16
         self.image_size = image_size
@@ -88,15 +86,11 @@ class DiffusionModel(pl.LightningModule):
 
     def on_before_zero_grad(self, *args, **kwargs) -> None:
         if self.use_ema:
-            self.eps_model_ema.update(self.model)
+            self.eps_model_ema.step_ema(self.model)
 
     def configure_optimizers(self):
-        optimizer = instantiate_from_config(
-            self.optimizer_config, params=self.parameters()
-        )
+        optimizer = self.optimizer_config(params=self.parameters())
         if self.lr_scheduler_config is not None:
-            scheduler = instantiate_from_config(
-                self.lr_scheduler_config, optimizer=optimizer
-            )
+            scheduler = self.lr_scheduler_config(optimizer=optimizer)
             return {"optimizer": optimizer, "lr_scheduler": scheduler}
         return optimizer

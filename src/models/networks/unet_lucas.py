@@ -1,12 +1,12 @@
 import math
 from functools import partial
 from einops import rearrange
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Union
 
 import torch
 from torch import nn, einsum
 
-from utils.misc import default
+from utils.misc import default, exists
 from utils.network import l2norm
 
 
@@ -189,7 +189,7 @@ class UNetLucas(nn.Module):
         self,
         dim: int,
         init_dim: int = None,
-        dim_mults: Optional[int, list] = (1, 2, 4),
+        dim_mults: Union[int, List[int]] = (1, 2, 4),
         channels: int = 1,
         resnet_block_groups: int = 8,
         learned_sinusoidal_dim: int = 18,

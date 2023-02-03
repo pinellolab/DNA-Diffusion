@@ -1,5 +1,5 @@
 train_dl:
-  _target_: src.data.sequence_dataloader.SequenceDataModule
+  _target_: data.sequence_dataloader.SequenceDataModule
   train_path: # add training dataset path
   batch_size: 32
   num_workers: 4
@@ -7,7 +7,7 @@ train_dl:
   #  _target_: # directly reference transforms -> torchvision.transforms.ToTensor
 
 val_dl:
-  _target_: src.data.sequence_dataloader.SequenceDataModule
+  _target_: data.sequence_dataloader.SequenceDataModule
   val_path: # add validation dataset path
   batch_size: 32
   num_workers: 4
