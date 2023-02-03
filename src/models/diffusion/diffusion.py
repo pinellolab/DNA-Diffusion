@@ -10,9 +10,7 @@ class DiffusionModel(pl.LightningModule):
         self,
         unet: nn.Module,
         timesteps: int,
-        is_conditional: bool,
         use_fp16: bool,
-        logdir: str,
         image_size: int,
         optimizer: torch.optim.Optimizer,
         lr_scheduler: torch.optim.lr_scheduler._LRScheduler,
@@ -29,22 +27,19 @@ class DiffusionModel(pl.LightningModule):
 
         # create Unet
         # attempt using hydra.utils.instantiate to instantiate both unet, lr scheduler and optimizer
-        self.model = instantiate(unet)
-        self.optimizer = instantiate(optimizer)
-        self.lr_scheduler = instantiate(lr_scheduler)
+        self.model = unet
+        self.optimizer = optimizer
+        self.lr_scheduler = lr_scheduler
         self.timesteps = timesteps
         # training parameters
         self.use_ema = use_ema
         if self.use_ema:
-            self.eps_model_ema = EMA(self.model, decay=ema_decay)
-        self.is_conditional = is_conditional
+            self.eps_model_ema = EMA(self.model, beta=ema_decay)
         self.use_fp16 = use_fp16
         self.image_size = image_size
-        #self.lr_scheduler= lr_scheduler
-        #self.optimizer = optimizer
+        self.optimizer = optimizer
         self.lr_warmup = lr_warmup
         self.criterion = criterion
-        self.logdir = logdir
 
     def training_step(self, batch: torch.Tensor, batch_idx: int):
         loss = 0

@@ -7,7 +7,7 @@ import torch
 from torch import nn, einsum
 
 from utils.misc import default, exists
-from utils.network import l2norm, Upsample, Downsample
+from utils.network import l2norm#, Upsample, Downsample
 
 # Building blocks of UNET
 

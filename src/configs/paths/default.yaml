@@ -1,2 +1,8 @@
 
-root: ${hydra:runtime.cwd}/
+## dot for cwd
+## 
+root_dir: ${hydra:runtime.cwd}/
+data_dir: $
+log_dir:
+output_dir:
+work_dir:
