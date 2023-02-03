@@ -1,7 +1,7 @@
 import tqdm
 import torch
 from torch import nn
-from torch.nn.functional import F
+import torch.nn.functional as F
 from functools import partial
 
 from models.diffusion.diffusion import DiffusionModel
@@ -11,7 +11,7 @@ from utils.schedules import (
     alpha_cosine_log_snr,
     linear_beta_schedule,
 )
-from utils.misc import extract, extract_data_from_batch, mean_flat
+from utils.misc import extract, mean_flat
 
 
 class DDPM(DiffusionModel):
@@ -20,9 +20,10 @@ class DDPM(DiffusionModel):
         *,
         image_size,
         timesteps=50,
+        beta_end=0.05,
         noise_schedule="cosine",
         time_difference=0.0,
-        unet_config: dict,
+        unet: nn.Module,
         is_conditional: bool,
         p_uncond: float = 0.1,
         use_fp16: bool,
@@ -38,16 +39,18 @@ class DDPM(DiffusionModel):
         p2_k: float = 1,
     ):
         super().__init__(
-            unet_config,
-            is_conditional,
-            use_fp16,
-            logdir,
-            optimizer_config,
-            lr_scheduler_config,
-            criterion,
-            use_ema,
-            ema_decay,
-            lr_warmup,
+            unet=unet,
+            timesteps=timesteps,
+            is_conditional=is_conditional,
+            use_fp16=use_fp16,
+            logdir=logdir,
+            image_size=image_size,
+            optimizer_config=optimizer_config,
+            lr_scheduler_config=lr_scheduler_config,
+            criterion=criterion,
+            use_ema=use_ema,
+            ema_decay=ema_decay,
+            lr_warmup=lr_warmup,
         )
 
         self.image_size = image_size
@@ -60,19 +63,20 @@ class DDPM(DiffusionModel):
             raise ValueError(f"invalid noise schedule {noise_schedule}")
 
         self.timesteps = timesteps
+        self.beta_end = beta_end
         self.p_uncond = p_uncond
 
         # self.betas = cosine_beta_schedule(timesteps=timesteps,  s=0.0001)
-        self.set_noise_schedule(self.betas, self.timesteps)
+        self.set_noise_schedule(self.timesteps, self.beta_end)
 
         # proposed in the paper, summed to time_next
         # as a way to fix a deficiency in self-conditioning and lower FID when the number of sampling timesteps is < 400
 
         self.time_difference = time_difference
 
-    def set_noise_schedule(self, betas, timesteps):
+    def set_noise_schedule(self, timesteps, beta_end):
         # define beta schedule
-        self.betas = linear_beta_schedule(timesteps=timesteps, beta_end=0.05)
+        self.betas = linear_beta_schedule(timesteps=timesteps, beta_end=beta_end)
 
         # define alphas
         alphas = 1.0 - self.betas
@@ -89,7 +93,7 @@ class DDPM(DiffusionModel):
 
         # calculations for posterior q(x_{t-1} | x_t, x_0)
         self.posterior_variance = (
-            betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
+            self.betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
         )
 
     def q_sample(self, x_start, t, noise=None):
