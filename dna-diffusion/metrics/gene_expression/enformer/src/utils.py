@@ -1,5 +1,6 @@
 import time
 import os
+from tqdm import tqdm
 import torch
 import subprocess
 import requests
@@ -10,16 +11,16 @@ import pandas as pd
 
 def inference(one_hot_seqs, model):
     start_time = time.perf_counter()
-    for gene, seq in one_hot_seqs.items():
+    for seq_name, seq in tqdm(one_hot_seqs.items()):
         # check if gene is already in outputs folder
-        if not os.path.exists(f'outputs/{gene}.pkl'):
-            print(f"Running Enformer inference for {gene}")
+        if not os.path.exists(f'outputs/{seq_name}.pkl'):
+            print(f"Running Enformer inference for {seq_name}")
             output = model.forward(seq)
             torch.cuda.empty_cache()
             output_df = create_annotated_dataframe("genomic_track_type_data.xlsx", output)
-            output_df.to_pickle(f'outputs/{gene}.pkl')
+            output_df.to_pickle(f'outputs/{seq_name}.pkl')
         else:
-            print(f'Output for {gene} already exists. Skipping...')
+            print(f'Output for {seq_name} already exists. Skipping...')
     end_time = time.perf_counter()
     print(f'Inference took {round(end_time - start_time, 2)} seconds')
 
@@ -43,7 +44,7 @@ def create_annotated_dataframe(deepmind_table, output):
 
 def sort_bed_file(bed_file):
     """
-    Sorts a bed file using pybedtools
+    Sorts and merges a bed file using pybedtools
     """
     bedgraph = BedTool(bed_file)
     sorted_bedgraph = bedgraph.sort()
@@ -96,11 +97,33 @@ def extend_gene_coordinates(start, end, SEQ_LEN):
     return start, end
 
 
+def split_bed(bed):
+    """
+    Splits a bed entry into equally sized regions of length 196608 such that the result does not overlap.
+    """
+    bed = bed.to_dataframe().to_numpy()
+    new_bed = []
+    for row in bed:
+        start, end = int(row[1]), int(row[2])
+        if end - start > 196608:
+            while end - start > 196608:
+                new_bed.append([row[0], start, start + 196608])
+                start += 196608 + 1
+            new_bed.append([row[0], start, end])
+        else:
+            new_bed.append([row[0], start, end])
+    return BedTool.from_dataframe(pd.DataFrame(new_bed, columns=['chrom', 'start', 'end']))
+
+
 def trim_bed_file(bed_file, path_to_ref_genome):
     """
     Trims a bed file to the coordinates of the reference genome
     """
     bed = pybedtools.BedTool(bed_file)
+    bed = bed.sort()
+    bed = bed.merge()
+    bed = split_bed(bed)
+
     chrom_lengths = {}
 
     with open(path_to_ref_genome, 'r') as f:
