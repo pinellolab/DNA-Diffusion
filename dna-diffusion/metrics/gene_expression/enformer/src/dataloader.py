@@ -201,5 +201,5 @@ class EnformerDataloaderDNAse:
         seqs_one_hot = {}
         for s in seqs:
             seqs_one_hot[s] = str_to_one_hot(seqs[s]).type(torch.float32)
-        print("Sequences one-hot encoded!")
+        ("Sequences one-hot encoded!")
         return seqs_one_hot

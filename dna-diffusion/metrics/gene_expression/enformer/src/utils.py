@@ -35,7 +35,7 @@ def create_annotated_dataframe(deepmind_table, output):
     """
     df = pd.read_excel(deepmind_table,
                        "Supplementary Table 2", index_col=None, na_values=['NA'], usecols="I:J")
-    tracks_output = pd.DataFrame([[track] for track in output['human'].T.detach().numpy()])
+    tracks_output = pd.DataFrame([[track] for track in output['human'].T.detach().cpu().numpy()])
     df['output'] = tracks_output
     targets = df['target'].str.split(pat="/", n=1, expand=True)
     df['target'] = targets[1]
