@@ -1,5 +1,6 @@
 import time
 import os
+import sys
 from tqdm import tqdm
 import torch
 import subprocess
@@ -21,6 +22,7 @@ def inference(one_hot_seqs, model):
             output_df.to_pickle(f'outputs/{seq_name}.pkl')
         else:
             print(f'Output for {seq_name} already exists. Skipping...')
+        sys.stdout.flush()
     end_time = time.perf_counter()
     print(f'Inference took {round(end_time - start_time, 2)} seconds')
 
@@ -109,7 +111,7 @@ def split_bed(bed):
             while end - start > 196608:
                 new_bed.append([row[0], start, start + 196608])
                 start += 196608 + 1
-            new_bed.append([row[0], start, end])
+            new_bed.append([row[0], start, start + 196608])
         else:
             new_bed.append([row[0], start, end])
     return BedTool.from_dataframe(pd.DataFrame(new_bed, columns=['chrom', 'start', 'end']))
