@@ -151,8 +151,8 @@ Using the Bit Diffusion model we were able to reconstruct 200 bp sequences that 
 
 
 ## Next Steps
-Expand the model lengh to generate complete regulatory regions (enhancers + Gene promoter pairs)  
-Use our syntethic enhancers on in-vivo models and check how they can regulate the transcriptional dynamics in biological scenarios (Besides the MPRA arrays).  
+Expand the model length to generate complete regulatory regions (enhancers + Gene promoter pairs)  
+Use our synthetic enhancers on in-vivo models and check how they can regulate the transcriptional dynamics in biological scenarios (Besides the MPRA arrays).  
 
 
 ## How to contribute
