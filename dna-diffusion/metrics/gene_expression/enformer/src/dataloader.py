@@ -183,10 +183,10 @@ class EnformerDataloaderDNAse:
         This function takes in the bed coordinates and retrieves the corresponding nucleotide sequence with
         fastaFromBed. Consequently, this sequence needs to be one-hot encoded.
         """
-        trimmed_bed = utils.trim_bed_file(self.enf_coords, 'hg38.fa')
+        trimmed_bed = utils.trim_bed_file(self.enf_coords, 'src/hg38.fa')
 
         try:
-            fasta = trimmed_bed.sequence(fi='hg38.fa', fo=f'sequences/enf_dnase_{self.chromosome}.fa')
+            fasta = trimmed_bed.sequence(fi='src/hg38.fa', fo=f'sequences/enf_dnase_{self.chromosome}.fa')
         except:
             warnings.warn(f'Out-of-bounds error for sequences/enf_dnase_{self.chromosome}.fa. This means that the gene '
                       f'is located to close to the telomeres in order to extend a 196,608 window around the TSS. '

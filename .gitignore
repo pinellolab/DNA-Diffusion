@@ -59,8 +59,6 @@ dna-diffusion/metrics/gene_expression/enformer/outputs/
 
 meetings/29_12_2022/
 
-dna-diffusion/metrics/gene_expression/enformer/data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt
-
 dna-diffusion/metrics/gene_expression/enformer/data/archive/
 
 dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase.bedGraph
@@ -82,3 +80,5 @@ meetings/21_01_2023/enformer implementation sketch updated.pdf
 dna-diffusion/metrics/gene_expression/enformer/src/hg38.fa
 
 dna-diffusion/metrics/gene_expression/enformer/src/hg38.fa.fai
+
+dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase_enformer.bedGraph
