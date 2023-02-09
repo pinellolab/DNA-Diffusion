@@ -78,3 +78,7 @@ dna-diffusion/metrics/gene_expression/enformer/exec/fetchChromSizes
 *.pyc
 
 meetings/21_01_2023/enformer implementation sketch updated.pdf
+
+dna-diffusion/metrics/gene_expression/enformer/src/hg38.fa
+
+dna-diffusion/metrics/gene_expression/enformer/src/hg38.fa.fai

@@ -134,5 +134,5 @@ def trim_bed_file(bed_file, path_to_ref_genome):
                 fasta_header = line[1:].strip().split()
                 chrom, length = fasta_header[0], int(fasta_header[1])
                 chrom_lengths[chrom] = int(length)
-    trimmed_bed = bed.filter(lambda x: int(x.end) < chrom_lengths[x.chrom]).saveas('data/chr1_dnase.bedGraph')
+    trimmed_bed = bed.filter(lambda x: int(x.end) < chrom_lengths[x.chrom]).saveas('data/chr1_dnase_enformer.bedGraph')
     return trimmed_bed
