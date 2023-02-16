@@ -18,7 +18,7 @@ def inference(one_hot_seqs, model):
             print(f"Running Enformer inference for {seq_name}")
             output = model.forward(seq)
             torch.cuda.empty_cache()
-            output_df = create_annotated_dataframe("genomic_track_type_data.xlsx", output)
+            output_df = create_annotated_dataframe("data/genomic_track_type_data.xlsx", output)
             output_df.to_pickle(f'outputs/{seq_name}.pkl')
         else:
             print(f'Output for {seq_name} already exists. Skipping...')
@@ -134,5 +134,35 @@ def trim_bed_file(bed_file, path_to_ref_genome):
                 fasta_header = line[1:].strip().split()
                 chrom, length = fasta_header[0], int(fasta_header[1])
                 chrom_lengths[chrom] = int(length)
-    trimmed_bed = bed.filter(lambda x: int(x.end) < chrom_lengths[x.chrom]).saveas('data/chr1_dnase_enformer.bedGraph')
+    trimmed_bed = bed.filter(lambda x: int(x.end) < chrom_lengths[x.chrom]).saveas('data/chr1_dnase_enformer.bed')
     return trimmed_bed
+
+
+def create_enformer_bedgraph(enformer_bed, cell_types, assay_type):
+    """
+    Create a bedgraph file where we map the enformer input to the output corresponding to the correct binsizes and
+    signal.
+    """
+    assay_type_check = ['DNASE', 'CAGE']
+    if assay_type not in assay_type_check:
+        raise ValueError(f"Assay type {assay_type} not supported. Please choose from {assay_type_check}")
+
+    # open the enformer bed and show it as a dataframe
+    enformer_bed = pybedtools.BedTool(enformer_bed)
+    enformer_bed = enformer_bed.to_dataframe()
+    enformer_outputs = os.listdir('outputs/')
+    for file in enformer_outputs:
+        if file != 'archive':
+            df = pd.read_pickle(f'outputs/{file}')
+            df = df[df['assay_type'] == assay_type]
+            df = df[df['target'] == 'H1-hESC']
+            df = df.iloc[0:1]
+            signal = df['output'].to_numpy()[0]
+            print(signal)
+            # df = df.rename(columns={'output': 'signal'})
+            # df = df.sort_values(by=['chrom', 'start'])
+            # df.to_csv(f'outputs/{file}.bedGraph', sep='\t', index=False, header=False)
+
+    # TODO Map signal to 128 bins of the enformer bed file and save as bedGraph file
+
+    return 0

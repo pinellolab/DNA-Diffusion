@@ -47,7 +47,6 @@ dna-diffusion/metrics/gene_expression/enformer/.DS_Store
 
 .DS_Store
 
-dna-diffusion/metrics/gene_expression/enformer/sequences/
 
 dna-diffusion/metrics/gene_expression/enformer/enformer_lucidrains_pytorch/enformer_pytorch/__pycache__/
 
@@ -61,18 +60,6 @@ meetings/29_12_2022/
 
 dna-diffusion/metrics/gene_expression/enformer/data/archive/
 
-dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase.bedGraph
-
-dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase.bw
-
-dna-diffusion/metrics/gene_expression/enformer/data/hg38.chrom.sizes
-
-dna-diffusion/metrics/gene_expression/enformer/data/tracks.ini
-
-dna-diffusion/metrics/gene_expression/enformer/exec/bedGraphToBigWig
-
-dna-diffusion/metrics/gene_expression/enformer/exec/fetchChromSizes
-
 *.pyc
 
 meetings/21_01_2023/enformer implementation sketch updated.pdf
@@ -82,3 +69,33 @@ dna-diffusion/metrics/gene_expression/enformer/src/hg38.fa
 dna-diffusion/metrics/gene_expression/enformer/src/hg38.fa.fai
 
 dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase_enformer.bedGraph
+
+*.pdf
+
+dna-diffusion/metrics/gene_expression/enformer/_outputs/archive/
+
+dna-diffusion/metrics/gene_expression/enformer/_outputs/
+
+dna-diffusion/metrics/gene_expression/enformer/_sequences/abc_data_seqs/
+
+dna-diffusion/metrics/gene_expression/enformer/sequences/abc_data_seqs/
+
+*.bigWig
+
+dna-diffusion/metrics/gene_expression/enformer/data/bigWigs/metadata_733_515_WM20221026.tsv
+
+dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase.bedGraph
+
+dna-diffusion/metrics/gene_expression/enformer/data/chr1_dnase.bw
+
+dna-diffusion/metrics/gene_expression/enformer/data/hg38.chrom.sizes
+
+dna-diffusion/metrics/gene_expression/enformer/data/tracks.ini
+
+dna-diffusion/metrics/gene_expression/enformer/data/~$genomic_track_type_data.xlsx
+
+dna-diffusion/metrics/gene_expression/enformer/sequences/enf_dnase_chr1.fa
+
+dna-diffusion/metrics/gene_expression/enformer/exec/bedGraphToBigWig
+
+dna-diffusion/metrics/gene_expression/enformer/exec/fetchChromSizes
