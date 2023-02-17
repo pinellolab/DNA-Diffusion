@@ -62,9 +62,6 @@ def convert_image_to(img_type, image):
 def l2norm(t):
     return F.normalize(t, dim = -1)
 
-# small helper modules
-
-
 def default(val, d):
     if exists(val):
         return val
@@ -144,7 +141,6 @@ def sampling_to_metric(number_of_samples=20, specific_group=False, group_number=
             sampled = torch.from_numpy(np.array([group_number] * sample_bs) )
         else:
             sampled = torch.from_numpy(np.random.choice(cell_types, sample_bs))
-            
         
         random_classes = sampled.float() #.cuda() to accelerate
         if additional_variables:
@@ -165,10 +161,10 @@ def sampling_to_metric(number_of_samples=20, specific_group=False, group_number=
         os.system(f"gimme scan synthetic_motifs_{current_cell}.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs_{current_cell}.bed")
         df_results_syn = pd.read_csv(f'syn_results_motifs_{current_cell}.bed', sep='\t', skiprows=5, header=None)
     else:
-        save_motifs_syn = open('new_synthetic_motifs.fasta', 'w')
+        save_motifs_syn = open('synthetic_motifs.fasta', 'w')
         save_motifs_syn.write('\n'.join(final_sequences))
         save_motifs_syn.close()
-        os.system("gimme scan new_synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > new_syn_results_motifs.bed")
+        os.system("gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed")
         df_results_syn = pd.read_csv('new_syn_results_motifs.bed', sep='\t', skiprows=5, header=None)
     
     df_results_syn['motifs'] = df_results_syn[8].apply(lambda x: x.split( 'motif_name "')[1].split('"')[0]   )
@@ -226,11 +222,12 @@ def kl_comparison_between_dataset(first_dic, second_dict):
         final_comp_kl.append(comp_array)
     return final_comp_kl
 
-def kl_comparison_generated_sequences(cell_list, dict_target_cells, addtional_variables=None, number_of_sequences_sample_per_cell=1000):
+def kl_comparison_generated_sequences(cell_list, dict_target_cells, additional_variables=None, number_of_sequences_sample_per_cell=500):
     final_comp_kl = []
     use_cell_list = cell_list
     for r in use_cell_list:
-        print(r)
+        #print(r)
+        print(conditional_numeric_to_tag[r])
         comp_array = []
         group_compare = r
         synt_df_cond = sampling_to_metric(
@@ -238,7 +235,7 @@ def kl_comparison_generated_sequences(cell_list, dict_target_cells, addtional_va
                             specific_group=True, 
                             group_number=group_compare, 
                             cond_weight_to_metric=1, 
-                            additional_variables=addtional_variables
+                            additional_variables=additional_variables
                         ) 
         for k in use_cell_list:
             v = dict_target_cells[conditional_numeric_to_tag[k]]
@@ -249,20 +246,20 @@ def kl_comparison_generated_sequences(cell_list, dict_target_cells, addtional_va
 
 def generate_heatmap(df_heat, x_label, y_label):
     plt.clf()
+    plt.legend().remove()
     plt.rcdefaults()
     plt.rcParams["figure.figsize"] = (10,10)
     df_plot = pd.DataFrame(df_heat)
-    df_plot.columns = [x.split('_')[0] for x in cell_types ]
+    df_plot.columns = [x.split('_')[0] for x in cell_components ]
     df_plot.index = df_plot.columns
-    sns.heatmap(df_plot, cmap='Blues_r', annot=True, lw=0.1, vmax=1, vmin=0 )
+    sns.heatmap(df_plot, cmap='Blues_r', annot=True, lw=0.1, vmax=1, vmin=0)
     plt.title(f'Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities')
     plt.xlabel(f'{x_label} Sequences  \n(motifs dist)')
     plt.ylabel(f'{y_label} \n (motifs dist)')
-    plt.savefig(f"./graphs/{x_label}_{y_label}_kl_heatmap.png")
-    plt.imshow(np.array(df_plot), cmap='bwr', aspect='auto', interpolation='nearest', vmin=-1, vmax=1)
     plt.colorbar()
     plt.grid(False)
-    wandb.log({f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities": plt})
+    plt.savefig(f"./graphs/{x_label}_{y_label}_kl_heatmap.png")
+    #wandb.log({f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities": plt})
 
 def generate_similarity_metric():
     '''Capture the syn_motifs.fasta and compare with the  dataset motifs'''
@@ -294,7 +291,6 @@ def p_sample(model, x, t, t_index):
     sqrt_one_minus_alphas_cumprod_t = extract(
         sqrt_one_minus_alphas_cumprod, t, x.shape
     )
-    #print (x.shape, 'x_shape')
     sqrt_recip_alphas_t = extract(sqrt_recip_alphas, t, x.shape)
     
     
@@ -315,7 +311,6 @@ def p_sample(model, x, t, t_index):
 @torch.no_grad()
 def p_sample_guided(model, x, classes, t, t_index, context_mask, cond_weight=0.0, betas=None, sqrt_one_minus_alphas_cumprod=None, sqrt_recip_alphas=None, posterior_variance=None, device=None, accelerator=None):
     # adapted from: https://openreview.net/pdf?id=qw8AKxfYbI
-    #print (classes[0])
     batch_size = x.shape[0]
     # double to do guidance with
     t_double = t.repeat(2).to(device)
@@ -331,7 +326,6 @@ def p_sample_guided(model, x, classes, t, t_index, context_mask, cond_weight=0.0
     # classifier free sampling interpolates between guided and non guided using `cond_weight`
     classes_masked = classes * context_mask
     classes_masked = classes_masked.type(torch.long)
-    #print ('class masked', classes_masked)
     if accelerator:
         model = accelerator.unwrap_model(model)
     model.output_attention= True
@@ -364,7 +358,7 @@ def p_sample_loop(model, classes, shape, cond_weight, get_cross_map=False, times
 
     b = shape[0]
     # start from pure noise (for each example in the batch)
-    img = torch.randn(shape, device=device)    # to accelerate
+    img = torch.randn(shape, device=device)   
     imgs = []
     cross_images_final = []
     
@@ -396,8 +390,7 @@ def sample(model, image_size, classes=None, batch_size=16, channels=3, cond_weig
     return p_sample_loop(model, classes=classes, shape=(batch_size, channels, 4, image_size), cond_weight=cond_weight , get_cross_map=get_cross_map,
                          timesteps=timesteps, device=device, betas=betas, sqrt_one_minus_alphas_cumprod=sqrt_one_minus_alphas_cumprod, sqrt_recip_alphas=sqrt_recip_alphas, posterior_variance=posterior_variance, accelerator=accelerator) #to accelerate add timesteps device
 
-# Foward Diffusion
-# forward diffusion
+# Forward Diffusion
 def q_sample(x_start, t, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumprod, noise=None, device=None):
 
     if noise is None:
@@ -410,12 +403,12 @@ def q_sample(x_start, t, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumprod, noi
 
     return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
-#THIS function changed to accomodate the conditional 
-
+#THIS function cha
 def p_losses(denoise_model, x_start, t, classes, noise=None, loss_type="l1", p_uncond=0.1, sqrt_alphas_cumprod_in=None, sqrt_one_minus_alphas_cumprod_in = None, device=None):
     
+    
     if noise is None:
-        noise = torch.randn_like(x_start) #  guass noise 
+        noise = torch.randn_like(x_start) 
     x_noisy = q_sample(x_start=x_start, t=t, sqrt_alphas_cumprod=sqrt_alphas_cumprod_in , sqrt_one_minus_alphas_cumprod = sqrt_one_minus_alphas_cumprod_in,  noise=noise, device=device) #this is the auto generated noise given t and Noise
     
     context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1-p_uncond)).to(device)
@@ -424,7 +417,7 @@ def p_losses(denoise_model, x_start, t, classes, noise=None, loss_type="l1", p_u
     classes = classes * context_mask
     # nn.Embedding needs type to be long, multiplying with mask changes type
     classes = classes.type(torch.long)
-    predicted_noise = denoise_model(x_noisy, t, classes)   # this is the predicted noise given the model and step t
+    predicted_noise = denoise_model(x_noisy, t, classes)   
 
     if loss_type == 'l1':
         loss = F.l1_loss(noise, predicted_noise)
@@ -449,7 +442,6 @@ class SinusoidalPositionEmbeddings(nn.Module):
         self.dim = dim
 
     def forward(self, time):
-        #device = time.device # to accelerate
         half_dim = self.dim // 2
         embeddings = math.log(10000) / (half_dim - 1)
         embeddings = torch.exp(torch.arange(half_dim) * -embeddings)
@@ -479,7 +471,7 @@ class ResBlock(nn.Module):
     """
     Combine output with the original input
     """
-    def forward(self, x): return x + self.convblock(x) # skip connection
+    def forward(self, x): return x + self.convblock(x) 
 
 
 class ConvBlock_2d(nn.Module):
@@ -511,12 +503,8 @@ class ConvBlock_2d(nn.Module):
                 nn.init.zeros_(m.bias)
         
     def forward(self, x):
-        #print ('x', x.shape)
         x = self.conv1(x)
-        #print ('conv1', x.shape)
         x = self.conv2(x)
-        #print ('conv2', x.shape)
-        #x = F.avg_pool2d(x, 2)
         
         return x
 
@@ -576,7 +564,6 @@ class PreNorm(nn.Module):
         return self.fn(x)
 
 # positional embeds
-
 class LearnedSinusoidalPosEmb(nn.Module):
     """ following @crowsonkb 's lead with learned sinusoidal pos emb """
     """ https://github.com/crowsonkb/v-diffusion-jax/blob/master/diffusion/models/danbooru_128.py#L8 """
@@ -595,7 +582,6 @@ class LearnedSinusoidalPosEmb(nn.Module):
         return fouriered
 
 # building block modules
-
 class Block(nn.Module):
     def __init__(self, dim, dim_out, groups = 8):
         super().__init__()
@@ -644,11 +630,8 @@ class ResnetBlock(nn.Module):
 class ResnetBlockClassConditioned(ResnetBlock):
     def __init__(self, dim, dim_out, *, num_classes, class_embed_dim, time_emb_dim = None, groups = 8):
         super().__init__(dim=dim+class_embed_dim, dim_out=dim_out, time_emb_dim=time_emb_dim, groups=groups)
-        #print ('n_classes', num_classes, 'class_embed_dim', class_embed_dim)
         self.class_mlp = EmbedFC(num_classes, class_embed_dim)
       
-
-  
     def forward(self, x, time_emb=None, c=None):
         emb_c = self.class_mlp(c)
         emb_c = emb_c.view(*emb_c.shape, 1, 1)
@@ -725,14 +708,9 @@ class CrossAttention_lucas(nn.Module):
         qkv_x = self.to_qkv(x).chunk(3, dim = 1)
         qkv_y = self.to_qkv(y).chunk(3, dim = 1)
 
-
         q_x, k_x, v_x = map(lambda t: rearrange(t, 'b (h c) x y -> b h c (x y)', h = self.heads), qkv_x)
 
         q_y, k_y, v_y = map(lambda t: rearrange(t, 'b (h c) x y -> b h c (x y)', h = self.heads), qkv_y)
-
-
-
-
 
         q, k = map(l2norm, (q_x, k_y))
 
@@ -755,7 +733,7 @@ def beta_linear_log_snr(t):
     return -torch.log(expm1(1e-4 + 10 * (t ** 2)))
 
 def alpha_cosine_log_snr(t, s: float = 0.008):
-    return -log((torch.cos((t + s) / (1 + s) * math.pi * 0.5) ** -2) - 1, eps = 1e-5) # not sure if this accounts for beta being clipped to 0.999 in discrete version
+    return -log((torch.cos((t + s) / (1 + s) * math.pi * 0.5) ** -2) - 1, eps = 1e-5) 
 
 def log_snr_to_alpha_sigma(log_snr):
     return torch.sqrt(torch.sigmoid(log_snr)), torch.sqrt(torch.sigmoid(-log_snr))
@@ -808,7 +786,6 @@ class Unet_lucas(nn.Module):
             self.label_emb = nn.Embedding(num_classes, time_dim)
 
         # layers
-
         self.downs = nn.ModuleList([])
         self.ups = nn.ModuleList([])
         num_resolutions = len(in_out)
@@ -830,7 +807,6 @@ class Unet_lucas(nn.Module):
 
         for ind, (dim_in, dim_out) in enumerate(reversed(in_out)):
             is_last = ind == (len(in_out) - 1)
-            print (dim_out)
             self.ups.append(nn.ModuleList([
                 block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
                 block_klass(dim_out + dim_in, dim_out, time_emb_dim = time_dim),
@@ -859,43 +835,41 @@ class Unet_lucas(nn.Module):
         t_end = t_start.clone()
         t_cross = t_start.clone()
 
-        #print ('t_cross shape', t_cross.shape)
         if classes is not None:
             t_start += self.label_emb(classes)
             t_mid += self.label_emb(classes)
             t_end += self.label_emb(classes)
             t_cross += self.label_emb(classes)
-        #print ('t_cross shape', t_cross.shape)
 
         h = []
 
         for block1, block2, attn, downsample in self.downs:
-            x = block1(x, t_start)#, classes)
+            x = block1(x, t_start)
             h.append(x)
 
-            x = block2(x, t_start)#, classes)
+            x = block2(x, t_start)
             x = attn(x)
             h.append(x)
 
             x = downsample(x)
 
-        x = self.mid_block1(x, t_mid)#, classes)
+        x = self.mid_block1(x, t_mid)
         x = self.mid_attn(x)
-        x = self.mid_block2(x, t_mid)#, classes)
+        x = self.mid_block2(x, t_mid)
 
         for block1, block2, attn, upsample in self.ups:
             x = torch.cat((x, h.pop()), dim = 1)
-            x = block1(x, t_mid)#, classes)
+            x = block1(x, t_mid)
 
             x = torch.cat((x, h.pop()), dim = 1)
-            x = block2(x, t_mid)#, classes)
+            x = block2(x, t_mid)
             x = attn(x)
 
             x = upsample(x)
 
         x = torch.cat((x, r), dim = 1)
 
-        x = self.final_res_block(x, t_end)#, classes)
+        x = self.final_res_block(x, t_end)
         x = self.final_conv(x)
         x_reshaped =       x.reshape(-1,4,200)
         t_cross_reshaped = t_cross.reshape(-1,4,200)
@@ -937,7 +911,7 @@ class LoadingData():
         self.limit_total_sequences = limit_total_sequences
         self.plot = plot
         self.sample_number = sample_number
-        self.subset_components = subset_components    # case none I need add all
+        self.subset_components = subset_components    
         self.change_comp_index = change_component_index
         self.data =  self.read_csv()
         self.df_generate = self.experiment() 
@@ -969,7 +943,6 @@ class LoadingData():
             print ('Subseting...')
         
         if self.plot:
-            # I changed raw_sequence to sequence
             print (df_generate.head()) 
             (df_generate.groupby('TAG').count()['sequence']  / df_generate.groupby('TAG').count()['sequence'].sum() ).plot.bar()
             plt.title('Component % on Training Sample')
@@ -980,7 +953,6 @@ class LoadingData():
     
     def create_train_groups(self):
         #solve it inside the simon dataloader
-    
         df_sampled = self.df_generate.query('chr != "chr1" ') 
         df_train = df_sampled.query('chr != "chr2" ') 
         df_test = self.df_generate.query('chr == "chr1" ') 
@@ -1016,9 +988,9 @@ class LoadingData():
     def save_fasta(self, df , name_fasta, to_seq_groups_comparison=False):
         fasta_final_name = name_fasta + '.fasta'
         save_fasta_file= open(fasta_final_name, 'w')
-        number_to_sample = df.shape[0] # case we dont want to limit the number of sequences used to calculate the motifs
+        number_to_sample = df.shape[0] 
         
-        if to_seq_groups_comparison and self.number_of_sequences_to_motif_creation: # case we want, we select just the number defined in number_of_sequences_to_motif_creation
+        if to_seq_groups_comparison and self.number_of_sequences_to_motif_creation: 
             number_to_sample = self.number_of_sequences_to_motif_creation
             
             
@@ -1121,9 +1093,9 @@ class Trainer():
         # Dataset used for sequences
         df = encode_data.train["dataset"]
         cell_components =  df.sort_values('TAG')['TAG'].unique().tolist()
-        conditional_tag_to_numeric = {x:n+1  for n,x in enumerate(df.TAG.unique())} 
-        conditional_numeric_to_tag = {n+1:x  for n,x in  enumerate(df.TAG.unique())} 
-        conditional_tags_to_numeric = {n+1:x  for n,x in    enumerate(df.TAG.unique()) } # check if this is changing order
+        self.conditional_tag_to_numeric = {x:n+1  for n,x in enumerate(df.TAG.unique())} 
+        self.conditional_numeric_to_tag = {n+1:x  for n,x in  enumerate(df.TAG.unique())} 
+        conditional_tags_to_numeric = {n+1:x  for n,x in    enumerate(df.TAG.unique()) } 
         cell_types = sorted(list(conditional_numeric_to_tag.keys())) 
         x_train_cell_type = torch.from_numpy(df["TAG"].apply(lambda x : conditional_tag_to_numeric[x]).to_numpy())
 
@@ -1193,29 +1165,80 @@ class Trainer():
         # Continue training
         self.model, self.optimizer = self.accelerator.prepare(self.model, self.optimizer)
         self.train()
+    
+    def create_samples(self, model_path, model_name):
+        if self.accelerator.is_main_process:
+            # define beta schedule
+            betas = linear_beta_schedule(timesteps=self.timesteps, beta_end=0.2)
+            betas.to(self.device)
+            # define alphas 
+            alphas = 1. - betas
+            alphas_cumprod = torch.cumprod(alphas, axis=0)
+            alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.0)
+            sqrt_recip_alphas = torch.sqrt(1.0 / alphas)
+            # calculations for diffusion q(x_t | x_{t-1}) and others
+            sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
+            sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
+            # calculations for posterior q(x_{t-1} | x_t, x_0)
+            posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
+
+            # Recreating model
+            checkpoint_dict = torch.load(model_path + model_name)
+            self.model = self.accelerator.unwrap_model(self.model)
+            self.model.load_state_dict(checkpoint_dict['model'])
+            self.model.eval()
+
+            # Creating variables
+            additional_variables = {
+                'model': self.model,
+                'timesteps': self.timesteps,
+                'betas': betas,
+                'sqrt_one_minus_alphas_cumprod': sqrt_one_minus_alphas_cumprod,
+                'sqrt_recip_alphas': sqrt_recip_alphas,
+                'posterior_variance': posterior_variance,
+                'image_size': self.image_size,
+                'accelerator': self.accelerator,
+                'device': self.device
+            }
+
+            # Creating samples
+            cell_num_list = list(conditional_tag_to_numeric.values())
+            heat_new_sequences_train = kl_comparison_generated_sequences(
+                cell_num_list,
+                self.final_comp_values_train,
+                additional_variables = additional_variables,
+                number_of_sequences_sample_per_cell=self.num_sampling_to_compare_cells
+            )
+            generate_heatmap(heat_new_sequences_train, 'DNADIFFUSION', 'Train')
+            heat_new_sequences_test = kl_comparison_generated_sequences(
+                cell_num_list,
+                self.final_comp_values_test,
+                additional_variables = additional_variables,
+                number_of_sequences_sample_per_cell=self.num_sampling_to_compare_cells
+            )
+            generate_heatmap(heat_new_sequences_test, 'DNADIFFUSION', 'Test')
+            heat_new_sequences_shuffle = kl_comparison_generated_sequences(
+                cell_num_list,
+                self.final_comp_values_shuffle,
+                additional_variables = additional_variables,
+                number_of_sequences_sample_per_cell=self.num_sampling_to_compare_cells
+            )
+            generate_heatmap(heat_new_sequences_shuffle, 'DNADIFFUSION', 'Shuffle')
 
     def train(self):
         # define beta schedule
         betas = linear_beta_schedule(timesteps=self.timesteps, beta_end=0.2)
         betas.to(self.device)
-        print (torch.cuda.is_initialized())
-        #betas = cosine_beta_schedule(timesteps=timesteps,  s=0.0001 )
         # define alphas 
         alphas = 1. - betas
         alphas_cumprod = torch.cumprod(alphas, axis=0)
-        print (torch.cuda.is_initialized())
         alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.0)
         sqrt_recip_alphas = torch.sqrt(1.0 / alphas)
-        print (torch.cuda.is_initialized())
         # calculations for diffusion q(x_t | x_{t-1}) and others
         sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
-        print (torch.cuda.is_initialized() )      
-        #sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
         sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
-        print (torch.cuda.is_initialized())
         # calculations for posterior q(x_{t-1} | x_t, x_0)
         posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
-        print (torch.cuda.is_initialized())
 
 
         if self.accelerator.is_main_process:
@@ -1262,14 +1285,13 @@ class Trainer():
                                             "seq_similarity": self.seq_similarity}, step=epoch)
                     print(f" Epoch {epoch} Loss:", loss.item())
 
-            if epoch != 0 and epoch % self.save_and_sample_every == 0 and self.accelerator.is_main_process: # to accelerate add main process
+            if epoch != 0 and epoch % self.save_and_sample_every == 0 and self.accelerator.is_main_process: 
                 self.model.eval()
 
                 print ('saving')
                 sample_bs = 2
-                #This needs to be fixed to the random
                 sampled = torch.from_numpy(np.random.choice(cell_types, sample_bs))
-                random_classes = sampled.to(self.device) #.c u d a()  to accelerate
+                random_classes = sampled.to(self.device) 
                 additional_variables = {'model':self.model,
                                         'timesteps':self.timesteps,
                                         'device':self.device,
@@ -1279,44 +1301,16 @@ class Trainer():
                                         'posterior_variance': posterior_variance,
                                         'accelerator': self.accelerator,
                                         'image_size':self.image_size}
-                synt_df = sampling_to_metric(int(self.num_sampling_to_compare_cells/10), additional_variables= additional_variables) #50 * batch 10 is the number of sampled seqs
-                self.seq_similarity = generate_similarity_using_train(self.X_train)  # ADDED 2/1/2023
+                synt_df = sampling_to_metric(int(self.num_sampling_to_compare_cells/10), additional_variables= additional_variables) 
                 self.train_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_train)
                 self.test_kl  = compare_motif_list(synt_df, self.df_results_seq_guime_count_test)
                 self.shuffle_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_shuffle)
-                print('Similarity', self.seq_similarity  , 'Similarity' ) #added 2/1/2023
+                print('Similarity', self.seq_similarity  , 'Similarity' ) 
                 print('KL_TRAIN', self.train_kl  , 'KL' )
                 print('KL_TEST',  self.test_kl  , 'KL' )
                 print('KL_SHUFFLE',  self.shuffle_kl , 'KL' )
 
-                # New metric for comparing the similarity of the sequences
-                cell_num_list = list(conditional_tag_to_numeric.values())
-                new_sequence_train = kl_comparison_generated_sequences(
-                    cell_num_list, 
-                    self.final_comp_values_train, 
-                    additional_variables= additional_variables,
-                    number_of_sequences_sample_per_cell= self.num_sampling_to_compare_cells
-                )
-                generate_heatmap(new_sequence_train, 'DNA Diffusion', 'Train')
-                new_sequence_test = kl_comparison_generated_sequences(
-                    cell_num_list, 
-                    self.final_comp_values_test, 
-                    additional_variables= additional_variables,
-                    number_of_sequences_sample_per_cell= self.num_sampling_to_compare_cells
-                )
-                generate_heatmap(new_sequence_test, 'DNA Diffusion', 'Test')
-                new_sequence_shuffle = kl_comparison_generated_sequences(
-                    cell_num_list, 
-                    self.final_comp_values_shuffle, 
-                    additional_variables= additional_variables,
-                    number_of_sequences_sample_per_cell= self.num_sampling_to_compare_cells
-                )
-                generate_heatmap(new_sequence_shuffle, 'DNA Diffusion', 'Shuffle')
-
-
-
             if epoch !=0 and epoch % 500 == 0 and self.accelerator.is_main_process:
-                current_epoch = epoch
                 model_path = './models/' + f'epoch_{str(epoch)}_' + self.model_name + '.pt'
                 self.save(epoch, model_path)
 
@@ -1333,4 +1327,5 @@ if __name__ == "__main__":
      
     trainer = Trainer()
     #trainer.load("/fsx/home-ssenan/dnadiffusion/script/models/", "epoch_5_model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k.pt")  
-    trainer.train() 
+    trainer.create_samples("/fsx/home-ssenan/dnadiffusion/script/models/", "epoch_1000_model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k.pt")  
+    #trainer.train() 
