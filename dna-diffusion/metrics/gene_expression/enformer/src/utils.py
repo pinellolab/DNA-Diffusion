@@ -9,18 +9,19 @@ from pybedtools import BedTool
 import pybedtools
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def inference(one_hot_seqs, model):
     start_time = time.perf_counter()
     for seq_name, seq in tqdm(one_hot_seqs.items()):
         # check if gene is already in outputs folder
-        if not os.path.exists(f'outputs/{seq_name}.pkl'):
+        if not os.path.exists(f'outputs/raw_enformer_outputs/{seq_name}.pkl'):
             print(f"Running Enformer inference for {seq_name}")
             output = model.forward(seq)
             torch.cuda.empty_cache()
             output_df = create_annotated_dataframe("data/genomic_track_type_data.xlsx", output)
-            output_df.to_pickle(f'outputs/{seq_name}.pkl')
+            output_df.to_pickle(f'outputs/raw_enformer_outputs/{seq_name}.pkl')
         else:
             print(f'Output for {seq_name} already exists. Skipping...')
         sys.stdout.flush()
@@ -149,36 +150,37 @@ def generate_dnase_boxplots(data, file, cell_type, assay_type):
     plt.savefig(f'plots/{file_name}_{cell_type}_{assay_type}.png')
 
 
-def create_enformer_bedgraph(enformer_bed, cell_types, assay_type):
+def create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chr, resolution=128):
     """
     Create a bedgraph file where we map the enformer input to the output corresponding to the correct binsizes and
     signal.
     """
     for cell_type in cell_types:
         # TODO: Add error handling for cell type not found
-        assay_type_check = ['DNASE', 'CAGE']
+        assay_type_check = ['DNASE', 'CAGE'] # for chrom accessibility and gene expression respectively
         if assay_type not in assay_type_check:
             raise ValueError(f"Assay type {assay_type} not supported. Please choose from {assay_type_check}")
 
-        enformer_bed = pybedtools.BedTool(enformer_bed)
-        enformer_bed = enformer_bed.to_dataframe()
-        enformer_outputs = os.listdir('outputs/')
+        enformer_outputs = os.listdir('outputs/raw_enformer_outputs/')
 
         for file in tqdm(enformer_outputs):
             if file != 'archive':
-                df = pd.read_pickle(f'outputs/{file}')
+                df = pd.read_pickle(f'outputs/raw_enformer_outputs/{file}')
                 df = df[df['assay_type'] == assay_type]
                 df = df[df['target'] == cell_type]
-                # df = df.iloc[0:1]
-                signal = df['output'].to_numpy()
+                signal = np.array(df['output'].values.tolist())
+                flattened_output = np.median(signal, axis=0)
 
-                data = [signal[0], signal[1], signal[2]]
-                generate_dnase_boxplots(data, file, cell_type, assay_type)
+            coords = file.split(':')[1].split('-')
+            start, end = int(coords[0]), int(coords[1].split('.')[0])
 
-                # df = df.rename(columns={'output': 'signal'})
-                # df = df.sort_values(by=['chrom', 'start'])
-                # df.to_csv(f'outputs/{file}.bedGraph', sep='\t', index=False, header=False)
+            bin_boundaries = [(start + i * resolution, start + (i + 1) * resolution)
+                              for i in range(len(flattened_output))]
 
-    # TODO Map signal to 128 bins of the enformer bed file and save as bedGraph file
+            for i in range(len(flattened_output)):
+                df = pd.DataFrame({'chrom': chr, 'start': bin_boundaries[i][0], 'end': bin_boundaries[i][1],
+                                   'output': flattened_output[i]}, index=[0])
+                df.to_csv(f"outputs/enformer_bedgraphs/{chr}:{start}-{end}_{cell_type}_{assay_type}.bedGraph", sep='\t',
+                          header=False, index=False)
 
     return 0

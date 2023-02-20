@@ -6,11 +6,12 @@ if __name__ == "__main__":
     enformer_bed = "data/chr1_dnase_enformer.bed"
     cell_types = ["K562", "H1-hESC", "HepG2", "GM12878"]
     assay_type = "DNASE"
+    chromosome = "chr1"
 
     model = EnformerModel(data_path)
     one_hot_seqs = model.data.fetch_sequences()
     inference(one_hot_seqs, model)  # saves output to outputs folder as a pickle file
-    create_enformer_bedgraph(enformer_bed, cell_types, assay_type)
+    create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chromosome)
 
     # TODO 1: Perform sanity check on DNA diff test data see:
     # TODO 1: https://discord.com/channels/850068776544108564/1024646567833112656/1055581251483996210`
