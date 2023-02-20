@@ -99,3 +99,5 @@ dna-diffusion/metrics/gene_expression/enformer/sequences/enf_dnase_chr1.fa
 dna-diffusion/metrics/gene_expression/enformer/exec/bedGraphToBigWig
 
 dna-diffusion/metrics/gene_expression/enformer/exec/fetchChromSizes
+
+dna-diffusion/metrics/gene_expression/enformer/plots/

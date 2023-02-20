@@ -8,6 +8,7 @@ import requests
 from pybedtools import BedTool
 import pybedtools
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def inference(one_hot_seqs, model):
@@ -138,30 +139,45 @@ def trim_bed_file(bed_file, path_to_ref_genome):
     return trimmed_bed
 
 
+def generate_dnase_boxplots(data, file, cell_type, assay_type):
+    fig, ax = plt.subplots()
+    file_name = file.split('.')[0]
+    ax.boxplot(data, showfliers=False)
+    ax.set_xticklabels(['Genomic track 1', 'Genomic track 2', 'Genomic track 3'])
+    ax.set_ylabel('Signal')
+    plt.title(f'Enformer {assay_type} boxplot of DNAse signal for {file_name} \n ({cell_type})')
+    plt.savefig(f'plots/{file_name}_{cell_type}_{assay_type}.png')
+
+
 def create_enformer_bedgraph(enformer_bed, cell_types, assay_type):
     """
     Create a bedgraph file where we map the enformer input to the output corresponding to the correct binsizes and
     signal.
     """
-    assay_type_check = ['DNASE', 'CAGE']
-    if assay_type not in assay_type_check:
-        raise ValueError(f"Assay type {assay_type} not supported. Please choose from {assay_type_check}")
+    for cell_type in cell_types:
+        # TODO: Add error handling for cell type not found
+        assay_type_check = ['DNASE', 'CAGE']
+        if assay_type not in assay_type_check:
+            raise ValueError(f"Assay type {assay_type} not supported. Please choose from {assay_type_check}")
 
-    # open the enformer bed and show it as a dataframe
-    enformer_bed = pybedtools.BedTool(enformer_bed)
-    enformer_bed = enformer_bed.to_dataframe()
-    enformer_outputs = os.listdir('outputs/')
-    for file in enformer_outputs:
-        if file != 'archive':
-            df = pd.read_pickle(f'outputs/{file}')
-            df = df[df['assay_type'] == assay_type]
-            df = df[df['target'] == 'H1-hESC']
-            df = df.iloc[0:1]
-            signal = df['output'].to_numpy()[0]
-            print(signal)
-            # df = df.rename(columns={'output': 'signal'})
-            # df = df.sort_values(by=['chrom', 'start'])
-            # df.to_csv(f'outputs/{file}.bedGraph', sep='\t', index=False, header=False)
+        enformer_bed = pybedtools.BedTool(enformer_bed)
+        enformer_bed = enformer_bed.to_dataframe()
+        enformer_outputs = os.listdir('outputs/')
+
+        for file in tqdm(enformer_outputs):
+            if file != 'archive':
+                df = pd.read_pickle(f'outputs/{file}')
+                df = df[df['assay_type'] == assay_type]
+                df = df[df['target'] == cell_type]
+                # df = df.iloc[0:1]
+                signal = df['output'].to_numpy()
+
+                data = [signal[0], signal[1], signal[2]]
+                generate_dnase_boxplots(data, file, cell_type, assay_type)
+
+                # df = df.rename(columns={'output': 'signal'})
+                # df = df.sort_values(by=['chrom', 'start'])
+                # df.to_csv(f'outputs/{file}.bedGraph', sep='\t', index=False, header=False)
 
     # TODO Map signal to 128 bins of the enformer bed file and save as bedGraph file
 
