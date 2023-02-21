@@ -209,7 +209,7 @@ def compare_motif_list(df_motifs_a, df_motifs_b):
     plt.show()
     """
     kl_pq = rel_entr(df_motifs['Diffusion_seqs'].values, df_motifs['Training_seqs'].values )
-    return    np.sum(kl_pq)
+    return np.sum(kl_pq)
 
 
 def kl_comparison_between_dataset(first_dic, second_dict):
@@ -246,7 +246,6 @@ def kl_comparison_generated_sequences(cell_list, dict_target_cells, additional_v
 
 def generate_heatmap(df_heat, x_label, y_label):
     plt.clf()
-    plt.legend().remove()
     plt.rcdefaults()
     plt.rcParams["figure.figsize"] = (10,10)
     df_plot = pd.DataFrame(df_heat)
@@ -256,7 +255,6 @@ def generate_heatmap(df_heat, x_label, y_label):
     plt.title(f'Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities')
     plt.xlabel(f'{x_label} Sequences  \n(motifs dist)')
     plt.ylabel(f'{y_label} \n (motifs dist)')
-    plt.colorbar()
     plt.grid(False)
     plt.savefig(f"./graphs/{x_label}_{y_label}_kl_heatmap.png")
     #wandb.log({f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities": plt})
@@ -403,10 +401,7 @@ def q_sample(x_start, t, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumprod, noi
 
     return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
-#THIS function cha
 def p_losses(denoise_model, x_start, t, classes, noise=None, loss_type="l1", p_uncond=0.1, sqrt_alphas_cumprod_in=None, sqrt_one_minus_alphas_cumprod_in = None, device=None):
-    
-    
     if noise is None:
         noise = torch.randn_like(x_start) 
     x_noisy = q_sample(x_start=x_start, t=t, sqrt_alphas_cumprod=sqrt_alphas_cumprod_in , sqrt_one_minus_alphas_cumprod = sqrt_one_minus_alphas_cumprod_in,  noise=noise, device=device) #this is the auto generated noise given t and Noise
@@ -1070,7 +1065,6 @@ class Trainer():
         self.accelerator = Accelerator(kwargs_handlers=[ddp_kwargs], split_batches =True, log_with=['wandb'])
         self.device = self.accelerator.device
 
-        
         if load_saved_data:
             encode_data = np.load("./encode_data.npy", allow_pickle=True).item()
         else:
@@ -1079,7 +1073,7 @@ class Trainer():
                                     change_component_index=False,
                                     subset_components=['GM12878_ENCLB441ZZZ', 'hESCT0_ENCLB449ZZZ', 'K562_ENCLB843GMH', 'HepG2_ENCLB029COU'],
                                     limit_total_sequences=limit_total_sequences,
-                                    number_of_sequences_to_motif_creation=number_of_sampling_to_compare_cells)
+                                    number_of_sequences_to_motif_creation=self.number_of_sampling_to_compare_cells)
 
         # Splitting encode data into train/test/shuffle 
         self.df_results_seq_guime_count_train = encode_data.train['motifs']
@@ -1126,7 +1120,6 @@ class Trainer():
 
     # Saving model
     def save(self, epoch, results_path):
-        # Saving the checkpoint
         checkpoint_dict = {
             'model': self.accelerator.get_state_dict(self.model),
             'optimizer': self.optimizer.state_dict(), 
@@ -1327,5 +1320,5 @@ if __name__ == "__main__":
      
     trainer = Trainer()
     #trainer.load("/fsx/home-ssenan/dnadiffusion/script/models/", "epoch_5_model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k.pt")  
-    trainer.create_samples("/fsx/home-ssenan/dnadiffusion/script/models/", "epoch_1000_model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k.pt")  
-    #trainer.train() 
+    #trainer.create_samples("/fsx/home-ssenan/dnadiffusion/script/models/", "epoch_3500_model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k.pt")  
+    trainer.train() 
