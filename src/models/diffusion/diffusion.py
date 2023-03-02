@@ -20,9 +20,6 @@ class DiffusionModel(pl.LightningModule):
         lr_warmup=0,
     ) -> None:
         super().__init__()
-        print('\n')
-        print('are you working')
-
         self.save_hyperparameters(ignore=["criterion"])
 
         # create Unet

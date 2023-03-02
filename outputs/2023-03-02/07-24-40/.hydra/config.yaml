@@ -1,0 +1,84 @@
+seed: 42
+train: true
+test: true
+ckpt_path: null
+data:
+  _target_: src.data
+  sequence_length: 200
+  sequence_encoding: polar
+  cell_type_transform: None
+  batch_size: 128
+  num_workers: 0
+  pin_memory: false
+model:
+  _target_: models.diffusion.diffusion.DiffusionModel
+  timesteps: 200
+  use_fp16: true
+  criterion: torch.nn.MSELoss
+  use_ema: true
+  ema_decay: 0.999
+  lr_warmup: 5000
+  image_size: 200
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 0.02
+  lr_scheduler:
+    _target_: torch.optim.lr_scheduler.MultiStepLR
+    _partial_: true
+    milestones:
+    - 5
+    - 10
+    - 20
+    gamma: 0.1
+  unet:
+    _target_: models.networks.unet_lucas_cond.UNet
+    dim: 200
+    init_dim: 200
+    dim_mults:
+    - 1
+    - 2
+    - 4
+    channels: 1
+    resnet_block_groups: 8
+    learned_sinusoidal_dim: 16
+    num_classes: 10
+    class_embed_dim: 3
+logger:
+  wandb:
+    _target_: pytorch_lightning.loggers.wandb.WandbLogger
+    save_dir: ''
+    project: ''
+    log_model: false
+trainer:
+  _target_: pytorch_lightning.Trainer
+  min_epochs: 1
+  max_epochs: 100000
+  accelerator: gpu
+  devices: 1
+  gradient_clip_val: 1.0
+  accumulate_grad_batches: 1
+  log_every_n_steps: 1
+  save_last: true
+  precision: 32
+  check_val_every_n_epoch: 1
+  strategy: ddp
+callbacks:
+  save_checkpoint:
+    target: pytorch_lightning.callbacks.ModelCheckpoint
+    params:
+      path: null
+      monitor: val_loss
+      mode: min
+      save_top_k: 10
+      save_last: true
+  learning_rate:
+    target: pytorch_lightning.callbacks.LearningRateMonitor
+    params:
+      logging_interval: epoch
+paths:
+  root_dir: ${hydra:runtime.cwd}/
+  data_dir: ${paths.root_dir}/data/
+  log_dir: ${paths.root_dir}/logs/
+  output_dir: ${hydra:runtime.output_dir}
+  work_dir: ${hydra:runtime.cwd}

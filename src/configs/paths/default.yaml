@@ -1,8 +1,11 @@
 
-## dot for cwd
-## 
+# path to root directory
+# this requires PROJECT_ROOT environment variable to exist
+# you can replace it with "." if you want the root to be the current working directory
+## https://github.com/ashleve/lightning-hydra-template/blob/main/configs/paths/default.yaml
+
 root_dir: ${hydra:runtime.cwd}/
-data_dir: $
-log_dir:
-output_dir:
-work_dir:
+data_dir: ${paths.root_dir}/data/
+log_dir: ${paths.root_dir}/logs/
+output_dir: ${hydra:runtime.output_dir}
+work_dir: ${hydra:runtime.cwd}
