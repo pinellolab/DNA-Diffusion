@@ -274,7 +274,7 @@ class Trainer:
                 "dnadiffusion",
                 init_kwargs={"wandb": {"notes": "testing wandb accelerate script"}},
             )
-
+        
         for epoch in tqdm(range(self.start_epoch, self.epochs)):
             self.model.train()
 
@@ -296,7 +296,7 @@ class Trainer:
                         sqrt_one_minus_alphas_cumprod_in=sqrt_one_minus_alphas_cumprod,
                         device=self.device,
                     )
-                    # print(f"\nEpoch {epoch} Loss:", loss.item())
+                    print(f"\nEpoch {epoch} Loss:", loss.item())
 
                 self.optimizer.zero_grad()
                 self.accelerator.backward(loss)
@@ -343,7 +343,7 @@ class Trainer:
                 synt_df = sampling_to_metric(
                     self.cell_types,
                     self.conditional_numeric_to_tag,
-                    additional_variables = additional_variables,
+                    additional_variables, 
                     int(self.num_sampling_to_compare_cells / 10),
                 )
                 self.seq_similarity = generate_similarity_using_train(self.X_train) 
@@ -366,3 +366,6 @@ class Trainer:
                     "./models/" + f"epoch_{str(epoch)}_" + self.model_name + ".pt"
                 )
                 self.save(epoch, model_path)
+if __name__ == '__main__':
+    trainer = Trainer()
+    trainer.train()

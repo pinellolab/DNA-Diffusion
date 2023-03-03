@@ -175,7 +175,7 @@ class Block(nn.Module):
         self.norm = nn.GroupNorm(groups, dim_out)
         self.act = nn.SiLU()
 
-    def forward(self, x: torch.Tensor, scale_shift: Optional[torch.Tensor]):
+    def forward(self, x: torch.Tensor, scale_shift: torch.Tensor=None):
         x = self.proj(x)
         x = self.norm(x)
 
@@ -202,7 +202,7 @@ class ResnetBlock(nn.Module):
         self.block2 = Block(dim_out, dim_out, groups=groups)
         self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
 
-    def forward(self, x: torch.Tensor, time_emb: Optional[torch.Tensor]):
+    def forward(self, x: torch.Tensor, time_emb: torch.Tensor = None):
         scale_shift = None
         if exists(self.mlp) and exists(time_emb):
             time_emb = self.mlp(time_emb)
