@@ -184,12 +184,30 @@ def create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chr, resoluti
         ids = np.arange(np.array(enformer_bedgraph).shape[0])
         enf_bed_avg_over_bed = np.array(enformer_bedgraph)[:, :3]
         enf_bed_avg_over_bed = np.append(enf_bed_avg_over_bed, ids.reshape(-1, 1), axis=1)
-        print(enf_bed_avg_over_bed)
-        df = pd.DataFrame(enformer_bedgraph, columns=['chrom', 'start', 'end', 'output'])
-        df.to_csv(f"outputs/enformer_bedgraphs/{chr}:1_{cell_type}_{assay_type}.bedGraph", sep='\t',
+        df_bedgraph = pd.DataFrame(enformer_bedgraph, columns=['chrom', 'start', 'end', 'output'])
+        df_bedgraph.to_csv(f"outputs/enformer_bedgraphs/{chr}:1_{cell_type}_{assay_type}.bedGraph", sep='\t',
                   header=False, index=False)
-        df = pd.DataFrame(enf_bed_avg_over_bed, columns=['chrom', 'start', 'end', 'id'])
-        df.to_csv(f"data/bigWigs/{chr}:1_{cell_type}_{assay_type}_index.bed", sep='\t',
+        df_bed = pd.DataFrame(enf_bed_avg_over_bed, columns=['chrom', 'start', 'end', 'id'])
+        df_bed.to_csv(f"data/bigWigs/{chr}:1_{cell_type}_{assay_type}_index.bed", sep='\t',
                   header=False, index=False)
-
+        tab_to_bedgraph(df_bedgraph, cell_type)
     return 0
+
+
+def tab_to_bedgraph(enformer_bedgraph, cell_type):
+    """
+    Create a bedGraph file from a tab separated bed files.
+    """
+    tab_files = os.listdir('data/bigWigs/')
+    tab_files = [tab_file for tab_file in tab_files if tab_file[-3:] == 'tab']
+    if cell_type == 'H1-hESC':
+        cell_type = 'hESC'
+    for tab_file in tab_files:
+        if cell_type in tab_file:
+            df = pd.read_csv(f'data/bigWigs/{tab_file}', sep='\t', header=None)
+            df.columns = ['name', 'size', 'covered', 'sum', 'mean0', 'mean']
+            means = df['mean'].values
+            df_bedgraph = enformer_bedgraph.iloc[:, :3]
+            df_bedgraph['output'] = means
+            df_bedgraph.to_csv(f"outputs/experimental_bedgraphs/{tab_file[:-4]}.bedGraph", sep='\t', header=False,
+                               index=False)

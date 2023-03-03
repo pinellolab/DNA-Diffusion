@@ -1,3 +1,5 @@
+import os
+
 from inference import EnformerModel
 from utils import inference, create_enformer_bedgraph
 
@@ -10,9 +12,5 @@ if __name__ == "__main__":
 
     model = EnformerModel(data_path)
     one_hot_seqs = model.data.fetch_sequences()
-    inference(one_hot_seqs, model)  # saves output to outputs folder as a pickle file
+    inference(one_hot_seqs, model)
     create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chromosome)
-
-    # TODO 1: Perform sanity check on DNA diff test data see:
-    # TODO 1: https://discord.com/channels/850068776544108564/1024646567833112656/1055581251483996210`
-
