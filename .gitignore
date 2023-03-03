@@ -101,3 +101,5 @@ dna-diffusion/metrics/gene_expression/enformer/exec/bedGraphToBigWig
 dna-diffusion/metrics/gene_expression/enformer/exec/fetchChromSizes
 
 dna-diffusion/metrics/gene_expression/enformer/plots/
+
+*.tab

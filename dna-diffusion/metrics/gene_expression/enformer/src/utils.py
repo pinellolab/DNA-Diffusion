@@ -157,12 +157,13 @@ def create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chr, resoluti
     """
     for cell_type in cell_types:
         # TODO: Add error handling for cell type not found
-        assay_type_check = ['DNASE', 'CAGE'] # for chrom accessibility and gene expression respectively
+        assay_type_check = ['DNASE', 'CAGE']  # for chrom accessibility and gene expression respectively
         if assay_type not in assay_type_check:
             raise ValueError(f"Assay type {assay_type} not supported. Please choose from {assay_type_check}")
 
         enformer_outputs = os.listdir('outputs/raw_enformer_outputs/')
-
+        enformer_bedgraph = []  # if entire chromosome, keep this out of file loop, else put it in. Also note the saving
+                                # needs to be changed in that case
         for file in tqdm(enformer_outputs):
             if file != 'archive':
                 df = pd.read_pickle(f'outputs/raw_enformer_outputs/{file}')
@@ -178,9 +179,17 @@ def create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chr, resoluti
                               for i in range(len(flattened_output))]
 
             for i in range(len(flattened_output)):
-                df = pd.DataFrame({'chrom': chr, 'start': bin_boundaries[i][0], 'end': bin_boundaries[i][1],
-                                   'output': flattened_output[i]}, index=[0])
-                df.to_csv(f"outputs/enformer_bedgraphs/{chr}:{start}-{end}_{cell_type}_{assay_type}.bedGraph", sep='\t',
-                          header=False, index=False)
+                row = (chr, bin_boundaries[i][0], bin_boundaries[i][1], flattened_output[i])
+                enformer_bedgraph.append(row)
+        ids = np.arange(np.array(enformer_bedgraph).shape[0])
+        enf_bed_avg_over_bed = np.array(enformer_bedgraph)[:, :3]
+        enf_bed_avg_over_bed = np.append(enf_bed_avg_over_bed, ids.reshape(-1, 1), axis=1)
+        print(enf_bed_avg_over_bed)
+        df = pd.DataFrame(enformer_bedgraph, columns=['chrom', 'start', 'end', 'output'])
+        df.to_csv(f"outputs/enformer_bedgraphs/{chr}:1_{cell_type}_{assay_type}.bedGraph", sep='\t',
+                  header=False, index=False)
+        df = pd.DataFrame(enf_bed_avg_over_bed, columns=['chrom', 'start', 'end', 'id'])
+        df.to_csv(f"data/bigWigs/{chr}:1_{cell_type}_{assay_type}_index.bed", sep='\t',
+                  header=False, index=False)
 
     return 0
