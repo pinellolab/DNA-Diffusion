@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils import extract
+from ..utils.utils import extract
 
 
 def q_sample(
@@ -12,7 +12,7 @@ def q_sample(
     sqrt_alphas_cumprod: torch.Tensor,
     sqrt_one_minus_alphas_cumprod: torch.Tensor,
     noise: Optional[torch.Tensor] = None,
-    device: Optional[str] = None,
+    device: Optional[torch.device] = None,
 ):
     if noise is None:
         noise = torch.randn_like(x_start)

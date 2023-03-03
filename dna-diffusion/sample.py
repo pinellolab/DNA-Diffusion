@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from accelerate import Accelerator
-from utils import extract
+from utils.utils import extract
 
 
 def sampling_to_metric(

@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sample import sampling_to_metric
+from ..sample import sampling_to_metric
 from scipy.special import rel_entr
 from tqdm import tqdm
-from utils import one_hot_encode
+from ..utils.utils import one_hot_encode
 
 
 def compare_motif_list(df_motifs_a: pd.DataFrame, df_motifs_b: pd.DataFrame):

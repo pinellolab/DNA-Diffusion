@@ -5,19 +5,19 @@ import torch
 import torch.nn.functional as F
 import torchvision.transforms as T
 from accelerate import Accelerator, DistributedDataParallelKwargs
-from dataloader import LoadingData, SequenceDataset
-from diffusion import p_losses
-from ema import EMA
-from metrics import (compare_motif_list, generate_heatmap,
+from data.dataloader import LoadingData, SequenceDataset
+from models.diffusion import p_losses
+from utils.ema import EMA
+from metrics.metrics import (compare_motif_list, generate_heatmap,
                      generate_similarity_using_train,
                      kl_comparison_generated_sequences)
-from networks import Unet_lucas
+from models.networks import Unet_lucas
 from sample import sampling_to_metric
-from scheduler import linear_beta_schedule
+from utils.scheduler import linear_beta_schedule
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from utils import one_hot_encode
+from utils.utils import one_hot_encode
 
 
 class Trainer:

@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from einops import rearrange
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
 from torch import einsum
-from utils import default, exists, l2norm
+from ..utils.utils import default, exists, l2norm
 
 
 class SinusoidalPositionEmbeddings(nn.Module):
@@ -157,7 +157,7 @@ class LearnedSinusoidalPosEmb(nn.Module):
         half_dim = dim // 2
         self.weights = nn.Parameter(torch.randn(half_dim))
 
-    def forward(self, x: int):
+    def forward(self, x: torch.Tensor):
         x = rearrange(x, "b -> b 1")
         freqs = x * rearrange(self.weights, "d -> 1 d") * 2 * math.pi
         fouriered = torch.cat((freqs.sin(), freqs.cos()), dim=-1)
@@ -175,7 +175,7 @@ class Block(nn.Module):
         self.norm = nn.GroupNorm(groups, dim_out)
         self.act = nn.SiLU()
 
-    def forward(self, x: torch.Tensor, scale_shift: torch.Tensor=None):
+    def forward(self, x: torch.Tensor, scale_shift: Optional[torch.Tensor]=None):
         x = self.proj(x)
         x = self.norm(x)
 
@@ -194,15 +194,14 @@ class ResnetBlock(nn.Module):
         super().__init__()
         self.mlp = (
             nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))
-            if exists(time_emb_dim)
-            else None
-        )
+        ) if exists(time_emb_dim) else None
+        
 
         self.block1 = Block(dim, dim_out, groups=groups)
         self.block2 = Block(dim_out, dim_out, groups=groups)
         self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
 
-    def forward(self, x: torch.Tensor, time_emb: torch.Tensor = None):
+    def forward(self, x: torch.Tensor, time_emb: Optional[torch.Tensor] = None):
         scale_shift = None
         if exists(self.mlp) and exists(time_emb):
             time_emb = self.mlp(time_emb)
@@ -256,7 +255,7 @@ class Attention(nn.Module):
         self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias=False)
         self.to_out = nn.Conv2d(hidden_dim, dim, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
         q, k, v = map(
