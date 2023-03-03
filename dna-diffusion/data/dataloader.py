@@ -1,10 +1,10 @@
 import os
 import random
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import torch.nn as nn
+import torchvision.transforms as T
 from torch.utils.data import Dataset
 
 
@@ -161,7 +161,7 @@ class LoadingData:
 
 
 class SequenceDataset(Dataset):
-    def __init__(self, seqs: str, c: str, transform: Optional[nn.Module] = None):
+    def __init__(self, seqs: str, c: str, transform: Optional[T.Compose] = T.Compose([T.ToTensor()])):
         "Initialization"
         self.seqs = seqs
         self.c = c
