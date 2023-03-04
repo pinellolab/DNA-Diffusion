@@ -1,14 +1,11 @@
 name: dnadiffusion
 channels:
+  - nodefaults
   - conda-forge
   - bioconda
-  - pytorch
-  - nvidia
 dependencies:
-  - pytorch
-  - pytorch-cuda=11.6
+  - pytorch-gpu
   - torchvision
-  - torchaudio
   - accelerate
   - jupyterlab
   - matplotlib
@@ -17,13 +14,9 @@ dependencies:
   - einops
   - wandb
   - genomepy
+  - pytorch-lightning
+  - hydra-core
   - pip
   - pip:
       - gimmemotifs
       - memory-efficient-attention-pytorch
-      - lightning
-      - ipywidgets
-      - widgetsnbextension
-      - pandas-profiling
-      - livelossplot
-      - hydra-core
