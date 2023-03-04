@@ -161,7 +161,12 @@ class LoadingData:
 
 
 class SequenceDataset(Dataset):
-    def __init__(self, seqs: str, c: str, transform: Optional[T.Compose] = T.Compose([T.ToTensor()])):
+    def __init__(
+        self,
+        seqs: str,
+        c: str,
+        transform: Optional[T.Compose] = T.Compose([T.ToTensor()]),
+    ):
         "Initialization"
         self.seqs = seqs
         self.c = c

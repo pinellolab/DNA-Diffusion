@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from einops import rearrange
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
 from torch import einsum
+
 from ..utils.utils import default, exists, l2norm
 
 
@@ -88,9 +89,9 @@ class ConvBlock_2d(nn.Module):
 
 class EmbedFC(nn.Module):
     def __init__(self, input_dim: int, emb_dim: int) -> None:
-        super(EmbedFC, self).__init__()
+        super().__init__()
         """
-        generic one layer FC NN for embedding things  
+        generic one layer FC NN for embedding things
         """
         self.input_dim = input_dim
         layers = [nn.Linear(input_dim, emb_dim), nn.GELU(), nn.Linear(emb_dim, emb_dim)]
@@ -175,7 +176,7 @@ class Block(nn.Module):
         self.norm = nn.GroupNorm(groups, dim_out)
         self.act = nn.SiLU()
 
-    def forward(self, x: torch.Tensor, scale_shift: Optional[torch.Tensor]=None):
+    def forward(self, x: torch.Tensor, scale_shift: Optional[torch.Tensor] = None):
         x = self.proj(x)
         x = self.norm(x)
 
@@ -193,9 +194,10 @@ class ResnetBlock(nn.Module):
     ) -> None:
         super().__init__()
         self.mlp = (
-            nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))
-        ) if exists(time_emb_dim) else None
-        
+            (nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2)))
+            if exists(time_emb_dim)
+            else None
+        )
 
         self.block1 = Block(dim, dim_out, groups=groups)
         self.block2 = Block(dim_out, dim_out, groups=groups)

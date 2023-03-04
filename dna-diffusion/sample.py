@@ -20,7 +20,7 @@ def sampling_to_metric(
     cond_weight_to_metric: int = 0,
 ):
     # Sampling regions using the trained  model
-    nucleotides = ['A', 'C', 'G', 'T']
+    nucleotides = ["A", "C", "G", "T"]
     final_sequences = []
     # for n_a in tqdm(range(number_of_samples)): # generating number_of_samples *10 sequences
     for n_a in range(number_of_samples):  # generating number_of_samples *10 sequences

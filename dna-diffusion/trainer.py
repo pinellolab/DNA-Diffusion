@@ -6,17 +6,17 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 from accelerate import Accelerator, DistributedDataParallelKwargs
 from data.dataloader import LoadingData, SequenceDataset
-from models.diffusion import p_losses
-from utils.ema import EMA
 from metrics.metrics import (compare_motif_list, generate_heatmap,
-                     generate_similarity_using_train,
-                     kl_comparison_generated_sequences)
+                             generate_similarity_using_train,
+                             kl_comparison_generated_sequences)
+from models.diffusion import p_losses
 from models.networks import Unet_lucas
 from sample import sampling_to_metric
-from utils.scheduler import linear_beta_schedule
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from utils.ema import EMA
+from utils.scheduler import linear_beta_schedule
 from utils.utils import one_hot_encode
 
 
@@ -113,7 +113,9 @@ class Trainer:
 
         # Sequence dataset loading
         tf = T.Compose([T.ToTensor()])
-        seq_dataset = SequenceDataset(seqs=X_train, c=self.x_train_cell_type, transform=tf)
+        seq_dataset = SequenceDataset(
+            seqs=X_train, c=self.x_train_cell_type, transform=tf
+        )
         train_dl = DataLoader(
             seq_dataset, batch_size, shuffle=True, num_workers=48, pin_memory=True
         )
@@ -274,7 +276,7 @@ class Trainer:
                 "dnadiffusion",
                 init_kwargs={"wandb": {"notes": "testing wandb accelerate script"}},
             )
-        
+
         for epoch in tqdm(range(self.start_epoch, self.epochs)):
             self.model.train()
 
@@ -343,10 +345,10 @@ class Trainer:
                 synt_df = sampling_to_metric(
                     self.cell_types,
                     self.conditional_numeric_to_tag,
-                    additional_variables, 
+                    additional_variables,
                     int(self.num_sampling_to_compare_cells / 10),
                 )
-                self.seq_similarity = generate_similarity_using_train(self.X_train) 
+                self.seq_similarity = generate_similarity_using_train(self.X_train)
                 self.train_kl = compare_motif_list(
                     synt_df, self.df_results_seq_guime_count_train
                 )
@@ -366,6 +368,8 @@ class Trainer:
                     "./models/" + f"epoch_{str(epoch)}_" + self.model_name + ".pt"
                 )
                 self.save(epoch, model_path)
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     trainer = Trainer()
     trainer.train()

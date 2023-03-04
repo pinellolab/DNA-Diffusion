@@ -2,9 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from ..sample import sampling_to_metric
 from scipy.special import rel_entr
 from tqdm import tqdm
+
+from ..sample import sampling_to_metric
 from ..utils.utils import one_hot_encode
 
 
@@ -112,7 +113,7 @@ def generate_heatmap(
 def generate_similarity_metric():
     """Capture the syn_motifs.fasta and compare with the  dataset motifs"""
     nucleotides = ["A", "C", "G", "T"]
-    seqs_file = open("synthetic_motifs.fasta", "r").readlines()
+    seqs_file = open("synthetic_motifs.fasta").readlines()
     seqs_to_hotencoder = [
         one_hot_encode(s.replace("\n", ""), nucleotides, 200).T
         for s in seqs_file

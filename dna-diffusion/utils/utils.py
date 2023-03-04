@@ -10,8 +10,7 @@ def exists(x):
 
 def cycle(dl):
     while True:
-        for data in dl:
-            yield data
+        yield from dl
 
 
 def has_int_squareroot(num):
