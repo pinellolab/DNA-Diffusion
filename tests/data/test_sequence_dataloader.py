@@ -1,7 +1,9 @@
 import os
+
 import pandas as pd
 import torch
 from torchvision import transforms
+
 from src.data.sequence_dataloader import SequenceDataModule
 
 
@@ -321,7 +323,7 @@ def test_ordinal_encoding():
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 3).all()
             assert (batch[0].min(dim=1).values == 0).all()
-            assert set(batch[0].tolist()[0]) == set([0, 1, 2, 3])
+            assert set(batch[0].tolist()[0]) == {0, 1, 2, 3}
 
     # remove dummy data
     os.remove(dummy_data_path)
@@ -382,7 +384,7 @@ def test_polar_transforms():
             cell_type_ids = set(batch[1].tolist())
             assert cell_type_ids.difference([21, 22, 30]) == set()
             seen_cell_type_ids.update(cell_type_ids)
-        assert seen_cell_type_ids == set([21, 22, 30])
+        assert seen_cell_type_ids == {21, 22, 30}
 
     # remove dummy data
     os.remove(dummy_data_path)
@@ -443,7 +445,7 @@ def test_onehot_transforms():
             cell_type_ids = set(batch[1].tolist())
             assert cell_type_ids.difference([21, 22, 30]) == set()
             seen_cell_type_ids.update(cell_type_ids)
-        assert seen_cell_type_ids == set([21, 22, 30])
+        assert seen_cell_type_ids == {21, 22, 30}
 
     # remove dummy data
     os.remove(dummy_data_path)
@@ -500,11 +502,11 @@ def test_ordinal_transforms():
             assert batch[1].shape == (2,)
             assert (batch[0].max(dim=1).values == 4).all()
             assert (batch[0].min(dim=1).values == 1).all()
-            assert set(batch[0].tolist()[0]) == set([1, 2, 3, 4])
+            assert set(batch[0].tolist()[0]) == {1, 2, 3, 4}
             cell_type_ids = set(batch[1].tolist())
             assert cell_type_ids.difference([21, 22, 30]) == set()
             seen_cell_type_ids.update(cell_type_ids)
-        assert seen_cell_type_ids == set([21, 22, 30])
+        assert seen_cell_type_ids == {21, 22, 30}
 
     # remove dummy data
     os.remove(dummy_data_path)

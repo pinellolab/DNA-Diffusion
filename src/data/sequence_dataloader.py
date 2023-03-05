@@ -1,11 +1,10 @@
-import pandas as pd
 import numpy as np
-
-import torch
-import torchvision.transforms as T
-import torch.nn.functional as F
+import pandas as pd
 import pytorch_lightning as pl
-from torch.utils.data import Dataset, DataLoader
+import torch
+import torch.nn.functional as F
+import torchvision.transforms as T
+from torch.utils.data import DataLoader, Dataset
 
 
 class SequenceDatasetBase(Dataset):

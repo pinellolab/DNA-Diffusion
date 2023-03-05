@@ -1,14 +1,13 @@
-
-
 ## Config Structure
 
 Current hypothetical config folder structure is as follows:
+
 ```
 ├── configs
     ├── callbacks
         ├── default.yaml
     ├── dataset
-        ├── sequence.yaml 
+        ├── sequence.yaml
     ├── logger
         ├── wandb.yaml
     ├── model
@@ -23,6 +22,7 @@ Current hypothetical config folder structure is as follows:
 As new items (models, datasets, etc.) are added, a corresponding config file can be included so that minimal parameter altering is needed across various experiments
 
 ## How to Run
+
 Below contains the main training config file that can be altered to fit any training alterations that are desired.
 Every parameter listed under defaults is defined within a config listed above.
 
@@ -41,7 +41,7 @@ seed: 42
 batch_size: 32
 devices: gpu
 benchmark: True
-ckpt_dir: # path still to be defined 
+ckpt_dir: # path still to be defined
 accelerator: gpu
 strategy: ddp
 min_epochs: 5
@@ -53,6 +53,7 @@ check_val_every_n_epoch: 1 #for debug purposes
 save_last: True
 precision: 32
 ```
+
 </details>
 
 ### Using hydra config in a Jupyter Notebook
@@ -68,7 +69,7 @@ cfg = compose(config_name="train")
 print(OmegaConf.to_yaml(cfg))
 ```
 
-When initializing hydra it is possible to override any of the default assignments. 
+When initializing hydra it is possible to override any of the default assignments.
 Here is an example of overriding batch_size and seed while initializing hydra:
 
 ```python
@@ -87,8 +88,9 @@ For more information regarding hydra initialization in jupyter see the following
 https://github.com/facebookresearch/hydra/blob/main/examples/jupyter_notebooks/compose_configs_in_notebook.ipynb
 
 ## Still To Do:
-* Alter training script to accommodate all logs we wish to track using wandb
-* Decide on default hyperparameters in train.yaml
-* Further alter config folder structure to best suit our training and testing practices
-* Define default paths for dataset within path config file so that directory can be referenced across various other configs
-* Hydra config logs currently output in src directory, creating the following folder structure ./src/outputs/YYYY-MM-DD/MM-HH-SS. If we wish to alter this it can be done in a hydra config file.
+
+- Alter training script to accommodate all logs we wish to track using wandb
+- Decide on default hyperparameters in train.yaml
+- Further alter config folder structure to best suit our training and testing practices
+- Define default paths for dataset within path config file so that directory can be referenced across various other configs
+- Hydra config logs currently output in src directory, creating the following folder structure ./src/outputs/YYYY-MM-DD/MM-HH-SS. If we wish to alter this it can be done in a hydra config file.

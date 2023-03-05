@@ -1,10 +1,10 @@
 import math
 from functools import partial
-from einops import rearrange
-from typing import Optional, List, Callable
+from typing import Callable, List, Optional
 
 import torch
-from torch import nn, einsum
+from einops import rearrange
+from torch import einsum, nn
 
 from utils.misc import default
 from utils.network import l2norm
@@ -17,8 +17,8 @@ class Residual(nn.Module):
 
     def forward(self, x: torch.Tensor, *args, **kwargs) -> torch.Tensor:
         return self.fn(x, *args, **kwargs) + x
-    
-    
+
+
 def Upsample(dim: int, dim_out: Optional[int] = None):
     return nn.Sequential(
         nn.Upsample(scale_factor=2, mode="nearest"),
@@ -114,7 +114,6 @@ class ResnetBlock(nn.Module):
         self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
 
     def forward(self, x: torch.Tensor, time_emb=None) -> torch.Tensor:
-
         scale_shift = None
         if exists(self.mlp) and exists(time_emb):
             time_emb = self.mlp(time_emb)

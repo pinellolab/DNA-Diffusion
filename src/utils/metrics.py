@@ -1,18 +1,18 @@
-import torch
-import pandas as pd
-import numpy as np
-from scipy.special import rel_entr
-import seaborn as sns
-import matplotlib.pyplot as plt
-from tqdm.auto import tqdm
 import os
 from typing import Callable, Dict
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import torch
+from scipy.special import rel_entr
+from tqdm.auto import tqdm
 
 
 def motif_scoring_KL_divergence(
     original: pd.Series, generated: pd.Series
 ) -> torch.Tensor:
-
     """
     This function encapsulates the logic of evaluating the KL divergence metric
     between two sequences.

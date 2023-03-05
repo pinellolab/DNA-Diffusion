@@ -1,5 +1,6 @@
 import math
-from math import log, exp
+from math import exp, log
+
 import torch
 
 

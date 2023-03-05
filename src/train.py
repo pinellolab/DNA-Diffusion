@@ -1,11 +1,11 @@
+import argparse
+import logging
+
 import hydra
 import pytorch_lightning as pl
-import logging
 import wandb
-
-from omegaconf import DictConfig, OmegaConf
 from hydra.utils import instantiate
-import argparse
+from omegaconf import DictConfig, OmegaConf
 
 logger = logging.getLogger()
 

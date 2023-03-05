@@ -1,9 +1,10 @@
-import math
 import importlib
-import torch
-import random
+import math
 import os
+import random
+
 import numpy as np
+import torch
 
 
 def seed_everything(seed: int) -> None:
@@ -37,8 +38,7 @@ def extract(a, t, x_shape):
 
 def cycle(dl):
     while True:
-        for data in dl:
-            yield data
+        yield from dl
 
 
 def has_int_squareroot(num):
@@ -88,7 +88,9 @@ def right_pad_dims_to(x, t):
 def instantiate_from_config(config, **kwargs):
     if not "_target_" in config:
         raise KeyError("Expected key `_target_` to instantiate.")
-    return get_obj_from_str(config["_target_"])(**config.get("params", dict()), **kwargs)
+    return get_obj_from_str(config["_target_"])(
+        **config.get("params", dict()), **kwargs
+    )
 
 
 def get_obj_from_str(string, reload=False):

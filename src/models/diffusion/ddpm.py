@@ -1,17 +1,14 @@
-import tqdm
-import torch
-from torch import nn
-from torch.nn.functional import F
 from functools import partial
 
-from models.diffusion.diffusion import DiffusionModel
+import torch
+import tqdm
+from torch import nn
+from torch.nn.functional import F
 
-from utils.schedules import (
-    beta_linear_log_snr,
-    alpha_cosine_log_snr,
-    linear_beta_schedule,
-)
+from models.diffusion.diffusion import DiffusionModel
 from utils.misc import extract, extract_data_from_batch, mean_flat
+from utils.schedules import (alpha_cosine_log_snr, beta_linear_log_snr,
+                             linear_beta_schedule)
 
 
 class DDPM(DiffusionModel):

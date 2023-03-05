@@ -3,7 +3,7 @@ train_dl:
   train_path: # add training dataset path
   batch_size: 32
   num_workers: 4
- # transform:
+  # transform:
   #  _target_: # directly reference transforms -> torchvision.transforms.ToTensor
 
 val_dl:
