@@ -8,10 +8,11 @@ from accelerate import Accelerator, DistributedDataParallelKwargs
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
 from dnadiffusion.data.dataloader import LoadingData, SequenceDataset
 from dnadiffusion.metrics.metrics import (compare_motif_list, generate_heatmap,
-                             generate_similarity_using_train,
-                             kl_comparison_generated_sequences)
+                                          generate_similarity_using_train,
+                                          kl_comparison_generated_sequences)
 from dnadiffusion.models.diffusion import p_losses
 from dnadiffusion.models.networks import Unet_lucas
 from dnadiffusion.sample import sampling_to_metric
@@ -57,7 +58,9 @@ class Trainer:
         self.device = self.accelerator.device
 
         if load_saved_data:
-            encode_data = np.load("dnadiffusion/data/encode_data.npy", allow_pickle=True).item()
+            encode_data = np.load(
+                "dnadiffusion/data/encode_data.npy", allow_pickle=True
+            ).item()
         else:
             encode_data = LoadingData(
                 data_path,
@@ -310,7 +313,7 @@ class Trainer:
                     self.ema.step_ema(
                         self.ema_model, self.accelerator.unwrap_model(self.model)
                     )
-                    
+
             print(f"\nEpoch {epoch} Loss:", loss.item())
             if (epoch % self.epochs_loss_show) == 0:
                 if self.accelerator.is_main_process:
