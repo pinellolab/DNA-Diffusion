@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Adding logs folder
+logs/*
+!logs/.gitkeep
