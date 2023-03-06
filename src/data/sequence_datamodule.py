@@ -135,6 +135,7 @@ class SequenceDataModule(pl.LightningDataModule):
 
     def setup(self, stage:str):
         # TODO: incorporate some extra information after the split (experiement -> split -> motif -> train/test assignment)
+        # WARNING: have to be able to call loading_data on the main process of accelerate/fabric bc of gimme_motifs caching dependecies
         # Creating sequence datasets unless they exist already
         self.df = pd.read_csv(data_path, sep="\t") 
         if not self.data_train and not self.data_test and not self.data_test:
