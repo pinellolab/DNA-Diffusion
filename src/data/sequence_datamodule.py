@@ -134,6 +134,7 @@ class SequenceDataModule(pl.LightningDataModule):
         self.data_dir = data_dir
 
     def setup(self, stage:str):
+        # TODO: incorporate some extra information after the split (experiement -> split -> motif -> train/test assignment)
         # Creating sequence datasets unless they exist already
         self.df = pd.read_csv(data_path, sep="\t") 
         if not self.data_train and not self.data_test and not self.data_test:
