@@ -137,6 +137,9 @@ class SequenceDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
 
+    def prepare_data(self):
+        return
+        
     def setup(self):
         if "train" in self.datasets:
             self.train_data = SequenceDatasetTrain(
