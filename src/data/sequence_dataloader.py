@@ -139,7 +139,7 @@ class SequenceDataModule(pl.LightningDataModule):
 
     def prepare_data(self):
         return
-        
+
     def setup(self):
         if "train" in self.datasets:
             self.train_data = SequenceDatasetTrain(

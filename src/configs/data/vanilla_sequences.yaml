@@ -1,4 +1,4 @@
-_target_: 'src.data.sequence_datamodule.SequenceDataModule'
+_target_: "src.data.sequence_datamodule.SequenceDataModule"
 data_dir: ${paths.data_dir}
 sequence_length: 200
 sequence_encoding: polar
