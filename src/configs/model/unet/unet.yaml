@@ -1,0 +1,9 @@
+_target_: models.networks.unet_lucas.UNetLucas
+dim: 200
+init_dim: 200
+dim_mults: [1, 2, 4]
+channels: 1
+resnet_block_groups: 8
+learned_sinusoidal_dim: 16
+num_classes: 10
+self_conditioned: False
