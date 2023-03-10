@@ -1,17 +1,17 @@
-import tqdm
-import torch
-from torch import nn
-import torch.nn.functional as F
 from functools import partial
 
-from models.diffusion.diffusion import DiffusionModel
+import torch
+import torch.nn.functional as F
+import tqdm
+from torch import nn
 
+from models.diffusion.diffusion import DiffusionModel
+from utils.misc import extract, extract_data_from_batch, mean_flat
 from utils.schedules import (
-    beta_linear_log_snr,
     alpha_cosine_log_snr,
+    beta_linear_log_snr,
     linear_beta_schedule,
 )
-from utils.misc import extract, extract_data_from_batch, mean_flat
 
 
 class DDPM(DiffusionModel):
@@ -49,8 +49,8 @@ class DDPM(DiffusionModel):
             ema_decay,
             lr_warmup,
         )
-        print('saludos del matei')
-        print('\n')
+        print("saludos del matei")
+        print("\n")
         self.image_size = image_size
 
         if noise_schedule == "linear":

@@ -1,9 +1,11 @@
 ### file to include dataclass definition
 from dataclasses import dataclass
+
 from hydra.core.config_store import ConfigStore
 
 ### needs overhaul with new folder structure
 ### ignore for now
+"""
 @dataclass
 class DNADiffusionConfig:
     defaults:
@@ -20,3 +22,4 @@ class DNADiffusionConfig:
     ema_decay: float = 0.999
     lr_warmup: 5000
     image_size: 200
+"""

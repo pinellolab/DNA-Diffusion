@@ -1,5 +1,7 @@
-from torch import nn
 from copy import deepcopy
+
+from torch import nn
+
 
 class EMA:
     def __init__(self, model: nn.Module, beta: float):

@@ -1,4 +1,4 @@
 defaults:
-- default.yaml
+  - default.yaml
 
 strategy: ddp

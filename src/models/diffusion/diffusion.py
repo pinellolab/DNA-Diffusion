@@ -1,7 +1,8 @@
+import pytorch_lightning as pl
 import torch
 import torch.nn as nn
-import pytorch_lightning as pl
 from hydra.utils import instantiate
+
 from utils.ema import EMA
 
 
@@ -87,10 +88,10 @@ class DiffusionModel(pl.LightningModule):
             self.eps_model_ema.update(self.model)
 
     def configure_optimizers(self):
-    #    optimizer = instantiate(
-    #        self.optimizer)
-    #   if self.lr_scheduler is not None:
-    #        scheduler = instantiate(
-    #            self.lr_scheduler, optimizer=optimizer)
-    #        return {"optimizer": optimizer, "lr_scheduler": scheduler}
-        return {"optimizer": self.optimizer, "lr_scheduler": self.scheduler} 
+        #    optimizer = instantiate(
+        #        self.optimizer)
+        #   if self.lr_scheduler is not None:
+        #        scheduler = instantiate(
+        #            self.lr_scheduler, optimizer=optimizer)
+        #        return {"optimizer": optimizer, "lr_scheduler": scheduler}
+        return {"optimizer": self.optimizer, "lr_scheduler": self.scheduler}

@@ -1,11 +1,13 @@
-import math
-import importlib
-import torch
-import random
-import os
-import numpy as np
 import argparse
+import importlib
+import math
+import os
+import random
 from typing import Any, Dict, Generator
+
+import numpy as np
+import torch
+
 
 def get_parser(**parser_kwargs):
     parser = argparse.ArgumentParser(**parser_kwargs)
@@ -20,6 +22,7 @@ def get_parser(**parser_kwargs):
         help="resume training from given folder or checkpoint",
     )
     return parser.parse_args()
+
 
 def seed_everything(seed: int) -> None:
     """ "
@@ -51,12 +54,12 @@ def extract(a, t, x_shape):
 
 
 def extract_data_from_batch():
-    return None 
+    return None
+
 
 def cycle(dl):
     while True:
-        for data in dl:
-            yield data
+        yield from dl
 
 
 def has_int_squareroot(num):
@@ -106,7 +109,9 @@ def right_pad_dims_to(x, t):
 def instantiate_from_config(config, **kwargs):
     if not "_target_" in config:
         raise KeyError("Expected key `_target_` to instantiate.")
-    return get_obj_from_str(config["_target_"])(**config.get("params", dict()), **kwargs)
+    return get_obj_from_str(config["_target_"])(
+        **config.get("params", dict()), **kwargs
+    )
 
 
 def get_obj_from_str(string, reload=False):
@@ -124,7 +129,8 @@ def mean_flat(tensor):
     """
     return tensor.mean(dim=list(range(1, len(tensor.shape))))
 
-def load_obj(obj_path: str, default_obj_path: str = '') -> Any:
+
+def load_obj(obj_path: str, default_obj_path: str = "") -> Any:
     """
     from
     https://github.com/Erlemar/pytorch_tempest/blob/3d593b91fc025a2d0bea2342478f811961acf79a/src/utils/technical_utils.py#L11
@@ -138,10 +144,10 @@ def load_obj(obj_path: str, default_obj_path: str = '') -> Any:
         Raises:
             AttributeError: When the object does not have the given named attribute.
     """
-    obj_path_list = obj_path.rsplit('.', 1)
+    obj_path_list = obj_path.rsplit(".", 1)
     obj_path = obj_path_list.pop(0) if len(obj_path_list) > 1 else default_obj_path
     obj_name = obj_path_list[0]
     module_obj = importlib.import_module(obj_path)
     if not hasattr(module_obj, obj_name):
-        raise AttributeError(f'Object `{obj_name}` cannot be loaded from `{obj_path}`.')
+        raise AttributeError(f"Object `{obj_name}` cannot be loaded from `{obj_path}`.")
     return getattr(module_obj, obj_name)

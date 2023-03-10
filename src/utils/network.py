@@ -1,14 +1,17 @@
-import torch
-from torch import nn, einsum
-import torch.nn.functional as F
 import math
+from typing import Callable, List, Optional
+
+import torch
+import torch.nn.functional as F
 from einops import rearrange
-from typing import Optional, List, Callable
+from torch import einsum, nn
 
 from utils.misc import default, exists
 
+
 def l2norm(t):
     return F.normalize(t, dim=-1)
+
 
 class Residual(nn.Module):
     def __init__(self, fn: Callable) -> None:
@@ -74,9 +77,9 @@ class LearnedSinusoidalPosEmb(nn.Module):
 
 class EmbedFC(nn.Module):
     def __init__(self, input_dim: int, emb_dim: int) -> None:
-        super(EmbedFC, self).__init__()
+        super().__init__()
         """
-        generic one layer FC NN for embedding things  
+        generic one layer FC NN for embedding things
         """
         self.input_dim = input_dim
         layers = [nn.Linear(input_dim, emb_dim), nn.GELU(), nn.Linear(emb_dim, emb_dim)]
@@ -127,7 +130,6 @@ class ResnetBlock(nn.Module):
         self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
 
     def forward(self, x: torch.Tensor, time_emb=None) -> torch.Tensor:
-
         scale_shift = None
         if exists(self.mlp) and exists(time_emb):
             time_emb = self.mlp(time_emb)
