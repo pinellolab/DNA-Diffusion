@@ -1,5 +1,6 @@
 ### file to include dataclass definition
 from dataclasses import dataclass
+
 from hydra.core.config_store import ConfigStore
 
 ### needs overhaul with new folder structure

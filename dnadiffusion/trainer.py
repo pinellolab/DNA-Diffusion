@@ -10,9 +10,12 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from dnadiffusion.data.dataloader import LoadingData, SequenceDataset
-from dnadiffusion.metrics.metrics import (compare_motif_list, generate_heatmap,
-                                          generate_similarity_using_train,
-                                          kl_comparison_generated_sequences)
+from dnadiffusion.metrics.metrics import (
+    compare_motif_list,
+    generate_heatmap,
+    generate_similarity_using_train,
+    kl_comparison_generated_sequences,
+)
 from dnadiffusion.models.diffusion import p_losses
 from dnadiffusion.models.networks import Unet_lucas
 from dnadiffusion.sample import sampling_to_metric

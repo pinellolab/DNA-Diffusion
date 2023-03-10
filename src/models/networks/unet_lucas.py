@@ -197,7 +197,7 @@ class UNetLucas(nn.Module):
     ) -> None:
         super().__init__()
 
-        channels = 1 
+        channels = 1
         self.channels = channels
 
         input_channels = channels

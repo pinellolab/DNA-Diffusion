@@ -1,11 +1,12 @@
 from typing import Any, Dict, Optional, Tuple
+
 import numpy as np
+import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
-import pytorch_lightning as pl
 
-#from torchvision.transforms import transforms
+# from torchvision.transforms import transforms
 
 
 class SequenceDatasetBase(Dataset):
@@ -17,18 +18,19 @@ class SequenceDatasetBase(Dataset):
         sequence_length (int): Length of the sequence
         sequence_encoding (str): Encoding scheme for the sequence ("polar", "onehot", "ordinal")
         sequence_transform (callable): Transformation for the sequence
-        cell_type_transform (callable): Transformation for the cell type 
+        cell_type_transform (callable): Transformation for the cell type
     """
+
     def __init__(
         self,
         df,
         sequence_length: int = 200,
         sequence_encoding: str = "polar",
         sequence_transform=None,
-        cell_type_transform=None
+        cell_type_transform=None,
     ) -> None:
         super().__init__()
-        self.data = df 
+        self.data = df
         self.sequence_length = sequence_length
         self.sequence_encoding = sequence_encoding
         self.sequence_transform = sequence_transform
@@ -98,8 +100,9 @@ class SequenceDatasetBase(Dataset):
             sequence_length=self.sequence_length,
             sequence_encoding=self.sequence_encoding,
             sequence_transform=self.sequence_transform,
-            cell_type_transform=self.cell_type_transform
+            cell_type_transform=self.cell_type_transform,
         )
+
 
 class SequenceDataModule(pl.LightningDataModule):
     """
@@ -114,50 +117,59 @@ class SequenceDataModule(pl.LightningDataModule):
         batch_size (int): Batch size
         num_workers (int): Number of workers
     """
+
     def __init__(
         self,
-        data_dir: str, 
+        data_dir: str,
         sequence_length: int = 200,
         sequence_encoding: str = "polar",
         sequence_transform=None,
         cell_type_transform=None,
         batch_size=None,
-        num_workers: int = 0
+        num_workers: int = 0,
     ) -> None:
         super().__init__()
         self.save_hyperparameters(logger=False)
-        #self.df_train, self.df_validation, self.df_test = Optional[Dataset] = None
+        # self.df_train, self.df_validation, self.df_test = Optional[Dataset] = None
         self.sequence_length = sequence_length
         self.sequence_encoding = sequence_encoding
         self.sequence_transform = sequence_transform
         self.cell_type_transform = cell_type_transform
         self.data_dir = data_dir
 
-    def setup(self, stage:str):
+    def setup(self, stage: str):
         # TODO: incorporate some extra information after the split (experiement -> split -> motif -> train/test assignment)
         # WARNING: have to be able to call loading_data on the main process of accelerate/fabric bc of gimme_motifs caching dependecies
         # Creating sequence datasets unless they exist already
-        self.df = pd.read_csv(data_path, sep="\t") 
+        self.df = pd.read_csv(data_path, sep="\t")
         if not self.data_train and not self.data_test and not self.data_test:
-            df_test = self.df[self.df.chr == 'chr1'].reset_index(drop=True)
-            df_validation = self.df[self.df.chr == 'chr2'].reset_index(drop=True)
-            df_train = self.df[~self.df.chr.isin(['chr1', 'chr2'])].reset_index(drop=True)
+            df_test = self.df[self.df.chr == "chr1"].reset_index(drop=True)
+            df_validation = self.df[self.df.chr == "chr2"].reset_index(drop=True)
+            df_train = self.df[~self.df.chr.isin(["chr1", "chr2"])].reset_index(
+                drop=True
+            )
 
         train_data = self.create_sequence_dataset(self.df_train)
         validation_data = self.create_sequence_dataset(self.df_validation)
         test_data = self.create_sequence_dataset(self.df_test)
-        
+
         # Creating sequence dataloaders
-        self.train_dl = self.create_dataloader(self.train_data, self.batch_size, self.num_workers)
-        self.validation_dl = self.create_dataloader(self.validation_data, self.batch_size, self.num_workers)
-        self.test_dl = self.create_dataloader(self.test_data, self.batch_size, self.num_workers)
+        self.train_dl = self.create_dataloader(
+            self.train_data, self.batch_size, self.num_workers
+        )
+        self.validation_dl = self.create_dataloader(
+            self.validation_data, self.batch_size, self.num_workers
+        )
+        self.test_dl = self.create_dataloader(
+            self.test_data, self.batch_size, self.num_workers
+        )
 
     def train_dataloader(self):
         return DataLoader(
             dataset=self.data_train,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
-            #pin_memory=self.hparams.pin_memory,
+            # pin_memory=self.hparams.pin_memory,
             shuffle=True,
         )
 
@@ -166,7 +178,7 @@ class SequenceDataModule(pl.LightningDataModule):
             dataset=self.data_val,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
-            #pin_memory=self.hparams.pin_memory,
+            # pin_memory=self.hparams.pin_memory,
             shuffle=False,
         )
 
@@ -175,7 +187,7 @@ class SequenceDataModule(pl.LightningDataModule):
             dataset=self.data_test,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
-            #pin_memory=self.hparams.pin_memory,
+            # pin_memory=self.hparams.pin_memory,
             shuffle=False,
         )
 
@@ -191,7 +203,6 @@ class SequenceDataModule(pl.LightningDataModule):
         """Things to do when loading checkpoint."""
         pass
 
+
 if __name__ == "__main__":
     _ = SequenceDataModule()
-
-
