@@ -1,14 +1,16 @@
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from Bio import SeqIO
 from scipy.special import rel_entr
+from sourmash import MinHash
 from tqdm import tqdm
+
 from dnadiffusion.sample import sampling_to_metric
 from dnadiffusion.utils.utils import one_hot_encode
-from collections import defaultdict
-from Bio import SeqIO
-from sourmash import MinHash
 
 
 def _create_pandas_series_from_a_fasta_file(fasta_file: str) -> pd.Series:
