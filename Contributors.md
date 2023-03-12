@@ -8,3 +8,5 @@
 **Simon Senan,** Master Data Science graduate student.
 **Aaron Wenteler,** PhD Student in AI and Drug Discovery, Queen Mary University of London.
 **Ihab Bendidi,** PhD Student in self supervised learning, Ecole Normale Supérieure de Paris.
+**Tin M. Tunjic,** Machine Learning Researcher, Celeris Therapeutics.
+**Noah Weber,** CTO, Celeris Therapeutics.
