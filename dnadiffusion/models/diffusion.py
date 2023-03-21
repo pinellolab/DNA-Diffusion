@@ -57,6 +57,7 @@ def p_losses(
     classes = classes * context_mask
     # nn.Embedding needs type to be long, multiplying with mask changes type
     classes = classes.type(torch.long)
+    t = t.to(device)
     predicted_noise = denoise_model(x_noisy, t, classes)
 
     if loss_type == "l1":

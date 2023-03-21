@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from accelerate import Accelerator
 
 from dnadiffusion.utils.utils import extract
 
@@ -69,11 +68,18 @@ def sampling_to_metric(
             "gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed"
         )
         df_results_syn = pd.read_csv(
-            "new_syn_results_motifs.bed", sep="\t", skiprows=5, header=None
+            "syn_results_motifs.bed", sep="\t", skiprows=5, header=None
         )
 
-    df_results_syn["motifs"] = df_results_syn[8].apply(
+    """df_results_syn["motifs"] = df_results_syn[8].apply(
         lambda x: x.split('motif_name "')[1].split('"')[0]
+    )
+    """
+    df_results_syn["motifs"] = (
+        df_results_syn[8]
+        .dropna()
+        .apply(lambda x: x.split(" ")[1].strip('"'))
+        .reset_index(drop=True)
     )
     df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
     df_motifs_count_syn = (
@@ -126,7 +132,6 @@ def p_sample_guided(
     sqrt_recip_alphas: torch.Tensor,
     posterior_variance: torch.Tensor,
     device: str,
-    accelerator: Accelerator,
     cond_weight: float = 0.0,
 ):
     # adapted from: https://openreview.net/pdf?id=qw8AKxfYbI
@@ -147,8 +152,8 @@ def p_sample_guided(
     # classifier free sampling interpolates between guided and non guided using `cond_weight`
     classes_masked = classes * context_mask
     classes_masked = classes_masked.type(torch.long)
-    if accelerator:
-        model = accelerator.unwrap_model(model)
+    # if accelerator:
+    # model = accelerator.unwrap_model(model)
     model.output_attention = True
     preds, cross_map_full = model(
         x_double, time=t_double, classes=classes_masked
@@ -187,7 +192,6 @@ def p_sample_loop(
     sqrt_one_minus_alphas_cumprod: torch.Tensor,
     sqrt_recip_alphas: torch.Tensor,
     posterior_variance: torch.Tensor,
-    accelerator: Accelerator,
     get_cross_map: bool = False,
 ):  # to accelerate add timesteps
     b = shape[0]
@@ -214,7 +218,6 @@ def p_sample_loop(
             sqrt_one_minus_alphas_cumprod=sqrt_one_minus_alphas_cumprod,
             sqrt_recip_alphas=sqrt_recip_alphas,
             posterior_variance=posterior_variance,
-            accelerator=accelerator,
         )  # to accelerate betas
     else:
         sampling_fn = partial(p_sample)
@@ -246,7 +249,6 @@ def sample(
     sqrt_one_minus_alphas_cumprod: torch.Tensor,
     sqrt_recip_alphas: torch.Tensor,
     posterior_variance: torch.Tensor,
-    accelerator: Accelerator,
     batch_size: int = 16,
     channels: int = 3,
     cond_weight: int = 0,
@@ -264,5 +266,4 @@ def sample(
         sqrt_one_minus_alphas_cumprod=sqrt_one_minus_alphas_cumprod,
         sqrt_recip_alphas=sqrt_recip_alphas,
         posterior_variance=posterior_variance,
-        accelerator=accelerator,
     )

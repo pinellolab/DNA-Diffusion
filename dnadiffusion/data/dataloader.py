@@ -1,11 +1,18 @@
 import os
+import pickle
 import random
 from typing import Any, Dict, List, Optional, Tuple
 
+import lightning as L
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import torch
 import torchvision.transforms as T
-from torch.utils.data import Dataset
+from lightning.pytorch.utilities import rank_zero_only
+from torch.utils.data import DataLoader, Dataset
+
+from dnadiffusion.utils.utils import one_hot_encode
 
 
 def motifs_from_fasta(fasta: str):
@@ -35,6 +42,7 @@ def motifs_from_fasta(fasta: str):
     return df_results_seq_guime_count_out
 
 
+@rank_zero_only
 class LoadingData:
     def __init__(
         self,
@@ -50,23 +58,21 @@ class LoadingData:
         self.sample_number = sample_number
         self.subset_components = subset_components
         self.change_comp_index = change_component_index
-        self.data = self.read_csv()
-        self.df_generate = self.experiment()
-        (
-            self.df_train_in,
-            self.df_test_in,
-            self.df_train_shuffled_in,
-        ) = self.create_train_groups()
         self.number_of_sequences_to_motif_creation = (
             number_of_sequences_to_motif_creation
         )
-        self.train = None
-        self.test = None
-        self.train_shuffle = None
-        self.get_motif()
 
-    def read_csv(self) -> pd.DataFrame:
-        df = pd.read_csv(self.csv, sep="\t")
+    def __call__(self) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+        df = self.read_csv(self.csv)
+        subset_df = self.experiment(df)
+        df_train, df_test, df_train_shuffled = self.create_train_groups(subset_df)
+        train, test, train_shuffle = self.get_motif(
+            df_train, df_test, df_train_shuffled
+        )
+        return train, test, train_shuffle
+
+    def read_csv(self, input_csv: str) -> pd.DataFrame:
+        df = pd.read_csv(input_csv, sep="\t")
         if self.change_comp_index:
             df["component"] = df["component"] + 1
 
@@ -74,12 +80,10 @@ class LoadingData:
             print(f"Limiting total sequences {self.limit_total_sequences}")
             df = df.sample(self.limit_total_sequences)
 
-        # change this in simon original table
-        df.columns = [c.replace("seqname", "chr") for c in df.columns.values]
         return df
 
-    def experiment(self) -> pd.DataFrame:
-        df_generate = self.data.copy()
+    def experiment(self, df: pd.DataFrame) -> pd.DataFrame:
+        df_generate = df
         if self.subset_components is not None and type(self.subset_components) == list:
             print(" or ".join([f"TAG == {c}" for c in self.subset_components]))
             df_generate = df_generate.query(
@@ -89,24 +93,32 @@ class LoadingData:
 
         return df_generate
 
-    def create_train_groups(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        # solve it inside the simon dataloader
-        df_sampled = self.df_generate.query('chr != "chr1" ')
-        df_train = df_sampled.query('chr != "chr2" ')
-        df_test = self.df_generate.query('chr == "chr1" ')
-        df_train_shuffled = df_sampled.query('chr == "chr2" ')
+    def create_train_groups(
+        self, df: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        df_test = df[df["chr"] == "chr1"].reset_index(drop=True)
+        df_train_shuffled = df[df["chr"] == "chr2"].reset_index(drop=True)
+        df_train = df_train = df[
+            (df["chr"] != "chr1") & (df["chr"] != "chr2")
+        ].reset_index(drop=True)
 
         df_train_shuffled["sequence"] = df_train_shuffled["sequence"].apply(
             lambda x: "".join(random.sample(list(x), len(x)))
         )
         return df_train, df_test, df_train_shuffled
 
-    def get_motif(self) -> None:
-        self.train = self.generate_motifs_and_fastas(self.df_train_in, "train")
-        self.test = self.generate_motifs_and_fastas(self.df_test_in, "test")
-        self.train_shuffle = self.generate_motifs_and_fastas(
-            self.df_train_shuffled_in, "train_shuffle"
+    def get_motif(
+        self,
+        df_train: pd.DataFrame,
+        df_test: pd.DataFrame,
+        df_train_shuffled: pd.DataFrame,
+    ) -> None:
+        train = self.generate_motifs_and_fastas(df_train, "train")
+        test = self.generate_motifs_and_fastas(df_test, "test")
+        train_shuffle = self.generate_motifs_and_fastas(
+            df_train_shuffled, "train_shuffle"
         )
+        return train, test, train_shuffle
 
     def generate_motifs_and_fastas(self, df: pd.DataFrame, name: str) -> Dict[str, Any]:
         """return fasta anem , and dict with components motifs"""
@@ -189,3 +201,108 @@ class SequenceDataset(Dataset):
         y = self.c[index]
 
         return x, y
+
+
+class LoadingDataModule(L.LightningDataModule):
+    def __init__(
+        self,
+        input_csv: str,
+        subset_components: list,
+        load_saved_data: bool = False,
+        sample_number: int = 0,
+        change_component_index: bool = True,
+        limit_total_sequences: Optional[int] = None,
+        number_of_sequences_to_motif_creation: Optional[int] = None,
+        transform: Optional[T.Compose] = None,
+        batch_size: int = 30,
+        shuffle: bool = True,
+        num_workers: int = 48,
+        pin_memory: bool = True,
+    ) -> None:
+        super().__init__()
+        self.input_csv = input_csv
+        self.subset_components = subset_components
+        self.load_saved_data = load_saved_data
+        self.sample_number = sample_number
+        self.change_component_index = change_component_index
+        self.limit_total_sequences = limit_total_sequences
+        self.number_of_sequences_to_motif_creation = (
+            number_of_sequences_to_motif_creation
+        )
+        self.transform = transform
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.num_workers = num_workers
+        self.pin_memory = pin_memory
+
+    def prepare_data(self) -> None:
+        if not self.load_saved_data:
+            print("Loading data")
+            encode_data = LoadingData(
+                self.input_csv,
+                self.subset_components,
+                self.sample_number,
+                self.change_component_index,
+                self.limit_total_sequences,
+                self.number_of_sequences_to_motif_creation,
+            )
+            train, test, train_shuffle = encode_data()
+            combined_dict = {
+                "train": train,
+                "test": test,
+                "train_shuffle": train_shuffle,
+            }
+            with open("dnadiffusion/data/encode_data.pkl", "wb") as f:
+                pickle.dump(combined_dict, f)
+
+    def setup(self, stage: Optional[str] = None) -> None:
+        with open("dnadiffusion/data/encode_data.pkl", "rb") as f:
+            encode_data = pickle.load(f)
+        train = encode_data["train"]
+        test = encode_data["test"]
+        train_shuffle = encode_data["train_shuffle"]
+
+        # Getting motif related data from encode_data
+        self.train_motifs = train["motifs"]
+        self.test_motifs = test["motifs"]
+        self.shuffle_motifs = train_shuffle["motifs"]
+
+        self.train_motifs_per_components_dict = train["motifs_per_components_dict"]
+        self.test_motifs_per_components_dict = test["motifs_per_components_dict"]
+        self.shuffle_motifs_per_components_dict = train_shuffle[
+            "motifs_per_components_dict"
+        ]
+
+        # Sequence related data
+        df = train["dataset"]
+        self.cell_components = df.sort_values("TAG")["TAG"].unique().tolist()
+        self.tag_to_numeric = {x: n + 1 for n, x in enumerate(df.TAG.unique())}
+        self.numeric_to_tag = {n + 1: x for n, x in enumerate(df.TAG.unique())}
+        self.cell_types = sorted(list(self.numeric_to_tag.keys()))
+        self.x_train_cell_type = torch.from_numpy(
+            df["TAG"].apply(lambda x: self.tag_to_numeric[x]).to_numpy()
+        )
+        nucleotides = ["A", "C", "G", "T"]
+        X_train = np.array(
+            [
+                one_hot_encode(x, nucleotides, 200)
+                for x in (df["sequence"])
+                if "N" not in x
+            ]
+        )
+        X_train = np.array([x.T.tolist() for x in X_train])
+        X_train[X_train == 0] = -1
+        self.X_train = X_train
+
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(
+            SequenceDataset(
+                self.X_train,
+                self.x_train_cell_type,
+                self.transform,
+            ),
+            batch_size=self.batch_size,
+            shuffle=self.shuffle,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
+        )

@@ -26,7 +26,7 @@ class EMA:
         return old * self.beta + (1 - self.beta) * new
 
     def step_ema(
-        self, ema_model: nn.Module, model: nn.Module, step_start_ema: int = 2000
+        self, ema_model: nn.Module, model: nn.Module, step_start_ema: int = 100
     ) -> None:
         if self.step < step_start_ema:
             self.reset_parameters(ema_model, model)
