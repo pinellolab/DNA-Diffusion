@@ -130,4 +130,9 @@ dmypy.json
 
 # Adding logs folder
 logs/*
-!logs/.gitkeep
+
+# Hydra outputs folder
+outputs/*
+
+# Checkpoints folder
+dnadiffusion/checkpoints/*
