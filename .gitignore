@@ -136,3 +136,6 @@ outputs/*
 
 # Checkpoints folder
 dnadiffusion/checkpoints/*
+
+# Wandb folder
+wandb/*
