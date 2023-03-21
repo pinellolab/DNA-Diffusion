@@ -94,8 +94,6 @@ LightningTrainer = builds(
     callbacks=[checkpoint],
 )
 
-# Profiler
-
 # Registering the builds
 cs = ConfigStore.instance()
 
