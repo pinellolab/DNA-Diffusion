@@ -1,6 +1,6 @@
 # Understanding the code of life: generative models of regulatory DNA sequences based on diffusion models.
 
-<img src='https://raw.githubusercontent.com/pinellolab/DNA-Diffusion/f028558816fe5832097c270f424e3b3c3db48d8d/diff_first.gif'> </img>
+<img src='https://github.com/pinellolab/DNA-Diffusion/raw/1413ec9c974d54a1e2885a250540dc89955d10c0/docs/images/diff_first.gif'> </img>
 
 ## Abstract
 
