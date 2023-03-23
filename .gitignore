@@ -1,3 +1,20 @@
+# Custom
+
+.hatch/
+.ruff_cache/
+
+# logs folder
+logs/*
+
+# Hydra outputs folder
+outputs/*
+
+# Checkpoints folder
+dnadiffusion/checkpoints/*
+
+# Wandb folder
+wandb/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -127,15 +144,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Adding logs folder
-logs/*
-
-# Hydra outputs folder
-outputs/*
-
-# Checkpoints folder
-dnadiffusion/checkpoints/*
-
-# Wandb folder
-wandb/*

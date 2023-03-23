@@ -1,0 +1,63 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: DNA-Diffusion
+message: >-
+    If you use this software, please cite it using the
+    metadata from this file.
+type: software
+authors:
+    - given-names: Matei
+      family-names: Bejan
+    - given-names: Ihab
+      family-names: Bendidi
+      affiliation: Ecole Normale Supérieure de Paris
+    - given-names: César
+      family-names: Miguel Valdez Córdova
+      affiliation: JKU Linz
+    - given-names: Lucas
+      family-names: Ferreira
+      affiliation: Harvard Medical School/MGH
+    - given-names: Sameer
+      family-names: Gabbita
+      affiliation: >-
+          Thomas Jefferson High School for Science and
+          Technology
+    - given-names: Jiecong
+      family-names: Lin
+      affiliation: Harvard Medical School/MGH
+    - given-names: Wouter
+      family-names: Meuleman
+      affiliation: Altius Institute for Biomedical Sciences
+    - given-names: Zach
+      family-names: Nussbaum
+    - given-names: Luca
+      family-names: Pinello
+      affiliation: Harvard Medical School/MGH
+    - given-names: Simon
+      family-names: Senan
+    - given-names: Cameron
+      family-names: Smith
+      affiliation: Harvard Medical School/MGH
+    - given-names: Tin
+      family-names: Tunjic
+      name-particle: M.
+      affiliation: Celeris Therapeutics
+    - given-names: Noah
+      family-names: Weber
+      affiliation: Celeris Therapeutics
+    - given-names: Aaron
+      family-names: Wenteler
+      affiliation: Queen Mary University of London
+repository-code: "https://github.com/pinellolab/DNA-Diffusion"
+url: "https://pinellolab.github.io/DNA-Diffusion"
+abstract: >-
+    Generative modeling of regulatory DNA sequences with
+    diffusion probabilistic models.
+keywords:
+    - diffusion probabilistic models
+    - regulatory genomics
+license: MIT
+commit: 29bcd8fdc8a629b92714832823ff19c3990bc5f3
+date-released: "2023-03-22"

@@ -1,5 +1,5 @@
 wandb:
-  _target_: pytorch_lightning.loggers.wandb.WandbLogger
-  save_dir: ""
-  project: ""
-  log_model: False
+    _target_: pytorch_lightning.loggers.wandb.WandbLogger
+    save_dir: ""
+    project: ""
+    log_model: False

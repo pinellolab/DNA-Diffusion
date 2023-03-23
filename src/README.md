@@ -31,10 +31,10 @@ Every parameter listed under defaults is defined within a config listed above.
 
 ```yaml
 defaults:
-  - model: unet_conditional
-  - dataset: sequence
-  - logger: wandb
-  - callbacks: default
+    - model: unet_conditional
+    - dataset: sequence
+    - logger: wandb
+    - callbacks: default
 
 ckpt: null # path to checkpoint
 seed: 42
@@ -89,8 +89,8 @@ https://github.com/facebookresearch/hydra/blob/main/examples/jupyter_notebooks/c
 
 ## Still To Do:
 
-- Alter training script to accommodate all logs we wish to track using wandb
-- Decide on default hyperparameters in train.yaml
-- Further alter config folder structure to best suit our training and testing practices
-- Define default paths for dataset within path config file so that directory can be referenced across various other configs
-- Hydra config logs currently output in src directory, creating the following folder structure ./src/outputs/YYYY-MM-DD/MM-HH-SS. If we wish to alter this it can be done in a hydra config file.
+-   Alter training script to accommodate all logs we wish to track using wandb
+-   Decide on default hyperparameters in train.yaml
+-   Further alter config folder structure to best suit our training and testing practices
+-   Define default paths for dataset within path config file so that directory can be referenced across various other configs
+-   Hydra config logs currently output in src directory, creating the following folder structure ./src/outputs/YYYY-MM-DD/MM-HH-SS. If we wish to alter this it can be done in a hydra config file.

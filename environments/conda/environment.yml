@@ -1,0 +1,30 @@
+name: dnadiffusion
+channels:
+    - nodefaults
+    - pytorch
+    - nvidia
+    - conda-forge
+    - bioconda
+dependencies:
+    # - pytorch-gpu=1.13.1 # conda-forge < pytorch + nvidia
+    # - cudatoolkit=11.8 # conda-forge < pytorch + nvidia
+    # - nccl # conda-forge < pytorch + nvidia
+    - python=3.10
+    - pytorch=2.0.0
+    - pytorch-cuda=11.8
+    - torchvision
+    - accelerate
+    - jupyterlab
+    - matplotlib
+    - pandas
+    - seaborn
+    - einops
+    - wandb
+    - genomepy
+    - pytorch-lightning
+    - hydra-core
+    - sourmash-minimal
+    - pip
+    - pip:
+          - gimmemotifs
+          - memory-efficient-attention-pytorch
