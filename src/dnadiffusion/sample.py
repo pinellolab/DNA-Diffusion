@@ -5,7 +5,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
+from torch import nn
 
 from dnadiffusion.utils.utils import extract
 
@@ -57,34 +57,23 @@ def sampling_to_metric(
         os.system(
             f"gimme scan synthetic_motifs_{current_cell}.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs_{current_cell}.bed"
         )
-        df_results_syn = pd.read_csv(
-            f"syn_results_motifs_{current_cell}.bed", sep="\t", skiprows=5, header=None
-        )
+        df_results_syn = pd.read_csv(f"syn_results_motifs_{current_cell}.bed", sep="\t", skiprows=5, header=None)
     else:
         save_motifs_syn = open("synthetic_motifs.fasta", "w")
         save_motifs_syn.write("\n".join(final_sequences))
         save_motifs_syn.close()
-        os.system(
-            "gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed"
-        )
-        df_results_syn = pd.read_csv(
-            "syn_results_motifs.bed", sep="\t", skiprows=5, header=None
-        )
+        os.system("gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed")
+        df_results_syn = pd.read_csv("syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
 
     """df_results_syn["motifs"] = df_results_syn[8].apply(
         lambda x: x.split('motif_name "')[1].split('"')[0]
     )
     """
     df_results_syn["motifs"] = (
-        df_results_syn[8]
-        .dropna()
-        .apply(lambda x: x.split(" ")[1].strip('"'))
-        .reset_index(drop=True)
+        df_results_syn[8].dropna().apply(lambda x: x.split(" ")[1].strip('"')).reset_index(drop=True)
     )
     df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
-    df_motifs_count_syn = (
-        df_results_syn[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
-    )
+    df_motifs_count_syn = df_results_syn[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
 
     return df_motifs_count_syn
 
@@ -106,9 +95,7 @@ def p_sample(
 
     # Equation 11 in the paper
     # Use our model (noise predictor) to predict the mean
-    model_mean = sqrt_recip_alphas_t * (
-        x - betas_t * model(x, time=t) / sqrt_one_minus_alphas_cumprod_t
-    )
+    model_mean = sqrt_recip_alphas_t * (x - betas_t * model(x, time=t) / sqrt_one_minus_alphas_cumprod_t)
 
     if t_index == 0:
         return model_mean
@@ -142,12 +129,8 @@ def p_sample_guided(
     betas = betas.to(device)
     sqrt_one_minus_alphas_cumprod = sqrt_one_minus_alphas_cumprod.to(device)
     betas_t = extract(betas, t_double, x_double.shape, device=device)
-    sqrt_one_minus_alphas_cumprod_t = extract(
-        sqrt_one_minus_alphas_cumprod, t_double, x_double.shape, device=device
-    )
-    sqrt_recip_alphas_t = extract(
-        sqrt_recip_alphas, t_double, x_double.shape, device=device
-    )
+    sqrt_one_minus_alphas_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t_double, x_double.shape, device=device)
+    sqrt_recip_alphas_t = extract(sqrt_recip_alphas, t_double, x_double.shape, device=device)
 
     # classifier free sampling interpolates between guided and non guided using `cond_weight`
     classes_masked = classes * context_mask
@@ -155,9 +138,7 @@ def p_sample_guided(
     # if accelerator:
     # model = accelerator.unwrap_model(model)
     model.output_attention = True
-    preds, cross_map_full = model(
-        x_double, time=t_double, classes=classes_masked
-    )  # I added cross_map
+    preds, cross_map_full = model(x_double, time=t_double, classes=classes_masked)  # I added cross_map
     model.output_attention = False
     cross_map = cross_map_full[:batch_size]
     eps1 = (1 + cond_weight) * preds[:batch_size]

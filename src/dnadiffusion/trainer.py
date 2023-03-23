@@ -55,15 +55,11 @@ class Trainer:
         self.image_size = image_size
 
         ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-        self.accelerator = Accelerator(
-            kwargs_handlers=[ddp_kwargs], split_batches=True, log_with=["wandb"]
-        )
+        self.accelerator = Accelerator(kwargs_handlers=[ddp_kwargs], split_batches=True, log_with=["wandb"])
         self.device = self.accelerator.device
 
         if load_saved_data:
-            encode_data = np.load(
-                "dnadiffusion/data/encode_data.npy", allow_pickle=True
-            ).item()
+            encode_data = np.load("dnadiffusion/data/encode_data.npy", allow_pickle=True).item()
         else:
             encode_data = LoadingData(
                 data_path,
@@ -85,33 +81,21 @@ class Trainer:
 
         self.final_comp_values_train = encode_data.train["motifs_per_components_dict"]
         self.final_comp_values_test = encode_data.test["motifs_per_components_dict"]
-        self.final_comp_values_shuffle = encode_data.train_shuffle[
-            "motifs_per_components_dict"
-        ]
+        self.final_comp_values_shuffle = encode_data.train_shuffle["motifs_per_components_dict"]
 
         # Dataset used for sequences
         df = encode_data.train["dataset"]
         self.cell_components = df.sort_values("TAG")["TAG"].unique().tolist()
-        self.conditional_tag_to_numeric = {
-            x: n + 1 for n, x in enumerate(df.TAG.unique())
-        }
-        self.conditional_numeric_to_tag = {
-            n + 1: x for n, x in enumerate(df.TAG.unique())
-        }
-        self.cell_types = sorted(list(self.conditional_numeric_to_tag.keys()))
+        self.conditional_tag_to_numeric = {x: n + 1 for n, x in enumerate(df.TAG.unique())}
+        self.conditional_numeric_to_tag = {n + 1: x for n, x in enumerate(df.TAG.unique())}
+        self.cell_types = sorted(self.conditional_numeric_to_tag.keys())
         self.x_train_cell_type = torch.from_numpy(
             df["TAG"].apply(lambda x: self.conditional_tag_to_numeric[x]).to_numpy()
         )
 
         # Creating X_train for sequence similarity
         dna_alphabet = ["A", "C", "T", "G"]
-        x_train_seq = np.array(
-            [
-                one_hot_encode(x, dna_alphabet, 200)
-                for x in tqdm(df["sequence"])
-                if "N" not in x
-            ]
-        )
+        x_train_seq = np.array([one_hot_encode(x, dna_alphabet, 200) for x in tqdm(df["sequence"]) if "N" not in x])
         X_train = x_train_seq
         X_train = np.array([x.T.tolist() for x in X_train])
         X_train[X_train == 0] = -1
@@ -119,17 +103,11 @@ class Trainer:
 
         # Sequence dataset loading
         tf = T.Compose([T.ToTensor()])
-        seq_dataset = SequenceDataset(
-            seqs=X_train, c=self.x_train_cell_type, transform=tf
-        )
-        train_dl = DataLoader(
-            seq_dataset, batch_size, shuffle=True, num_workers=48, pin_memory=True
-        )
+        seq_dataset = SequenceDataset(seqs=X_train, c=self.x_train_cell_type, transform=tf)
+        train_dl = DataLoader(seq_dataset, batch_size, shuffle=True, num_workers=48, pin_memory=True)
 
         # Preparing model/optimizer/EMA/dataloader
-        self.model = Unet_lucas(
-            dim=200, channels=1, dim_mults=(1, 2, 4), resnet_block_groups=4
-        )
+        self.model = Unet_lucas(dim=200, channels=1, dim_mults=(1, 2, 4), resnet_block_groups=4)
         self.optimizer = Adam(self.model.parameters(), lr=1e-4)
         if self.accelerator.is_main_process:
             self.ema = EMA(0.995)
@@ -138,9 +116,7 @@ class Trainer:
         self.start_epoch = 0
         self.train_kl, self.test_kl, self.shuffle_kl = 1, 1, 1
         self.seq_similarity = 0.38
-        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(
-            self.model, self.optimizer, train_dl
-        )
+        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(self.model, self.optimizer, train_dl)
 
     # Saving model
     def save(self, epoch, results_path):
@@ -179,9 +155,7 @@ class Trainer:
         print("saving")
 
         # Continue training
-        self.model, self.optimizer = self.accelerator.prepare(
-            self.model, self.optimizer
-        )
+        self.model, self.optimizer = self.accelerator.prepare(self.model, self.optimizer)
         self.train()
 
     def create_samples(self, model_path, model_name):
@@ -198,9 +172,7 @@ class Trainer:
             sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
             sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
             # calculations for posterior q(x_{t-1} | x_t, x_0)
-            posterior_variance = (
-                betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
-            )
+            posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
 
             # Recreating model
             checkpoint_dict = torch.load(model_path + model_name)
@@ -230,9 +202,7 @@ class Trainer:
                 conditional_numeric_to_tag=self.conditional_numeric_to_tag,
                 number_of_sequences_sample_per_cell=self.num_sampling_to_compare_cells,
             )
-            generate_heatmap(
-                heat_new_sequences_train, "DNADIFFUSION", "Train", self.cell_components
-            )
+            generate_heatmap(heat_new_sequences_train, "DNADIFFUSION", "Train", self.cell_components)
 
             heat_new_sequences_test = kl_comparison_generated_sequences(
                 cell_num_list,
@@ -242,9 +212,7 @@ class Trainer:
                 number_of_sequences_sample_per_cell=self.num_sampling_to_compare_cells,
             )
 
-            generate_heatmap(
-                heat_new_sequences_test, "DNADIFFUSION", "Test", self.cell_components
-            )
+            generate_heatmap(heat_new_sequences_test, "DNADIFFUSION", "Test", self.cell_components)
 
             heat_new_sequences_shuffle = kl_comparison_generated_sequences(
                 cell_num_list,
@@ -273,9 +241,7 @@ class Trainer:
         sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
         sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
         # calculations for posterior q(x_{t-1} | x_t, x_0)
-        posterior_variance = (
-            betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
-        )
+        posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
 
         """if self.accelerator.is_main_process:
             self.accelerator.init_trackers(
@@ -313,9 +279,7 @@ class Trainer:
 
                 self.accelerator.wait_for_everyone()
                 if self.accelerator.is_main_process:
-                    self.ema.step_ema(
-                        self.ema_model, self.accelerator.unwrap_model(self.model)
-                    )
+                    self.ema.step_ema(self.ema_model, self.accelerator.unwrap_model(self.model))
 
             print(f"\nEpoch {epoch} Loss:", loss.item())
             if (epoch % self.epochs_loss_show) == 0:
@@ -332,11 +296,7 @@ class Trainer:
                     #)
                     print(f" Epoch {epoch} Loss:", loss.item())
                     """
-            if (
-                epoch != 0
-                and epoch % self.save_and_sample_every == 0
-                and self.accelerator.is_main_process
-            ):
+            if epoch != 0 and epoch % self.save_and_sample_every == 0 and self.accelerator.is_main_process:
                 self.model.eval()
                 additional_variables = {
                     "model": self.model,
@@ -356,22 +316,14 @@ class Trainer:
                     int(self.num_sampling_to_compare_cells / 10),
                 )
                 self.seq_similarity = generate_similarity_using_train(self.X_train)
-                self.train_kl = compare_motif_list(
-                    synt_df, self.df_results_seq_guime_count_train
-                )
-                self.test_kl = compare_motif_list(
-                    synt_df, self.df_results_seq_guime_count_test
-                )
-                self.shuffle_kl = compare_motif_list(
-                    synt_df, self.df_results_seq_guime_count_shuffle
-                )
+                self.train_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_train)
+                self.test_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_test)
+                self.shuffle_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_shuffle)
                 print("Similarity", self.seq_similarity, "Similarity")
                 print("KL_TRAIN", self.train_kl, "KL")
                 print("KL_TEST", self.test_kl, "KL")
                 print("KL_SHUFFLE", self.shuffle_kl, "KL")
 
             if epoch != 0 and epoch % 500 == 0 and self.accelerator.is_main_process:
-                model_path = (
-                    "./models/" + f"epoch_{str(epoch)}_" + self.model_name + ".pt"
-                )
+                model_path = f"./models/epoch_{str(epoch)}_{self.model_name}.pt"
                 self.save(epoch, model_path)

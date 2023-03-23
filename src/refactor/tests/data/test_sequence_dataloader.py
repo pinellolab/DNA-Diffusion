@@ -141,9 +141,7 @@ def test_train_val_test_data_split():
     dummy_train_data_path = "_tmp_seq_dataloader_train_data.csv"
     dummy_val_data_path = "_tmp_seq_dataloader_val_data.csv"
     dummy_test_data_path = "_tmp_seq_dataloader_test_data.csv"
-    prepare_high_diversity_datasets(
-        dummy_train_data_path, dummy_val_data_path, dummy_test_data_path
-    )
+    prepare_high_diversity_datasets(dummy_train_data_path, dummy_val_data_path, dummy_test_data_path)
 
     # check loading of only a single data set
     datamodule = SequenceDataModule(

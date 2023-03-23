@@ -11,9 +11,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as T
+import wandb
 from accelerate import Accelerator, DistributedDataParallelKwargs
 from accelerate.utils import set_seed
 from einops import rearrange
@@ -23,8 +23,6 @@ from torch import einsum, nn
 from torch.optim import Adam
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
-
-import wandb
 
 
 # Helper Modules
@@ -93,9 +91,7 @@ class EMA:  # https://github.com/dome272/Diffusion-Models-pytorch/blob/main/modu
         self.step = 0
 
     def update_model_average(self, ma_model, current_model):
-        for current_params, ma_params in zip(
-            current_model.parameters(), ma_model.parameters()
-        ):
+        for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
             old_weight, up_weight = ma_params.data, current_params.data
             ma_params.data = self.update_average(old_weight, up_weight)
 
@@ -182,27 +178,17 @@ def sampling_to_metric(
         os.system(
             f"gimme scan synthetic_motifs_{current_cell}.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs_{current_cell}.bed"
         )
-        df_results_syn = pd.read_csv(
-            f"syn_results_motifs_{current_cell}.bed", sep="\t", skiprows=5, header=None
-        )
+        df_results_syn = pd.read_csv(f"syn_results_motifs_{current_cell}.bed", sep="\t", skiprows=5, header=None)
     else:
         save_motifs_syn = open("synthetic_motifs.fasta", "w")
         save_motifs_syn.write("\n".join(final_sequences))
         save_motifs_syn.close()
-        os.system(
-            "gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed"
-        )
-        df_results_syn = pd.read_csv(
-            "new_syn_results_motifs.bed", sep="\t", skiprows=5, header=None
-        )
+        os.system("gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed")
+        df_results_syn = pd.read_csv("new_syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
 
-    df_results_syn["motifs"] = df_results_syn[8].apply(
-        lambda x: x.split('motif_name "')[1].split('"')[0]
-    )
+    df_results_syn["motifs"] = df_results_syn[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
     df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
-    df_motifs_count_syn = (
-        df_results_syn[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
-    )
+    df_motifs_count_syn = df_results_syn[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
     # plt.rcParams["figure.figsize"] = (30,2)
     # df_motifs_count_syn.sort_values(0, ascending=False).head(50)[0].plot.bar()
     # plt.show()
@@ -212,9 +198,7 @@ def sampling_to_metric(
 
 def compare_motif_list(df_motifs_a, df_motifs_b):
     # Using KL divergence to compare motifs lists distribution
-    set_all_mot = set(
-        df_motifs_a.index.values.tolist() + df_motifs_b.index.values.tolist()
-    )
+    set_all_mot = set(df_motifs_a.index.values.tolist() + df_motifs_b.index.values.tolist())
     create_new_matrix = []
     for x in set_all_mot:
         list_in = []
@@ -243,9 +227,7 @@ def compare_motif_list(df_motifs_a, df_motifs_b):
     plt.title('Motifs Probs')
     plt.show()
     """
-    kl_pq = rel_entr(
-        df_motifs["Diffusion_seqs"].values, df_motifs["Training_seqs"].values
-    )
+    kl_pq = rel_entr(df_motifs["Diffusion_seqs"].values, df_motifs["Training_seqs"].values)
     return np.sum(kl_pq)
 
 
@@ -296,9 +278,7 @@ def generate_heatmap(df_heat, x_label, y_label):
     df_plot.columns = [x.split("_")[0] for x in cell_components]
     df_plot.index = df_plot.columns
     sns.heatmap(df_plot, cmap="Blues_r", annot=True, lw=0.1, vmax=1, vmin=0)
-    plt.title(
-        f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities"
-    )
+    plt.title(f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities")
     plt.xlabel(f"{x_label} Sequences  \n(motifs dist)")
     plt.ylabel(f"{y_label} \n (motifs dist)")
     plt.grid(False)
@@ -309,11 +289,7 @@ def generate_heatmap(df_heat, x_label, y_label):
 def generate_similarity_metric():
     """Capture the syn_motifs.fasta and compare with the  dataset motifs"""
     seqs_file = open("synthetic_motifs.fasta").readlines()
-    seqs_to_hotencoder = [
-        one_hot_encode(s.replace("\n", ""), nucleotides, 200).T
-        for s in seqs_file
-        if ">" not in s
-    ]
+    seqs_to_hotencoder = [one_hot_encode(s.replace("\n", ""), nucleotides, 200).T for s in seqs_file if ">" not in s]
 
     return seqs_to_hotencoder
 
@@ -323,9 +299,7 @@ def get_best_match(db, x_seq):  # transforming in a function
 
 
 def calculate_mean_similarity(database, input_query_seqs, seq_len=200):
-    final_base_max_match = np.mean(
-        [get_best_match(database, x) for x in tqdm(input_query_seqs)]
-    )
+    final_base_max_match = np.mean([get_best_match(database, x) for x in tqdm(input_query_seqs)])
     return final_base_max_match / seq_len
 
 
@@ -345,9 +319,7 @@ def p_sample(model, x, t, t_index):
 
     # Equation 11 in the paper
     # Use our model (noise predictor) to predict the mean
-    model_mean = sqrt_recip_alphas_t * (
-        x - betas_t * model(x, time=t) / sqrt_one_minus_alphas_cumprod_t
-    )
+    model_mean = sqrt_recip_alphas_t * (x - betas_t * model(x, time=t) / sqrt_one_minus_alphas_cumprod_t)
 
     if t_index == 0:
         return model_mean
@@ -382,12 +354,8 @@ def p_sample_guided(
     betas = betas.to(device)
     sqrt_one_minus_alphas_cumprod = sqrt_one_minus_alphas_cumprod.to(device)
     betas_t = extract(betas, t_double, x_double.shape, device=device)
-    sqrt_one_minus_alphas_cumprod_t = extract(
-        sqrt_one_minus_alphas_cumprod, t_double, x_double.shape, device=device
-    )
-    sqrt_recip_alphas_t = extract(
-        sqrt_recip_alphas, t_double, x_double.shape, device=device
-    )
+    sqrt_one_minus_alphas_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t_double, x_double.shape, device=device)
+    sqrt_recip_alphas_t = extract(sqrt_recip_alphas, t_double, x_double.shape, device=device)
 
     # classifier free sampling interpolates between guided and non guided using `cond_weight`
     classes_masked = classes * context_mask
@@ -396,9 +364,7 @@ def p_sample_guided(
         model = accelerator.unwrap_model(model)
     model.output_attention = True
     show_out_test = model(x_double, time=t_double, classes=classes_masked)
-    preds, cross_map_full = model(
-        x_double, time=t_double, classes=classes_masked
-    )  # I added cross_map
+    preds, cross_map_full = model(x_double, time=t_double, classes=classes_masked)  # I added cross_map
     model.output_attention = False
     cross_map = cross_map_full[:batch_size]
     eps1 = (1 + cond_weight) * preds[:batch_size]
@@ -527,9 +493,7 @@ def q_sample(
         noise = torch.randn_like(x_start)
 
     sqrt_alphas_cumprod_t = extract(sqrt_alphas_cumprod, t, x_start.shape).to(device)
-    sqrt_one_minus_alphas_cumprod_t = extract(
-        sqrt_one_minus_alphas_cumprod, t, x_start.shape
-    ).to(device)
+    sqrt_one_minus_alphas_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t, x_start.shape).to(device)
 
     return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
@@ -557,9 +521,7 @@ def p_losses(
         device=device,
     )  # this is the auto generated noise given t and Noise
 
-    context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1 - p_uncond)).to(
-        device
-    )
+    context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1 - p_uncond)).to(device)
 
     # mask for unconditinal guidance
     classes = classes * context_mask
@@ -761,11 +723,7 @@ class Block(nn.Module):
 class ResnetBlock(nn.Module):
     def __init__(self, dim, dim_out, *, time_emb_dim=None, groups=8):
         super().__init__()
-        self.mlp = (
-            nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))
-            if exists(time_emb_dim)
-            else None
-        )
+        self.mlp = nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2)) if exists(time_emb_dim) else None
 
         self.block1 = Block(dim, dim_out, groups=groups)
         self.block2 = Block(dim_out, dim_out, groups=groups)
@@ -786,9 +744,7 @@ class ResnetBlock(nn.Module):
 
 
 class ResnetBlockClassConditioned(ResnetBlock):
-    def __init__(
-        self, dim, dim_out, *, num_classes, class_embed_dim, time_emb_dim=None, groups=8
-    ):
+    def __init__(self, dim, dim_out, *, num_classes, class_embed_dim, time_emb_dim=None, groups=8):
         super().__init__(
             dim=dim + class_embed_dim,
             dim_out=dim_out,
@@ -818,9 +774,7 @@ class LinearAttention(nn.Module):
     def forward(self, x):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
+        q, k, v = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv)
 
         q = q.softmax(dim=-2)
         k = k.softmax(dim=-1)
@@ -847,9 +801,7 @@ class Attention(nn.Module):
     def forward(self, x):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
+        q, k, v = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv)
 
         q, k = map(l2norm, (q, k))
 
@@ -876,13 +828,9 @@ class CrossAttention_lucas(nn.Module):
         qkv_x = self.to_qkv(x).chunk(3, dim=1)
         qkv_y = self.to_qkv(y).chunk(3, dim=1)
 
-        q_x, k_x, v_x = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv_x
-        )
+        q_x, k_x, v_x = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv_x)
 
-        q_y, k_y, v_y = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv_y
-        )
+        q_y, k_y, v_y = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv_y)
 
         q, k = map(l2norm, (q_x, k_y))
 
@@ -942,7 +890,7 @@ class Unet_lucas(nn.Module):
 
         init_dim = default(init_dim, dim)
         self.init_conv = nn.Conv2d(input_channels, init_dim, (7, 7), padding=3)
-        dims = [init_dim, *map(lambda m: dim * m, dim_mults)]
+        dims = [init_dim, *(dim * m for m in dim_mults)]
 
         in_out = list(zip(dims[:-1], dims[1:]))
         block_klass = partial(ResnetBlock, groups=resnet_block_groups)
@@ -977,9 +925,7 @@ class Unet_lucas(nn.Module):
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_in, LinearAttention(dim_in))),
-                        Downsample(dim_in, dim_out)
-                        if not is_last
-                        else nn.Conv2d(dim_in, dim_out, 3, padding=1),
+                        Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding=1),
                     ]
                 )
             )
@@ -997,9 +943,7 @@ class Unet_lucas(nn.Module):
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_out, LinearAttention(dim_out))),
-                        Upsample(dim_out, dim_in)
-                        if not is_last
-                        else nn.Conv2d(dim_out, dim_in, 3, padding=1),
+                        Upsample(dim_out, dim_in) if not is_last else nn.Conv2d(dim_out, dim_in, 3, padding=1),
                     ]
                 )
             )
@@ -1078,28 +1022,16 @@ class Unet_lucas(nn.Module):
 # Loading data and Motifs
 def motifs_from_fasta(fasta, generate_heatmap=True):
     print("Computing Motifs....")
-    os.system(
-        f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed"
-    )
-    df_results_seq_guime = pd.read_csv(
-        "train_results_motifs.bed", sep="\t", skiprows=5, header=None
-    )
-    df_results_seq_guime["motifs"] = df_results_seq_guime[8].apply(
-        lambda x: x.split('motif_name "')[1].split('"')[0]
-    )
+    os.system(f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed")
+    df_results_seq_guime = pd.read_csv("train_results_motifs.bed", sep="\t", skiprows=5, header=None)
+    df_results_seq_guime["motifs"] = df_results_seq_guime[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
     # if generate_heatmap:
     #     generate_heatmap_motifs(df_results_seq_guime)
 
-    df_results_seq_guime[0] = df_results_seq_guime[0].apply(
-        lambda x: "_".join(x.split("_")[:-1])
-    )
-    df_results_seq_guime_count_out = (
-        df_results_seq_guime[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
-    )
+    df_results_seq_guime[0] = df_results_seq_guime[0].apply(lambda x: "_".join(x.split("_")[:-1]))
+    df_results_seq_guime_count_out = df_results_seq_guime[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
     plt.rcParams["figure.figsize"] = (30, 2)
-    df_results_seq_guime_count_out.sort_values(0, ascending=False).head(50)[
-        0
-    ].plot.bar()
+    df_results_seq_guime_count_out.sort_values(0, ascending=False).head(50)[0].plot.bar()
     plt.title("Top 50 MOTIFS on component 0 ")
     plt.show()
     return df_results_seq_guime_count_out
@@ -1135,9 +1067,7 @@ class LoadingData:
             self.df_test_in,
             self.df_train_shuffled_in,
         ) = self.create_train_groups()
-        self.number_of_sequences_to_motif_creation = (
-            number_of_sequences_to_motif_creation
-        )
+        self.number_of_sequences_to_motif_creation = number_of_sequences_to_motif_creation
         self.train = None
         self.test = None
         self.train_shuffle = None
@@ -1152,27 +1082,22 @@ class LoadingData:
             print(f"Limiting total sequences {self.limit_total_sequences}")
             df = df.sample(self.limit_total_sequences)
 
-        df.columns = [
-            c.replace("seqname", "chr") for c in df.columns.values
-        ]  # change this in simon original table
+        df.columns = [c.replace("seqname", "chr") for c in df.columns.values]  # change this in simon original table
         return df
 
     def experiment(self):
         df_generate = self.data.copy()
         print(df_generate.head().columns)
-        print([c for c in self.subset_components])
+        print(list(self.subset_components))
         if self.subset_components != None and type(self.subset_components) == list:
             print(" or ".join([f"TAG == {c}" for c in self.subset_components]))
-            df_generate = df_generate.query(
-                " or ".join([f'TAG == "{c}" ' for c in self.subset_components])
-            ).copy()
+            df_generate = df_generate.query(" or ".join([f'TAG == "{c}" ' for c in self.subset_components])).copy()
             print("Subseting...")
 
         if self.plot:
             print(df_generate.head())
             (
-                df_generate.groupby("TAG").count()["sequence"]
-                / df_generate.groupby("TAG").count()["sequence"].sum()
+                df_generate.groupby("TAG").count()["sequence"] / df_generate.groupby("TAG").count()["sequence"].sum()
             ).plot.bar()
             plt.title("Component % on Training Sample")
             plt.show()
@@ -1194,17 +1119,13 @@ class LoadingData:
     def get_motif(self):
         self.train = self.generate_motifs_and_fastas(self.df_train_in, "train")
         self.test = self.generate_motifs_and_fastas(self.df_test_in, "test")
-        self.train_shuffle = self.generate_motifs_and_fastas(
-            self.df_train_shuffled_in, "train_shuffle"
-        )
+        self.train_shuffle = self.generate_motifs_and_fastas(self.df_train_shuffled_in, "train_shuffle")
 
     def generate_motifs_and_fastas(self, df, name):
         """return fasta anem , and dict with components motifs"""
         print("Generating Fasta and Motis:", name)
         print("---" * 10)
-        fasta_saved = self.save_fasta(
-            df, f"{name}_{'_'.join([str(c) for c in self.subset_components])}"
-        )
+        fasta_saved = self.save_fasta(df, f"{name}_{'_'.join([str(c) for c in self.subset_components])}")
         print("Generating Motifs (all seqs)")
         motif_all_components = motifs_from_fasta(fasta_saved, False)
         print("Generating Motifs per component")
@@ -1241,9 +1162,7 @@ class LoadingData:
         for comp, v_comp in df.groupby("TAG"):
             print(comp)
             print("number of sequences used to generate the motifs")
-            name_c_fasta = self.save_fasta(
-                v_comp, "temp_component", to_seq_groups_comparison=True
-            )
+            name_c_fasta = self.save_fasta(v_comp, "temp_component", to_seq_groups_comparison=True)
             final_comp_values[comp] = motifs_from_fasta(name_c_fasta, False)
         return final_comp_values
 
@@ -1306,9 +1225,7 @@ class Trainer:
 
         # set_seed(12345)
         ddp_kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-        self.accelerator = Accelerator(
-            kwargs_handlers=[ddp_kwargs], split_batches=True, log_with=["wandb"]
-        )
+        self.accelerator = Accelerator(kwargs_handlers=[ddp_kwargs], split_batches=True, log_with=["wandb"])
         self.device = self.accelerator.device
 
         if load_saved_data:
@@ -1334,34 +1251,20 @@ class Trainer:
 
         self.final_comp_values_train = encode_data.train["motifs_per_components_dict"]
         self.final_comp_values_test = encode_data.test["motifs_per_components_dict"]
-        self.final_comp_values_shuffle = encode_data.train_shuffle[
-            "motifs_per_components_dict"
-        ]
+        self.final_comp_values_shuffle = encode_data.train_shuffle["motifs_per_components_dict"]
 
         # Dataset used for sequences
         df = encode_data.train["dataset"]
         cell_components = df.sort_values("TAG")["TAG"].unique().tolist()
-        self.conditional_tag_to_numeric = {
-            x: n + 1 for n, x in enumerate(df.TAG.unique())
-        }
-        self.conditional_numeric_to_tag = {
-            n + 1: x for n, x in enumerate(df.TAG.unique())
-        }
+        self.conditional_tag_to_numeric = {x: n + 1 for n, x in enumerate(df.TAG.unique())}
+        self.conditional_numeric_to_tag = {n + 1: x for n, x in enumerate(df.TAG.unique())}
         conditional_tags_to_numeric = {n + 1: x for n, x in enumerate(df.TAG.unique())}
-        cell_types = sorted(list(conditional_numeric_to_tag.keys()))
-        x_train_cell_type = torch.from_numpy(
-            df["TAG"].apply(lambda x: conditional_tag_to_numeric[x]).to_numpy()
-        )
+        cell_types = sorted(conditional_numeric_to_tag.keys())
+        x_train_cell_type = torch.from_numpy(df["TAG"].apply(lambda x: conditional_tag_to_numeric[x]).to_numpy())
 
         # Creating X_train for sequence similarity
         dna_alphabet = ["A", "C", "T", "G"]
-        x_train_seq = np.array(
-            [
-                one_hot_encode(x, dna_alphabet, 200)
-                for x in tqdm(df["sequence"])
-                if "N" not in x
-            ]
-        )
+        x_train_seq = np.array([one_hot_encode(x, dna_alphabet, 200) for x in tqdm(df["sequence"]) if "N" not in x])
         X_train = x_train_seq
         X_train = np.array([x.T.tolist() for x in X_train])
         X_train[X_train == 0] = -1
@@ -1370,14 +1273,10 @@ class Trainer:
         # Sequence dataset loading
         tf = T.Compose([T.ToTensor()])
         seq_dataset = SequenceDataset(seqs=X_train, c=x_train_cell_type, transform=tf)
-        train_dl = DataLoader(
-            seq_dataset, batch_size, shuffle=True, num_workers=48, pin_memory=True
-        )
+        train_dl = DataLoader(seq_dataset, batch_size, shuffle=True, num_workers=48, pin_memory=True)
 
         # Preparing model/optimizer/EMA/dataloader
-        self.model = Unet_lucas(
-            dim=200, channels=1, dim_mults=(1, 2, 4), resnet_block_groups=4
-        )
+        self.model = Unet_lucas(dim=200, channels=1, dim_mults=(1, 2, 4), resnet_block_groups=4)
         self.optimizer = Adam(self.model.parameters(), lr=1e-4)
         if self.accelerator.is_main_process:
             self.ema = EMA(0.995)
@@ -1386,9 +1285,7 @@ class Trainer:
         self.start_epoch = 0
         self.train_kl, self.test_kl, self.shuffle_kl = 1, 1, 1
         self.seq_similarity = 0.38
-        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(
-            self.model, self.optimizer, train_dl
-        )
+        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(self.model, self.optimizer, train_dl)
 
     # Saving model
     def save(self, epoch, results_path):
@@ -1426,9 +1323,7 @@ class Trainer:
         self.seq_similarity = checkpoint_dict["seq_similarity"]
 
         # Continue training
-        self.model, self.optimizer = self.accelerator.prepare(
-            self.model, self.optimizer
-        )
+        self.model, self.optimizer = self.accelerator.prepare(self.model, self.optimizer)
         self.train()
 
     def create_samples(self, model_path, model_name):
@@ -1445,9 +1340,7 @@ class Trainer:
             sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
             sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
             # calculations for posterior q(x_{t-1} | x_t, x_0)
-            posterior_variance = (
-                betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
-            )
+            posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
 
             # Recreating model
             checkpoint_dict = torch.load(model_path + model_name)
@@ -1505,9 +1398,7 @@ class Trainer:
         sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
         sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
         # calculations for posterior q(x_{t-1} | x_t, x_0)
-        posterior_variance = (
-            betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
-        )
+        posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
 
         if self.accelerator.is_main_process:
             self.accelerator.init_trackers(
@@ -1547,9 +1438,7 @@ class Trainer:
 
                 self.accelerator.wait_for_everyone()
                 if self.accelerator.is_main_process:
-                    self.ema.step_ema(
-                        self.ema_model, self.accelerator.unwrap_model(self.model)
-                    )
+                    self.ema.step_ema(self.ema_model, self.accelerator.unwrap_model(self.model))
 
             if (epoch % self.epochs_loss_show) == 0:
                 if self.accelerator.is_main_process:
@@ -1565,11 +1454,7 @@ class Trainer:
                     )
                     print(f" Epoch {epoch} Loss:", loss.item())
 
-            if (
-                epoch != 0
-                and epoch % self.save_and_sample_every == 0
-                and self.accelerator.is_main_process
-            ):
+            if epoch != 0 and epoch % self.save_and_sample_every == 0 and self.accelerator.is_main_process:
                 self.model.eval()
 
                 print("saving")
@@ -1591,24 +1476,16 @@ class Trainer:
                     int(self.num_sampling_to_compare_cells / 10),
                     additional_variables=additional_variables,
                 )
-                self.train_kl = compare_motif_list(
-                    synt_df, self.df_results_seq_guime_count_train
-                )
-                self.test_kl = compare_motif_list(
-                    synt_df, self.df_results_seq_guime_count_test
-                )
-                self.shuffle_kl = compare_motif_list(
-                    synt_df, self.df_results_seq_guime_count_shuffle
-                )
+                self.train_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_train)
+                self.test_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_test)
+                self.shuffle_kl = compare_motif_list(synt_df, self.df_results_seq_guime_count_shuffle)
                 print("Similarity", self.seq_similarity, "Similarity")
                 print("KL_TRAIN", self.train_kl, "KL")
                 print("KL_TEST", self.test_kl, "KL")
                 print("KL_SHUFFLE", self.shuffle_kl, "KL")
 
             if epoch != 0 and epoch % 500 == 0 and self.accelerator.is_main_process:
-                model_path = (
-                    "./models/" + f"epoch_{str(epoch)}_" + self.model_name + ".pt"
-                )
+                model_path = f"./models/epoch_{str(epoch)}_{self.model_name}.pt"
                 self.save(epoch, model_path)
 
 
@@ -1618,13 +1495,9 @@ if __name__ == "__main__":
     cell_components = df.sort_values("TAG")["TAG"].unique().tolist()
     conditional_tag_to_numeric = {x: n + 1 for n, x in enumerate(df.TAG.unique())}
     conditional_numeric_to_tag = {n + 1: x for n, x in enumerate(df.TAG.unique())}
-    conditional_tags_to_numeric = {
-        n + 1: x for n, x in enumerate(df.TAG.unique())
-    }  # check if this is changing order
-    cell_types = sorted(list(conditional_numeric_to_tag.keys()))
-    x_train_cell_type = torch.from_numpy(
-        df["TAG"].apply(lambda x: conditional_tag_to_numeric[x]).to_numpy()
-    )
+    conditional_tags_to_numeric = {n + 1: x for n, x in enumerate(df.TAG.unique())}  # check if this is changing order
+    cell_types = sorted(conditional_numeric_to_tag.keys())
+    x_train_cell_type = torch.from_numpy(df["TAG"].apply(lambda x: conditional_tag_to_numeric[x]).to_numpy())
     nucleotides = ["A", "C", "T", "G"]
 
     trainer = Trainer()

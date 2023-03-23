@@ -3,9 +3,8 @@ from functools import partial
 import torch
 import torch.nn.functional as F
 import tqdm
-from torch import nn
-
 from models.diffusion.diffusion import DiffusionModel
+from torch import nn
 from utils.misc import extract, extract_data_from_batch, mean_flat
 from utils.schedules import (
     alpha_cosine_log_snr,
@@ -89,9 +88,7 @@ class DDPM(DiffusionModel):
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
 
         # calculations for posterior q(x_{t-1} | x_t, x_0)
-        self.posterior_variance = (
-            betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
-        )
+        self.posterior_variance = betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
 
     def q_sample(self, x_start, t, noise=None):
         """
@@ -101,26 +98,20 @@ class DDPM(DiffusionModel):
             noise = torch.randn_like(x_start)
 
         sqrt_alphas_cumprod_t = extract(self.sqrt_alphas_cumprod, t, x_start.shape)
-        sqrt_one_minus_alphas_cumprod_t = extract(
-            self.sqrt_one_minus_alphas_cumprod, t, x_start.shape
-        )
+        sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape)
 
         return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
     @torch.no_grad()
     def p_sample(self, x, t, t_index):
         betas_t = extract(self.betas, t, x.shape)
-        sqrt_one_minus_alphas_cumprod_t = extract(
-            self.sqrt_one_minus_alphas_cumprod, t, x.shape
-        )
+        sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t, x.shape)
         # print (x.shape, 'x_shape')
         sqrt_recip_alphas_t = extract(self.sqrt_recip_alphas, t, x.shape)
 
         # Equation 11 in the paper
         # Use our model (noise predictor) to predict the mean
-        model_mean = sqrt_recip_alphas_t * (
-            x - betas_t * self.model(x, time=t) / sqrt_one_minus_alphas_cumprod_t
-        )
+        model_mean = sqrt_recip_alphas_t * (x - betas_t * self.model(x, time=t) / sqrt_one_minus_alphas_cumprod_t)
 
         if t_index == 0:
             return model_mean
@@ -139,9 +130,7 @@ class DDPM(DiffusionModel):
         t_double = t.repeat(2)
         x_double = x.repeat(2, 1, 1, 1)
         betas_t = extract(self.betas, t_double, x_double.shape)
-        sqrt_one_minus_alphas_cumprod_t = extract(
-            self.sqrt_one_minus_alphas_cumprod, t_double, x_double.shape
-        )
+        sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t_double, x_double.shape)
         sqrt_recip_alphas_t = extract(self.sqrt_recip_alphas, t_double, x_double.shape)
 
         # classifier free sampling interpolates between guided and non guided using `cond_weight`
@@ -156,8 +145,7 @@ class DDPM(DiffusionModel):
         # Equation 11 in the paper
         # Use our model (noise predictor) to predict the mean
         model_mean = sqrt_recip_alphas_t[:batch_size] * (
-            x
-            - betas_t[:batch_size] * x_t / sqrt_one_minus_alphas_cumprod_t[:batch_size]
+            x - betas_t[:batch_size] * x_t / sqrt_one_minus_alphas_cumprod_t[:batch_size]
         )
 
         if t_index == 0:
@@ -210,9 +198,7 @@ class DDPM(DiffusionModel):
         return images
 
     @torch.no_grad()
-    def sample(
-        self, image_size, classes=None, batch_size=16, channels=3, cond_weight=0
-    ):
+    def sample(self, image_size, classes=None, batch_size=16, channels=3, cond_weight=0):
         return self.p_sample_loop(
             self.model,
             classes=classes,
@@ -252,26 +238,18 @@ class DDPM(DiffusionModel):
     def test_step(self, batch: torch.Tensor, batch_idx: int):
         return self.inference_step(batch, batch_idx, "test")
 
-    def inference_step(
-        self, batch: torch.Tensor, batch_idx: int, phase="validation", noise=None
-    ):
+    def inference_step(self, batch: torch.Tensor, batch_idx: int, phase="validation", noise=None):
         x_start, condition = extract_data_from_batch(batch)
         device = x_start.device
         batch_size = batch.shape[0]
 
-        t = torch.randint(
-            0, self.timesteps, (batch_size,), device=device
-        ).long()  # sampling a t to generate t and t+1
+        t = torch.randint(0, self.timesteps, (batch_size,), device=device).long()  # sampling a t to generate t and t+1
 
         if noise is None:
             noise = torch.randn_like(x_start)  #  gauss noise
-        x_noisy = self.q_sample(
-            x_start=x_start, t=t, noise=noise
-        )  # this is the auto generated noise given t and Noise
+        x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)  # this is the auto generated noise given t and Noise
 
-        context_mask = torch.bernoulli(
-            torch.zeros(classes.shape[0]) + (1 - self.p_uncond)
-        ).to(device)
+        context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1 - self.p_uncond)).to(device)
 
         # mask for unconditinal guidance
         classes = classes * context_mask
@@ -281,9 +259,7 @@ class DDPM(DiffusionModel):
 
         loss = self.criterion(predictions, batch)
 
-        self.log("validation_loss", loss) if phase == "validation" else self.log(
-            "test_loss", loss
-        )
+        self.log("validation_loss", loss) if phase == "validation" else self.log("test_loss", loss)
 
         """
             Log multiple losses at validation/test time according to internal discussions.

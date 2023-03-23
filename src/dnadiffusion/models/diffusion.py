@@ -1,8 +1,8 @@
 from typing import Optional
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from dnadiffusion.utils.utils import extract
 
@@ -19,9 +19,7 @@ def q_sample(
         noise = torch.randn_like(x_start)
 
     sqrt_alphas_cumprod_t = extract(sqrt_alphas_cumprod, t, x_start.shape).to(device)
-    sqrt_one_minus_alphas_cumprod_t = extract(
-        sqrt_one_minus_alphas_cumprod, t, x_start.shape
-    ).to(device)
+    sqrt_one_minus_alphas_cumprod_t = extract(sqrt_one_minus_alphas_cumprod, t, x_start.shape).to(device)
 
     return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
 
@@ -49,9 +47,7 @@ def p_losses(
         device=device,
     )  # this is the auto generated noise given t and Noise
 
-    context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1 - p_uncond)).to(
-        device
-    )
+    context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1 - p_uncond)).to(device)
 
     # mask for unconditinal guidance
     classes = classes * context_mask

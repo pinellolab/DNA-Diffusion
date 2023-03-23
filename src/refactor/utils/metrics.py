@@ -10,9 +10,7 @@ from scipy.special import rel_entr
 from tqdm.auto import tqdm
 
 
-def motif_scoring_KL_divergence(
-    original: pd.Series, generated: pd.Series
-) -> torch.Tensor:
+def motif_scoring_KL_divergence(original: pd.Series, generated: pd.Series) -> torch.Tensor:
     """
     This function encapsulates the logic of evaluating the KL divergence metric
     between two sequences.
@@ -41,9 +39,7 @@ def compare_motif_list(
     for that is that they dont satisfy certain properties, such as in KL case, the simmetry property.
     Hence it makes a big difference what are the positions of input.
     """
-    set_all_mot = set(
-        df_motifs_a.index.values.tolist() + df_motifs_b.index.values.tolist()
-    )
+    set_all_mot = set(df_motifs_a.index.values.tolist() + df_motifs_b.index.values.tolist())
     create_new_matrix = []
     for x in set_all_mot:
         list_in = []
@@ -72,9 +68,7 @@ def compare_motif_list(
         plt.title("Motifs Probs")
         plt.show()
 
-    return motif_scoring_metric(
-        df_motifs["Diffusion_seqs"].values, df_motifs["Training_seqs"].values
-    )
+    return motif_scoring_metric(df_motifs["Diffusion_seqs"].values, df_motifs["Training_seqs"].values)
 
 
 def sampling_to_metric(
@@ -123,19 +117,11 @@ def sampling_to_metric(
     save_motifs_syn.close()
 
     # Scan for motifs
-    os.system(
-        "gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed"
-    )
-    df_results_syn = pd.read_csv(
-        "syn_results_motifs.bed", sep="\t", skiprows=5, header=None
-    )
-    df_results_syn["motifs"] = df_results_syn[8].apply(
-        lambda x: x.split('motif_name "')[1].split('"')[0]
-    )
+    os.system("gimme scan synthetic_motifs.fasta -p   JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed")
+    df_results_syn = pd.read_csv("syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
+    df_results_syn["motifs"] = df_results_syn[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
     df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
-    df_motifs_count_syn = (
-        df_results_syn[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
-    )
+    df_motifs_count_syn = df_results_syn[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
     plt.rcParams["figure.figsize"] = (30, 2)
     df_motifs_count_syn.sort_values(0, ascending=False).head(50)[0].plot.bar()
     plt.show()
@@ -182,9 +168,7 @@ def metric_comparison_between_components(
     for components_1, motif_occurance_frequency in original_data.items():
         comparisons_single_component = []
         for components_2 in generated_data.keys():
-            compared_motifs_occurances = compare_motif_list(
-                motif_occurance_frequency, generated_data[components_2]
-            )
+            compared_motifs_occurances = compare_motif_list(motif_occurance_frequency, generated_data[components_2])
             comparisons_single_component.append(compared_motifs_occurances)
 
         final_comparison_all_components.append(comparisons_single_component)
@@ -194,8 +178,6 @@ def metric_comparison_between_components(
     df_plot.columns = [CELL_NAMES[x] for x in cell_components]
     df_plot.index = df_plot.columns
     sns.heatmap(df_plot, cmap="Blues_r", annot=True, lw=0.1, vmax=1, vmin=0)
-    plt.title(
-        f"Kl divergence \n {x_label_plot} sequences x  {y_label_plot} sequences \n MOTIFS probabilities"
-    )
+    plt.title(f"Kl divergence \n {x_label_plot} sequences x  {y_label_plot} sequences \n MOTIFS probabilities")
     plt.xlabel(f"{x_label_plot} Sequences  \n(motifs dist)")
     plt.ylabel(f"{y_label_plot} \n (motifs dist)")

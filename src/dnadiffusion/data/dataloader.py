@@ -17,26 +17,14 @@ from dnadiffusion.utils.utils import one_hot_encode
 
 def motifs_from_fasta(fasta: str):
     print("Computing Motifs....")
-    os.system(
-        f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed"
-    )
-    df_results_seq_guime = pd.read_csv(
-        "train_results_motifs.bed", sep="\t", skiprows=5, header=None
-    )
-    df_results_seq_guime["motifs"] = df_results_seq_guime[8].apply(
-        lambda x: x.split('motif_name "')[1].split('"')[0]
-    )
+    os.system(f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed")
+    df_results_seq_guime = pd.read_csv("train_results_motifs.bed", sep="\t", skiprows=5, header=None)
+    df_results_seq_guime["motifs"] = df_results_seq_guime[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
 
-    df_results_seq_guime[0] = df_results_seq_guime[0].apply(
-        lambda x: "_".join(x.split("_")[:-1])
-    )
-    df_results_seq_guime_count_out = (
-        df_results_seq_guime[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
-    )
+    df_results_seq_guime[0] = df_results_seq_guime[0].apply(lambda x: "_".join(x.split("_")[:-1]))
+    df_results_seq_guime_count_out = df_results_seq_guime[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
     plt.rcParams["figure.figsize"] = (30, 2)
-    df_results_seq_guime_count_out.sort_values(0, ascending=False).head(50)[
-        0
-    ].plot.bar()
+    df_results_seq_guime_count_out.sort_values(0, ascending=False).head(50)[0].plot.bar()
     plt.title("Top 50 MOTIFS on component 0 ")
     plt.show()
     return df_results_seq_guime_count_out
@@ -58,17 +46,13 @@ class LoadingData:
         self.sample_number = sample_number
         self.subset_components = subset_components
         self.change_comp_index = change_component_index
-        self.number_of_sequences_to_motif_creation = (
-            number_of_sequences_to_motif_creation
-        )
+        self.number_of_sequences_to_motif_creation = number_of_sequences_to_motif_creation
 
     def __call__(self) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
         df = self.read_csv(self.csv)
         subset_df = self.experiment(df)
         df_train, df_test, df_train_shuffled = self.create_train_groups(subset_df)
-        train, test, train_shuffle = self.get_motif(
-            df_train, df_test, df_train_shuffled
-        )
+        train, test, train_shuffle = self.get_motif(df_train, df_test, df_train_shuffled)
         return train, test, train_shuffle
 
     def read_csv(self, input_csv: str) -> pd.DataFrame:
@@ -86,21 +70,15 @@ class LoadingData:
         df_generate = df
         if self.subset_components is not None and type(self.subset_components) == list:
             print(" or ".join([f"TAG == {c}" for c in self.subset_components]))
-            df_generate = df_generate.query(
-                " or ".join([f'TAG == "{c}" ' for c in self.subset_components])
-            ).copy()
+            df_generate = df_generate.query(" or ".join([f'TAG == "{c}" ' for c in self.subset_components])).copy()
             print("Subseting...")
 
         return df_generate
 
-    def create_train_groups(
-        self, df: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def create_train_groups(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         df_test = df[df["chr"] == "chr1"].reset_index(drop=True)
         df_train_shuffled = df[df["chr"] == "chr2"].reset_index(drop=True)
-        df_train = df_train = df[
-            (df["chr"] != "chr1") & (df["chr"] != "chr2")
-        ].reset_index(drop=True)
+        df_train = df_train = df[(df["chr"] != "chr1") & (df["chr"] != "chr2")].reset_index(drop=True)
 
         df_train_shuffled["sequence"] = df_train_shuffled["sequence"].apply(
             lambda x: "".join(random.sample(list(x), len(x)))
@@ -115,18 +93,14 @@ class LoadingData:
     ) -> None:
         train = self.generate_motifs_and_fastas(df_train, "train")
         test = self.generate_motifs_and_fastas(df_test, "test")
-        train_shuffle = self.generate_motifs_and_fastas(
-            df_train_shuffled, "train_shuffle"
-        )
+        train_shuffle = self.generate_motifs_and_fastas(df_train_shuffled, "train_shuffle")
         return train, test, train_shuffle
 
     def generate_motifs_and_fastas(self, df: pd.DataFrame, name: str) -> Dict[str, Any]:
         """return fasta anem , and dict with components motifs"""
         print("Generating Fasta and Motis:", name)
         print("---" * 10)
-        fasta_saved = self.save_fasta(
-            df, f"{name}_{'_'.join([str(c) for c in self.subset_components])}"
-        )
+        fasta_saved = self.save_fasta(df, f"{name}_{'_'.join([str(c) for c in self.subset_components])}")
         print("Generating Motifs (all seqs)")
         motif_all_components = motifs_from_fasta(fasta_saved)
         print("Generating Motifs per component")
@@ -139,9 +113,7 @@ class LoadingData:
             "dataset": df,
         }
 
-    def save_fasta(
-        self, df: pd.DataFrame, name_fasta: str, to_seq_groups_comparison: bool = False
-    ) -> str:
+    def save_fasta(self, df: pd.DataFrame, name_fasta: str, to_seq_groups_comparison: bool = False) -> str:
         fasta_final_name = name_fasta + ".fasta"
         save_fasta_file = open(fasta_final_name, "w")
         number_to_sample = df.shape[0]
@@ -165,9 +137,7 @@ class LoadingData:
         for comp, v_comp in df.groupby("TAG"):
             print(comp)
             print("number of sequences used to generate the motifs")
-            name_c_fasta = self.save_fasta(
-                v_comp, "temp_component", to_seq_groups_comparison=True
-            )
+            name_c_fasta = self.save_fasta(v_comp, "temp_component", to_seq_groups_comparison=True)
             final_comp_values[comp] = motifs_from_fasta(name_c_fasta)
         return final_comp_values
 
@@ -226,9 +196,7 @@ class LoadingDataModule(L.LightningDataModule):
         self.sample_number = sample_number
         self.change_component_index = change_component_index
         self.limit_total_sequences = limit_total_sequences
-        self.number_of_sequences_to_motif_creation = (
-            number_of_sequences_to_motif_creation
-        )
+        self.number_of_sequences_to_motif_creation = number_of_sequences_to_motif_creation
         self.transform = transform
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -269,27 +237,17 @@ class LoadingDataModule(L.LightningDataModule):
 
         self.train_motifs_per_components_dict = train["motifs_per_components_dict"]
         self.test_motifs_per_components_dict = test["motifs_per_components_dict"]
-        self.shuffle_motifs_per_components_dict = train_shuffle[
-            "motifs_per_components_dict"
-        ]
+        self.shuffle_motifs_per_components_dict = train_shuffle["motifs_per_components_dict"]
 
         # Sequence related data
         df = train["dataset"]
         self.cell_components = df.sort_values("TAG")["TAG"].unique().tolist()
         self.tag_to_numeric = {x: n + 1 for n, x in enumerate(df.TAG.unique())}
         self.numeric_to_tag = {n + 1: x for n, x in enumerate(df.TAG.unique())}
-        self.cell_types = sorted(list(self.numeric_to_tag.keys()))
-        self.x_train_cell_type = torch.from_numpy(
-            df["TAG"].apply(lambda x: self.tag_to_numeric[x]).to_numpy()
-        )
+        self.cell_types = sorted(self.numeric_to_tag.keys())
+        self.x_train_cell_type = torch.from_numpy(df["TAG"].apply(lambda x: self.tag_to_numeric[x]).to_numpy())
         nucleotides = ["A", "C", "G", "T"]
-        X_train = np.array(
-            [
-                one_hot_encode(x, nucleotides, 200)
-                for x in (df["sequence"])
-                if "N" not in x
-            ]
-        )
+        X_train = np.array([one_hot_encode(x, nucleotides, 200) for x in (df["sequence"]) if "N" not in x])
         X_train = np.array([x.T.tolist() for x in X_train])
         X_train[X_train == 0] = -1
         self.X_train = X_train

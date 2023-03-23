@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class EMA:
@@ -9,12 +9,8 @@ class EMA:
         self.beta = beta
         self.step = 0
 
-    def update_model_average(
-        self, ma_model: nn.Module, current_model: nn.Module
-    ) -> None:
-        for current_params, ma_params in zip(
-            current_model.parameters(), ma_model.parameters()
-        ):
+    def update_model_average(self, ma_model: nn.Module, current_model: nn.Module) -> None:
+        for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
             old_weight, up_weight = ma_params.data, current_params.data
             ma_params.data = self.update_average(old_weight, up_weight)
 
@@ -25,9 +21,7 @@ class EMA:
         old = old.to(device)
         return old * self.beta + (1 - self.beta) * new
 
-    def step_ema(
-        self, ema_model: nn.Module, model: nn.Module, step_start_ema: int = 100
-    ) -> None:
+    def step_ema(self, ema_model: nn.Module, model: nn.Module, step_start_ema: int = 100) -> None:
         if self.step < step_start_ema:
             self.reset_parameters(ema_model, model)
             self.step += 1

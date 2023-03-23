@@ -29,9 +29,7 @@ class EMA(L.Callback):
         ma_model: L.LightningModule,
         current_model: L.LightningModule,
     ) -> None:
-        for current_params, ma_params in zip(
-            current_model.parameters(), ma_model.parameters()
-        ):
+        for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
             old_weight, up_weight = ma_params.data, current_params.data
             ma_params.data = self.update_average(old_weight, up_weight)
 

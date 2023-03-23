@@ -1,8 +1,7 @@
 import pytorch_lightning as pl
 import torch
-import torch.nn as nn
 from hydra.utils import instantiate
-
+from torch import nn
 from utils.ema import EMA
 
 
@@ -56,12 +55,7 @@ class DiffusionModel(pl.LightningModule):
         return
 
     def sample(
-        self,
-        n_sample: int,  # number of samples
-        condition=None,
-        timesteps=None,
-        *args,
-        **kwargs
+        self, n_sample: int, condition=None, timesteps=None, *args, **kwargs  # number of samples
     ) -> torch.Tensor:
         return
 

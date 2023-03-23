@@ -11,9 +11,7 @@ class EMA:
         self.ema_model = deepcopy(model).eval().requires_grad_(False)
 
     def update_model_average(self, current_model):
-        for current_params, ema_params in zip(
-            current_model.parameters(), self.ema_model.parameters()
-        ):
+        for current_params, ema_params in zip(current_model.parameters(), self.ema_model.parameters()):
             old_weight, up_weight = ema_params.data, current_params.data
             ma_params.data = self.update_average(old_weight, up_weight)
 

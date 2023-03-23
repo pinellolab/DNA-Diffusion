@@ -111,7 +111,7 @@ class SequenceDataModule(pl.LightningDataModule):
         num_workers: int = 1,
     ) -> None:
         super().__init__()
-        self.datasets = dict()
+        self.datasets = {}
         self.train_dataloader, self.val_dataloader, self.test_dataloader = (
             None,
             None,

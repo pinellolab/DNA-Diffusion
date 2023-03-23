@@ -145,24 +145,16 @@ class SequenceDataModule(pl.LightningDataModule):
         if not self.data_train and not self.data_test and not self.data_test:
             df_test = self.df[self.df.chr == "chr1"].reset_index(drop=True)
             df_validation = self.df[self.df.chr == "chr2"].reset_index(drop=True)
-            df_train = self.df[~self.df.chr.isin(["chr1", "chr2"])].reset_index(
-                drop=True
-            )
+            df_train = self.df[~self.df.chr.isin(["chr1", "chr2"])].reset_index(drop=True)
 
         train_data = self.create_sequence_dataset(self.df_train)
         validation_data = self.create_sequence_dataset(self.df_validation)
         test_data = self.create_sequence_dataset(self.df_test)
 
         # Creating sequence dataloaders
-        self.train_dl = self.create_dataloader(
-            self.train_data, self.batch_size, self.num_workers
-        )
-        self.validation_dl = self.create_dataloader(
-            self.validation_data, self.batch_size, self.num_workers
-        )
-        self.test_dl = self.create_dataloader(
-            self.test_data, self.batch_size, self.num_workers
-        )
+        self.train_dl = self.create_dataloader(self.train_data, self.batch_size, self.num_workers)
+        self.validation_dl = self.create_dataloader(self.validation_data, self.batch_size, self.num_workers)
+        self.test_dl = self.create_dataloader(self.test_data, self.batch_size, self.num_workers)
 
     def train_dataloader(self):
         return DataLoader(

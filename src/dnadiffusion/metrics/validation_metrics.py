@@ -22,9 +22,7 @@ def _create_mini_hash_of_a_sequence(seq: str, minihash: MinHash) -> MinHash:
     return minihash
 
 
-def _compare_two_sequences_and_return_similarity(
-    seq: str, seq2: str, k: int, n: int
-) -> float:
+def _compare_two_sequences_and_return_similarity(seq: str, seq2: str, k: int, n: int) -> float:
     """Calculate similarity of two sequences. Input is 2 sequences, k size of kmer and n number of hashes"""
     mh1 = MinHash(n=n, ksize=k)
     mh2 = MinHash(n=n, ksize=k)
@@ -50,9 +48,7 @@ def average_jaccard_similarity(
     sequence_1 = seq.tolist()
     sequence_2 = seq2.tolist()
     for k in k_sizes:
-        similarity = _compare_two_sequences_and_return_similarity(
-            sequence_1, sequence_2, k, number_of_hashes
-        )
+        similarity = _compare_two_sequences_and_return_similarity(sequence_1, sequence_2, k, number_of_hashes)
         average_similarities.append(similarity)
     average_similarities = np.array(average_similarities)
     average_similarity = round(average_similarities.mean(), 3)

@@ -35,9 +35,7 @@ class UnetDiffusion(L.LightningModule):
         self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - self.alphas_cumprod)
         # calculations for posterior q(x_{t-1} | x_t, x_0)
-        self.posterior_variance = (
-            self.betas * (1.0 - self.alphas_cumprod_prev) / (1.0 - self.alphas_cumprod)
-        )
+        self.posterior_variance = self.betas * (1.0 - self.alphas_cumprod_prev) / (1.0 - self.alphas_cumprod)
         self.ema = EMA(beta)
         self.ema_model = copy.deepcopy(self.model).eval().requires_grad_(False)
 

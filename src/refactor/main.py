@@ -6,12 +6,11 @@ from dataclasses import dataclass
 import hydra
 import pyrootutils
 import pytorch_lightning as pl
+import wandb
 from hydra.core.config_store import ConfigStore
 from hydra.utils import get_original_cwd, instantiate, to_absolute_path
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-
-import wandb
 
 root = pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 

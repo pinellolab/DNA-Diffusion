@@ -13,9 +13,7 @@ def test_layernorm_zero_dim():
 
 def test_layernorm_forward_negative_values_float64():
     test_layer = unet.LayerNorm(2)
-    all_negs = torch.tensor(
-        [[-2, -8, -1], [-1, -6, -3], [-3, -9, -7]], dtype=torch.float64
-    )
+    all_negs = torch.tensor([[-2, -8, -1], [-1, -6, -3], [-3, -9, -7]], dtype=torch.float64)
     # row_wise_mu = np.array([-11/3,-10/3,-19/3])
     # row_wise_var = np.array([9.555555555555557,4.222222222222222, 6.222222222222222])
     result = torch.tensor(
@@ -40,9 +38,7 @@ def test_layernorm_forward_negative_values_float64():
 
 def test_layernorm_forward_negative_values_float32():
     test_layer = unet.LayerNorm(2)
-    all_negs = torch.tensor(
-        [[-2, -8, -1], [-1, -6, -3], [-3, -9, -7]], dtype=torch.float32
-    )
+    all_negs = torch.tensor([[-2, -8, -1], [-1, -6, -3], [-3, -9, -7]], dtype=torch.float32)
     # row_wise_mu = np.array([-11/3,-10/3,-19/3])
     # row_wise_var = np.array([9.555555555555557,4.222222222222222, 6.222222222222222])
     result = torch.tensor(
@@ -117,9 +113,7 @@ def test_layernorm_forward_positive_values_float32():
 
 def test_layernorm_forward_float64():
     test_layer = unet.LayerNorm(2)
-    mixed_values = torch.tensor(
-        [[-2, 8, -1], [1, -6, 3], [-3, 9, -7]], dtype=torch.float64
-    )
+    mixed_values = torch.tensor([[-2, 8, -1], [1, -6, 3], [-3, 9, -7]], dtype=torch.float64)
     # row_wise_mu = np.array([5/3,-2/3,-1/3])
     # row_wise_var = np.array([20.222222222222225,14.888888888888891, 46.22222222222222])
     result = torch.tensor(
@@ -144,9 +138,7 @@ def test_layernorm_forward_float64():
 
 def test_layernorm_forward__float32():
     test_layer = unet.LayerNorm(2)
-    mixed_values = torch.tensor(
-        [[-2, 8, -1], [1, -6, 3], [-3, 9, -7]], dtype=torch.float32
-    )
+    mixed_values = torch.tensor([[-2, 8, -1], [1, -6, 3], [-3, 9, -7]], dtype=torch.float32)
     # row_wise_mu = np.array([5/3,-2/3,-1/3])
     # row_wise_var = np.array([20.222222222222225,14.888888888888891, 46.22222222222222])
     result = torch.tensor(

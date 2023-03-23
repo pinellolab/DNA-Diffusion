@@ -5,7 +5,6 @@ from typing import Callable, List, Optional
 import torch
 from einops import rearrange
 from torch import einsum, nn
-
 from utils.misc import default, exists
 from utils.network import Downsample, Upsample, l2norm
 
@@ -117,15 +116,9 @@ class Block(nn.Module):
 
 
 class ResnetBlock(nn.Module):
-    def __init__(
-        self, dim: int, dim_out: int, *, time_emb_dim=None, groups: int = 8
-    ) -> None:
+    def __init__(self, dim: int, dim_out: int, *, time_emb_dim=None, groups: int = 8) -> None:
         super().__init__()
-        self.mlp = (
-            nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))
-            if exists(time_emb_dim)
-            else None
-        )
+        self.mlp = nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2)) if exists(time_emb_dim) else None
 
         self.block1 = Block(dim, dim_out, groups=groups)
         self.block2 = Block(dim_out, dim_out, groups=groups)
@@ -150,14 +143,7 @@ class ResnetBlock(nn.Module):
 
 class ResnetBlockClassConditioned(ResnetBlock):
     def __init__(
-        self,
-        dim: int,
-        dim_out: int,
-        *,
-        num_classes: int,
-        class_embed_dim: int,
-        time_emb_dim=None,
-        groups: int = 8
+        self, dim: int, dim_out: int, *, num_classes: int, class_embed_dim: int, time_emb_dim=None, groups: int = 8
     ) -> None:
         super().__init__(
             dim=dim + class_embed_dim,
@@ -191,9 +177,7 @@ class LinearAttention(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
+        q, k, v = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv)
 
         q = q.softmax(dim=-2)
         k = k.softmax(dim=-1)
@@ -209,9 +193,7 @@ class LinearAttention(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(
-        self, dim: int, heads: int = 4, dim_head: int = 32, scale: int = 10
-    ) -> None:
+    def __init__(self, dim: int, heads: int = 4, dim_head: int = 32, scale: int = 10) -> None:
         super().__init__()
         self.scale = scale
         self.heads = heads
@@ -222,9 +204,7 @@ class Attention(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = map(
-            lambda t: rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads), qkv
-        )
+        q, k, v = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv)
 
         q, k = map(l2norm, (q, k))
 
@@ -263,7 +243,7 @@ class UNet(nn.Module):
 
         init_dim = default(init_dim, dim)
         self.init_conv = nn.Conv2d(input_channels, init_dim, (7, 7), padding=3)
-        dims = [init_dim, *map(lambda m: dim * m, dim_mults)]
+        dims = [init_dim, *(dim * m for m in dim_mults)]
         in_out = list(zip(dims[:-1], dims[1:]))
 
         block_klass = partial(ResnetBlock, groups=resnet_block_groups)
@@ -297,9 +277,7 @@ class UNet(nn.Module):
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_in, LinearAttention(dim_in))),
-                        Downsample(dim_in, dim_out)
-                        if not is_last
-                        else nn.Conv2d(dim_in, dim_out, 3, padding=1),
+                        Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding=1),
                     ]
                 )
             )
@@ -318,9 +296,7 @@ class UNet(nn.Module):
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_out, LinearAttention(dim_out))),
-                        Upsample(dim_out, dim_in)
-                        if not is_last
-                        else nn.Conv2d(dim_out, dim_in, 3, padding=1),
+                        Upsample(dim_out, dim_in) if not is_last else nn.Conv2d(dim_out, dim_in, 3, padding=1),
                     ]
                 )
             )
