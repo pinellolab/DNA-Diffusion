@@ -1,0 +1,60 @@
+site_name: DNA Diffusion
+site_description: Generative modeling of regulatory DNA sequences with diffusion probabilistic models.
+
+repo_url: https://github.com/pinellolab/DNA-Diffusion
+repo_name: pinellolab/DNA-Diffusion
+
+theme:
+    name: material
+    icon:
+        logo: material/library
+    palette:
+        # Palette toggle for light mode
+        - media: "(prefers-color-scheme: light)"
+          scheme: default
+          primary: black
+          accent: red
+          toggle:
+            icon: material/brightness-7
+            name: Switch to dark mode
+
+        # Palette toggle for dark mode
+        - media: "(prefers-color-scheme: dark)"
+          scheme: slate
+          primary: black
+          accent: red
+          toggle:
+            icon: material/brightness-4
+            name: Switch to light mode
+
+markdown_extensions:
+    - toc:
+        permalink: true
+    - pymdownx.highlight:
+        anchor_linenums: true
+    - pymdownx.tasklist:
+        custom_checkbox: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+
+plugins:
+    - search
+    - mkdocstrings:
+        handlers:
+            python:
+                import:
+                    - https://docs.python.org/3.10/objects.inv
+                options:
+                    docstring_style: google
+
+watch:
+    - docs
+    - src/dnadiffusion
+
+nav:
+    - About: index.md
+    - Specification: specification.md
+    - Reference:
+        - dnadiffusion: reference/dnadiffusion.md
+    - Contributors: contributors.md
