@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import hydra
-import lightning as L
 from hydra.core.config_store import ConfigStore
 from hydra_zen import MISSING, instantiate, make_config
 from omegaconf import DictConfig
