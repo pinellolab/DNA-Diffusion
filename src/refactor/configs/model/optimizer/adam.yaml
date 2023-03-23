@@ -1,0 +1,3 @@
+_target_: torch.optim.Adam
+_partial_: True
+lr: 0.02

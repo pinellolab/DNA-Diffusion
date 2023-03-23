@@ -1,6 +1,24 @@
-# Understanding the code of life: generative models of regulatory DNA sequences based on diffusion models.
+# DNA Diffusion
 
-<img src='https://raw.githubusercontent.com/pinellolab/DNA-Diffusion/f028558816fe5832097c270f424e3b3c3db48d8d/diff_first.gif'> </img>
+<img src='https://github.com/pinellolab/DNA-Diffusion/raw/1413ec9c974d54a1e2885a250540dc89955d10c0/docs/images/diff_first.gif'> </img>
+
+<p align="center">
+    <em>Generative modeling of regulatory DNA sequences with diffusion probabilistic models.</em>
+</p>
+
+[![build](https://github.com/pinellolab/DNA-Diffusion/workflows/Build/badge.svg)](https://github.com/pinellolab/DNA-Diffusion/actions)
+[![codecov](https://codecov.io/gh/pinellolab/DNA-Diffusion/branch/main/graph/badge.svg)](https://codecov.io/gh/pinellolab/DNA-Diffusion)
+[![PyPI version](https://badge.fury.io/py/dnadiffusion.svg?kill_cache=1)](https://badge.fury.io/py/dnadiffusion)
+
+---
+
+**Documentation**: <a href="https://pinellolab.github.io/DNA-Diffusion" target="_blank">https://pinellolab.github.io/DNA-Diffusion</a>
+
+**Source Code**: <a href="https://github.com/pinellolab/DNA-Diffusion" target="_blank">https://github.com/pinellolab/DNA-Diffusion</a>
+
+---
+
+
 
 ## Abstract
 
@@ -164,3 +182,45 @@ Join the OpenBioML discord: https://discord.gg/Y9CN2dUzQJ, we are discussing thi
 ## Known contributors
 
 You can access the contributor list [here](https://docs.google.com/spreadsheets/d/1_nxDI6DIoWbyUDpIDX-tJIILejrJ0kEYrcXXdWlzPvU/edit#gid=1871728801).
+
+## Development
+
+### Setup environment
+
+We use [hatch](https://hatch.pypa.io/latest/install/) to manage the development environment and production build. It is often convenient to install hatch with [pipx](https://pypa.github.io/pipx/installation/).
+
+### Run unit tests
+
+You can run all the tests with:
+
+```bash
+hatch run test
+```
+
+### Format the code
+
+Execute the following command to apply linting and check typing:
+
+```bash
+hatch run lint
+```
+
+### Publish a new version
+
+You can check the current version with:
+
+```bash
+hatch version
+```
+
+You can bump the version with commands such as `hatch version dev` or `patch`, `minor` or `major`. Or edit the `src/dnadiffusion/__about__.py` file. After changing the version, when you push to github, the Test Release workflow will automatically publish it on Test-PyPI and a github release will be created as a draft.
+
+## Serve the documentation
+
+You can serve the mkdocs documentation with:
+
+```bash
+hatch run docs-serve
+```
+
+This will automatically watch for changes in your code.

@@ -1,0 +1,13 @@
+save_checkpoint:
+    target: pytorch_lightning.callbacks.ModelCheckpoint
+    params:
+        path: # to be entered
+        monitor: val_loss
+        mode: min
+        save_top_k: 10
+        save_last: True
+
+learning_rate:
+    target: pytorch_lightning.callbacks.LearningRateMonitor
+    params:
+        logging_interval: epoch

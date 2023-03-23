@@ -1,0 +1,16 @@
+defaults:
+    - _self_
+    - optimizer: adam
+    - lr_scheduler: MultiStepLR
+    - unet: unet_conditional
+
+_target_: models.diffusion.ddpm.DDPM
+timesteps: 200
+use_fp16: True
+criterion: torch.nn.MSELoss #utils.metrics.MetricName
+use_ema: True
+ema_decay: 0.999
+lr_warmup: 5000
+image_size:
+beta_end: 0.02
+schedule: linear

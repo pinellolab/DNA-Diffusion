@@ -1,27 +1,194 @@
-[tool.pylint.messages_control]
-disable = [
-    "no-member",
-    "too-many-arguments",
-    "too-few-public-methods",
-    "no-else-return",
-    "duplicate-code",
-    "too-many-branches",
-    "redefined-builtin",
-    "dangerous-default-value",
+[tool.black]
+target-version = ["py37"]
+line-length = 120
+skip-string-normalization = true
+
+[tool.ruff]
+target-version = "py37"
+line-length = 120
+select = [
+  "A",
+  # "ARG",
+  # "B",
+  "C",
+  "DTZ",
+  # "E",
+  "EM",
+  # "F",
+  # "FBT",
+  "I",
+  "ICN",
+  "ISC",
+  # "N",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "Q",
+  "RUF",
+  # "S",
+  # "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
+]
+ignore = [
+  # Allow non-abstract empty methods in abstract base classes
+  "B027",
+  # Allow boolean positional values in function calls, like `dict.get(... True)`
+  "FBT003",
+  # Ignore checks for possible passwords
+  "S105", "S106", "S107",
+  # Ignore complexity
+  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+]
+unfixable = [
+  # Don't touch unused imports
+  "F401",
+]
+exclude = [
+    "src/refactor",
 ]
 
-[tool.pylint.format]
-max-line-length = 88
+[tool.ruff.isort]
+known-first-party = ["dnadiffusion"]
 
-[tool.black]
-line-length = 88
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
 
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
+[tool.ruff.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-	"ignore::UserWarning"
+addopts = "--cov=src/dnadiffusion/ --cov-report=term-missing --ignore=src/refactor"
+asyncio_mode = "strict"
+
+[tool.coverage.run]
+source_pkgs = ["dnadiffusion", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/dnadiffusion/__about__.py",
+  "src/dnadiffusion/__main__.py",
+  "tests/conftest.py",
 ]
+
+[tool.coverage.paths]
+dnadiffusion = ["src/dnadiffusion", "*/dnadiffusion/src/dnadiffusion"]
+tests = ["tests", "*/dnadiffusion/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.mypy]
+python_version = "3.10"
+
+[[tool.mypy.overrides]]
+module = [
+    "accelerate",
+    "Bio",
+    "hydra_zen",
+    "lightning",
+    "lightning.pytorch.utilities",
+    "lightning.pytorch.callbacks",
+    "lightning.pytorch.loggers",
+    "memory_efficient_attention_pytorch",
+    "matplotlib",
+    "matplotlib.pyplot",
+    "pandas",
+    "torchvision",
+    "torchvision.transforms",
+    "seaborn",
+    "scipy.special",
+    "sourmash",
+]
+ignore_missing_imports = true
+
+[tool.hatch]
+
+[tool.hatch.build.targets.wheel]
+packages = ['src/dnadiffusion']
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.version]
+path = "src/dnadiffusion/__about__.py"
+
+[tool.hatch.envs.default]
+python = "3.10"
+dependencies = [
+    "black[jupyter]",
+    "mypy",
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "xdoctest",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "pytest-asyncio",
+    "types-tqdm",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest -rA"
+test-cov-xml = "pytest -rA --cov-report=xml"
+lint = [
+  "black .",
+  "ruff --fix .",
+  # "mypy src/dnadiffusion/",
+]
+lint-check = [
+  "black --check .",
+  "ruff .",
+  # "mypy src/dnadiffusion/",
+]
+docs-serve = "mkdocs serve"
+docs-build = "mkdocs build"
+
+[build-system]
+requires = ["hatchling", "hatch-regex-commit"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dnadiffusion"
+authors = [
+  { name = "dnadiffusion", email = "dnadiffusion@pinellolab.org" }
+]
+description = "Library for probabilistic analysis of protein-protein interaction sequencing data."
+readme = "README.md"
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+]
+requires-python = ">=3.10"
+dependencies = [
+  "click",
+  "torch==2.0.0",
+  "torchvision",
+  "accelerate",
+  "matplotlib",
+  "pandas",
+  "seaborn",
+  "einops",
+  "wandb",
+  "genomepy",
+  "pytorch-lightning",
+  "hydra-core",
+  "sourmash",
+  "gimmemotifs",
+  "memory-efficient-attention-pytorch",
+]
+
+[project.scripts]
+dnadiffusion = "dnadiffusion.cli:main"
+
+[project.urls]
+Documentation = "https://pinellolab.github.io/DNA-Diffusion"
+Source = "https://github.com/pinellolab/DNA-Diffusion"
