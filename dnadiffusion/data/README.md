@@ -12,8 +12,8 @@ The final sequence number is balanced using the celltype with smallest number of
 
 4 cell types link (~48 sequences- Single file - 12k seqs per cell)
 
-- [Four cell types table](https://drive.google.com/drive/folders/1dBeZIdJZQqaZUzCBVrz_Z2fAV9ePsw7h?usp=sharing)
-- File: DNA-Diffusion/dna-diffusion/data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt
+-   [Four cell types table](https://drive.google.com/drive/folders/1dBeZIdJZQqaZUzCBVrz_Z2fAV9ePsw7h?usp=sharing)
+-   File: DNA-Diffusion/dna-diffusion/data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt
 
 **dhs_id** : dhs id
 **chr** : chr

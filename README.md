@@ -30,13 +30,13 @@ https://www.biorxiv.org/content/10.1101/2022.07.26.501466v1)
 We propose to develop models that can generate cell type specific or context specific DNA-sequences with certain regulatory properties based on an input text prompt.
 For example:
 
-- "A sequence that will correspond to open (or closed) chromatin in cell type X"
+-   "A sequence that will correspond to open (or closed) chromatin in cell type X"
 
-- "A sequence that will activate a gene to its maximum expression level in cell type X"
+-   "A sequence that will activate a gene to its maximum expression level in cell type X"
 
-- "A sequence active in cell type X that contains binding site(s) for the transcription factor Y"
+-   "A sequence active in cell type X that contains binding site(s) for the transcription factor Y"
 
-- "A sequence that activates a gene in liver and heart, but not in brain"
+-   "A sequence that activates a gene in liver and heart, but not in brain"
 
 ### Step 2: extensions and improvements
 
@@ -55,18 +55,18 @@ https://github.com/lucidrains/bit-diffusion
 
 ## Tasks and potential roadmap:
 
-- Collecting genomic datasets
-- Implementing the guided diffusion based on the code base
-- Thinking about the best encoding of biological information for the guided diffusion (e.g. cell type: K562, very strong activating sequence for chromatin, or cell type: GM12878, very open chromatin)
-- Plans for validation based on existing datasets or how to perform new biological experiments (we need to think about potential active learning strategies).
+-   Collecting genomic datasets
+-   Implementing the guided diffusion based on the code base
+-   Thinking about the best encoding of biological information for the guided diffusion (e.g. cell type: K562, very strong activating sequence for chromatin, or cell type: GM12878, very open chromatin)
+-   Plans for validation based on existing datasets or how to perform new biological experiments (we need to think about potential active learning strategies).
 
 ## Deliverables
 
-- **Dataset:** compile and provide a complete database of cell-specific regulatory regions (DNAse assay) to allow scientists to train and generate different diffusion models based on the regulatory sequences.
+-   **Dataset:** compile and provide a complete database of cell-specific regulatory regions (DNAse assay) to allow scientists to train and generate different diffusion models based on the regulatory sequences.
 
-- **Models:** Provide a model that can generate regulatory sequences given a specific cell type and genomic context.
+-   **Models:** Provide a model that can generate regulatory sequences given a specific cell type and genomic context.
 
-- **API:** Provide an API to make it possible to manipulate DNA regulatory models and a visual playground to generate synthetic contextual sequences.
+-   **API:** Provide an API to make it possible to manipulate DNA regulatory models and a visual playground to generate synthetic contextual sequences.
 
 ## Datasets
 
@@ -83,11 +83,11 @@ Please find these data, along with a data dictionary, [here](https://www.meulema
 
 ### Other potential datasets:
 
-- DNA-sequences data corresponding to annotated regulatory sequences such as gene promoters or distal regulatory sequences such as enhancers annotated (based on chromatin marks or accessibility) for hundreds of cells by the NHGRI funded projects like ENCODE or Roadmap Epigenomics.
+-   DNA-sequences data corresponding to annotated regulatory sequences such as gene promoters or distal regulatory sequences such as enhancers annotated (based on chromatin marks or accessibility) for hundreds of cells by the NHGRI funded projects like ENCODE or Roadmap Epigenomics.
 
-- Data from MPRA assays that test the regulatory potential of hundred of DNA sequences in parallel (https://elifesciences.org/articles/69479.pdf , https://www.nature.com/articles/s41588-021-01009-4 , ... )
+-   Data from MPRA assays that test the regulatory potential of hundred of DNA sequences in parallel (https://elifesciences.org/articles/69479.pdf , https://www.nature.com/articles/s41588-021-01009-4 , ... )
 
-- MIAA assays that test the ability of open chromatin within a given cell type.
+-   MIAA assays that test the ability of open chromatin within a given cell type.
 
 ## Models
 
