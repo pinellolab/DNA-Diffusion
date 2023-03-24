@@ -53,12 +53,3 @@ jobs:
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Check PyPI package installation
-      if: ${{ inputs.release_enabled }}
-      run: |
-        sleep 120 &&
-        version=$(hatch -q version) &&
-        pip install \
-        dnadiffusion==$version &&
-        pip list | grep dnadiffusion

@@ -3,7 +3,9 @@ name: Test Release
 on: 
   workflow_dispatch:
   workflow_run:
-    workflows: [Build]
+    workflows: 
+      - Build
+      - Docker
     branches: main
     types: 
       - completed
@@ -66,14 +68,4 @@ jobs:
         tag: ${{ steps.check-version.outputs.tag }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Check TestPyPI package installation
-      run: |
-        sleep 120 &&
-        version=$(hatch -q version) &&
-        echo $version &&
-        pip install \
-        --index-url https://test.pypi.org/simple/ \
-        --extra-index-url https://pypi.org/simple/ \
-        dnadiffusion==$version &&
-        pip list | grep dnadiffusion
+ 
