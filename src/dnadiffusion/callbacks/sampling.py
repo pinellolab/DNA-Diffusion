@@ -1,6 +1,5 @@
-import lightning as L
-import pandas as pd
-from lightning.pytorch.utilities import rank_zero_only
+import pytorch_lightning as pl
+from pytorch_lightning.utilities import rank_zero_only
 
 from dnadiffusion.metrics.sampling_metrics import (
     compare_motif_list,
@@ -9,10 +8,10 @@ from dnadiffusion.metrics.sampling_metrics import (
 )
 
 
-class Sample(L.Callback):
+class Sample(pl.Callback):
     def __init__(
         self,
-        data_module: L.LightningDataModule,
+        data_module: pl.LightningDataModule,
         image_size: int,
         num_sampling_to_compare_cells: int,
     ) -> None:
@@ -29,7 +28,7 @@ class Sample(L.Callback):
         self.numeric_to_tag = self.data_module.numeric_to_tag
 
     @rank_zero_only
-    def on_train_epoch_end(self, trainer: L.Trainer, L_module: L.LightningModule):
+    def on_train_epoch_end(self, trainer: pl.Trainer, L_module: pl.LightningModule):
         if (trainer.current_epoch + 1) % 15 == 0:
             L_module.eval()
             additional_variables = {

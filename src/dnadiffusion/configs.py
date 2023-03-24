@@ -1,10 +1,10 @@
-import lightning as L
+import pytorch_lightning as pl
 import torch
 import torchvision.transforms as T
 from hydra.core.config_store import ConfigStore
 from hydra_zen import MISSING, builds, make_custom_builds_fn
-from lightning.pytorch.callbacks import ModelCheckpoint
-from lightning.pytorch.loggers import WandbLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers.wandb import WandbLogger 
 
 from dnadiffusion.callbacks.sampling import Sample
 from dnadiffusion.data.dataloader import LoadingDataModule
@@ -84,7 +84,7 @@ checkpoint = builds(
 
 # Lightning Trainer
 LightningTrainer = builds(
-    L.Trainer,
+    pl.Trainer,
     accelerator="cuda",
     strategy="ddp_find_unused_parameters_true",
     num_nodes=1,

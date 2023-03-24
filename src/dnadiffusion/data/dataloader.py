@@ -3,13 +3,13 @@ import pickle
 import random
 from typing import Any, Dict, List, Optional, Tuple
 
-import lightning as L
+import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
 import torchvision.transforms as T
-from lightning.pytorch.utilities import rank_zero_only
+from pytorch_lightning.utilities import rank_zero_only
 from torch.utils.data import DataLoader, Dataset
 
 from dnadiffusion.utils.utils import one_hot_encode
@@ -173,7 +173,7 @@ class SequenceDataset(Dataset):
         return x, y
 
 
-class LoadingDataModule(L.LightningDataModule):
+class LoadingDataModule(pl.LightningDataModule):
     def __init__(
         self,
         input_csv: str,

@@ -1,6 +1,6 @@
 import copy
 
-import lightning as L
+import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
@@ -11,7 +11,7 @@ from dnadiffusion.utils.ema import EMA
 from dnadiffusion.utils.scheduler import linear_beta_schedule
 
 
-class UnetDiffusion(L.LightningModule):
+class UnetDiffusion(pl.LightningModule):
     def __init__(
         self,
         model: Unet,
