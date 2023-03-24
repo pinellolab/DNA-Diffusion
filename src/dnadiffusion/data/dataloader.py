@@ -3,10 +3,10 @@ import pickle
 import random
 from typing import Any, Dict, List, Optional, Tuple
 
-import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pytorch_lightning as pl
 import torch
 import torchvision.transforms as T
 from pytorch_lightning.utilities import rank_zero_only
