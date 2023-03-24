@@ -1,6 +1,6 @@
 # DNA Diffusion
 
-<img src='https://github.com/pinellolab/DNA-Diffusion/raw/1413ec9c974d54a1e2885a250540dc89955d10c0/docs/images/diff_first.gif'> </img>
+<img src='https://raw.githubusercontent.com/pinellolab/DNA-Diffusion/main/docs/images/diff_first_lossy.gif?inline=true'> </img>
 
 <p align="center">
     <em>Generative modeling of regulatory DNA sequences with diffusion probabilistic models.</em>
