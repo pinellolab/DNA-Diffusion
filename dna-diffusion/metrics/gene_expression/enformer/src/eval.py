@@ -20,17 +20,17 @@ def pearson_corr_coef(x, y, dim=1, reduce_dims=(-1,)):
 
 
 def scatter_evaluation():
-    enf_files = os.listdir('outputs/enformer_bedgraphs/')
-    exp_files = os.listdir('outputs/experimental_bedgraphs/')
+    enf_files = os.listdir('../outputs/enformer_bedgraphs/')
+    exp_files = os.listdir('../outputs/experimental_bedgraphs/')
     fig, ax = plt.subplots()
     for exp_file in exp_files:
         cell_type = exp_file.split('_')[0]
         for enf_file in enf_files:
             cell_type_enf = enf_file.split('_')[1]
             if cell_type in cell_type_enf:
-                df = pd.read_csv(f'outputs/enformer_bedgraphs/{enf_file}', sep='\t', header=None)
+                df = pd.read_csv(f'../outputs/enformer_bedgraphs/{enf_file}', sep='\t', header=None)
                 pred = list(df[3].values)
-                df = pd.read_csv(f'outputs/experimental_bedgraphs/{exp_file}', sep='\t', header=None)
+                df = pd.read_csv(f'../outputs/experimental_bedgraphs/{exp_file}', sep='\t', header=None)
                 target = list(df[3].values)
                 ax.scatter(pred, target, label=f"{cell_type}", alpha=0.5)
 

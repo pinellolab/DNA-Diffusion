@@ -135,12 +135,12 @@ class EnformerDataloaderDNAse:
 
     def make_bed_file(self):
         df = self.data[self.data['chr'] == 'chr1']
-        with open('data/chr1_dnase.bedGraph', 'w') as f:
+        with open('../data/chr1_dnase.bedGraph', 'w') as f:
             for _, row in df.iterrows():
                 f.write(f'{row["chr"]}\t{row["start"]}\t{row["end"]}\t{row["total_signal"]}\n')
         f.close()
-        utils.sort_bed_file('data/chr1_dnase.bedGraph')
-        exp_bed = pd.read_csv('data/chr1_dnase.bedGraph', sep='\t', header=None)
+        utils.sort_bed_file('../data/chr1_dnase.bedGraph')
+        exp_bed = pd.read_csv('../data/chr1_dnase.bedGraph', sep='\t', header=None)
         # self.bedGraph2bigwig('data/chr1_dnase.bedGraph')
 
         return exp_bed
@@ -183,7 +183,7 @@ class EnformerDataloaderDNAse:
         This function takes in the bed coordinates and retrieves the corresponding nucleotide sequence with
         fastaFromBed. Consequently, this sequence needs to be one-hot encoded.
         """
-        trimmed_bed = utils.trim_bed_file(self.enf_coords, 'src/hg38.fa')
+        trimmed_bed = utils.trim_bed_file(self.enf_coords, '../src/hg38.fa')
 
         try:
             fasta = trimmed_bed.sequence(fi='src/hg38.fa', fo=f'sequences/enf_dnase_{self.chromosome}.fa')

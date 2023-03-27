@@ -5,15 +5,15 @@ from utils import inference, create_enformer_bedgraph
 from eval import scatter_evaluation
 
 if __name__ == "__main__":
-    data_path = "data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
-    enformer_bed = "data/chr1_dnase_enformer.bed"
+    data_path = "../data/selected_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
+    enformer_bed = "../data/chr1_dnase_enformer.bed"
     cell_types = ["K562", "H1-hESC", "HepG2", "GM12878"]
     assay_type = "DNASE"
     chromosome = "chr1"
 
-    scatter_evaluation()
+    # scatter_evaluation() # TODO: check plot function
 
-    # model = EnformerModel(data_path)
-    # one_hot_seqs = model.data.fetch_sequences()
-    # inference(one_hot_seqs, model)
-    # create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chromosome)
+    model = EnformerModel(data_path)
+    one_hot_seqs = model.data.fetch_sequences()
+    inference(one_hot_seqs, model)
+    create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chromosome)
