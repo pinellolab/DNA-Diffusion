@@ -16,12 +16,12 @@ def inference(one_hot_seqs, model):
     start_time = time.perf_counter()
     for seq_name, seq in tqdm(one_hot_seqs.items()):
         # check if gene is already in outputs folder
-        if not os.path.exists(f'outputs/raw_enformer_outputs/{seq_name}.pkl'):
+        if not os.path.exists(f'../outputs/raw_enformer_outputs/{seq_name}.pkl'):
             print(f"Running Enformer inference for {seq_name}")
             output = model.forward(seq)
             torch.cuda.empty_cache()
-            output_df = create_annotated_dataframe("data/genomic_track_type_data.xlsx", output)
-            output_df.to_pickle(f'outputs/raw_enformer_outputs/{seq_name}.pkl')
+            output_df = create_annotated_dataframe("../data/genomic_track_type_data.xlsx", output)
+            output_df.to_pickle(f'../outputs/raw_enformer_outputs/{seq_name}.pkl')
         else:
             print(f'Output for {seq_name} already exists. Skipping...')
         sys.stdout.flush()
@@ -136,7 +136,7 @@ def trim_bed_file(bed_file, path_to_ref_genome):
                 fasta_header = line[1:].strip().split()
                 chrom, length = fasta_header[0], int(fasta_header[1])
                 chrom_lengths[chrom] = int(length)
-    trimmed_bed = bed.filter(lambda x: int(x.end) < chrom_lengths[x.chrom]).saveas('..data/chr1_dnase_enformer.bed')
+    trimmed_bed = bed.filter(lambda x: int(x.end) < chrom_lengths[x.chrom]).saveas('../data/chr1_dnase_enformer.bed')
     return trimmed_bed
 
 
@@ -161,7 +161,7 @@ def create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chr, resoluti
         if assay_type not in assay_type_check:
             raise ValueError(f"Assay type {assay_type} not supported. Please choose from {assay_type_check}")
 
-        enformer_outputs = os.listdir('outputs/raw_enformer_outputs/')
+        enformer_outputs = os.listdir('../outputs/raw_enformer_outputs/')
         enformer_bedgraph = []  # if entire chromosome, keep this out of file loop, else put it in. Also note the saving
                                 # needs to be changed in that case
         output_seq_len = resolution * 896

@@ -11,9 +11,11 @@ if __name__ == "__main__":
     assay_type = "DNASE"
     chromosome = "chr1"
 
-    # scatter_evaluation() # TODO: check plot function
+    scatter_evaluation()
 
-    model = EnformerModel(data_path)
-    one_hot_seqs = model.data.fetch_sequences()
-    inference(one_hot_seqs, model)
-    create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chromosome)
+    # TODO: Redo the rebinning with the improved output bins for enformer
+
+    # model = EnformerModel(data_path)
+    # one_hot_seqs = model.data.fetch_sequences()
+    # inference(one_hot_seqs, model)
+    # create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chromosome)
