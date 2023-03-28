@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from dnadiffusion.utils.utils import extract
+from src.dnadiffusion.utils.utils import extract
 
 
 def q_sample(

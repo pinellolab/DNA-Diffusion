@@ -6,10 +6,10 @@ from hydra_zen import MISSING, builds, make_custom_builds_fn
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
 
-from dnadiffusion.callbacks.sampling import Sample
-from dnadiffusion.data.dataloader import LoadingDataModule
-from dnadiffusion.models.training_modules import UnetDiffusion
-from dnadiffusion.models.unet import Unet as UnetBase
+from src.dnadiffusion.callbacks.sampling import Sample
+from src.dnadiffusion.data.dataloader import LoadingDataModule
+from src.dnadiffusion.models.training_modules import UnetDiffusion
+from src.dnadiffusion.models.unet import Unet as UnetBase
 
 # Custom Builds Function
 sbuilds = make_custom_builds_fn(populate_full_signature=True)
@@ -22,7 +22,7 @@ transforms = builds(T.ToTensor)
 # Loading data
 LoadingData = builds(
     LoadingDataModule,
-    input_csv="./dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
+    input_csv="./src/dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
     subset_components=[
         "GM12878_ENCLB441ZZZ",
         "hESCT0_ENCLB449ZZZ",

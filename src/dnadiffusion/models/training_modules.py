@@ -5,10 +5,10 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 
-from dnadiffusion.models.diffusion import p_losses
-from dnadiffusion.models.unet import Unet
-from dnadiffusion.utils.ema import EMA
-from dnadiffusion.utils.scheduler import linear_beta_schedule
+from src.dnadiffusion.models.diffusion import p_losses
+from src.dnadiffusion.models.unet import Unet
+from src.dnadiffusion.utils.ema import EMA
+from src.dnadiffusion.utils.scheduler import linear_beta_schedule
 
 
 class UnetDiffusion(pl.LightningModule):

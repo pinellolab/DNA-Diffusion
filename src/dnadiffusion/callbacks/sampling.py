@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
 from pytorch_lightning.utilities import rank_zero_only
 
-from dnadiffusion.metrics.sampling_metrics import (
+from src.dnadiffusion.metrics.sampling_metrics import (
     compare_motif_list,
     generate_similarity_using_train,
     sampling_to_metric,

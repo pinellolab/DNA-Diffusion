@@ -9,19 +9,19 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from dnadiffusion.data.dataloader import LoadingData, SequenceDataset
-from dnadiffusion.metrics.metrics import (
+from src.dnadiffusion.data.dataloader import LoadingData, SequenceDataset
+from src.dnadiffusion.metrics.sampling_metrics import (
     compare_motif_list,
     generate_heatmap,
     generate_similarity_using_train,
     kl_comparison_generated_sequences,
 )
-from dnadiffusion.models.diffusion import p_losses
-from dnadiffusion.models.networks import Unet_lucas
-from dnadiffusion.sample import sampling_to_metric
-from dnadiffusion.utils.ema import EMA
-from dnadiffusion.utils.scheduler import linear_beta_schedule
-from dnadiffusion.utils.utils import one_hot_encode
+from src.dnadiffusion.models.diffusion import p_losses
+from src.dnadiffusion.models.networks import Unet_lucas
+from src.dnadiffusion.sample import sampling_to_metric
+from src.dnadiffusion.utils.ema import EMA
+from src.dnadiffusion.utils.scheduler import linear_beta_schedule
+from src.dnadiffusion.utils.utils import one_hot_encode
 
 
 class Trainer:

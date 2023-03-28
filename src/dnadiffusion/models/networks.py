@@ -8,7 +8,7 @@ from einops import rearrange
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
 from torch import einsum, nn
 
-from dnadiffusion.utils.utils import default, exists, l2norm
+from src.dnadiffusion.utils.utils import default, exists, l2norm
 
 
 class SinusoidalPositionEmbeddings(nn.Module):

@@ -12,7 +12,7 @@ import torchvision.transforms as T
 from pytorch_lightning.utilities import rank_zero_only
 from torch.utils.data import DataLoader, Dataset
 
-from dnadiffusion.utils.utils import one_hot_encode
+from src.dnadiffusion.utils.utils import one_hot_encode
 
 
 def motifs_from_fasta(fasta: str):
@@ -220,11 +220,11 @@ class LoadingDataModule(pl.LightningDataModule):
                 "test": test,
                 "train_shuffle": train_shuffle,
             }
-            with open("dnadiffusion/data/encode_data.pkl", "wb") as f:
+            with open("src/dnadiffusion/data/encode_data.pkl", "wb") as f:
                 pickle.dump(combined_dict, f)
 
     def setup(self, stage: Optional[str] = None) -> None:
-        with open("dnadiffusion/data/encode_data.pkl", "rb") as f:
+        with open("src/dnadiffusion/data/encode_data.pkl", "rb") as f:
             encode_data = pickle.load(f)
         train = encode_data["train"]
         test = encode_data["test"]

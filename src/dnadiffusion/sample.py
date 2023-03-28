@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 from torch import nn
 
-from dnadiffusion.utils.utils import extract
+from src.dnadiffusion.utils.utils import extract
 
 
 def sampling_to_metric(

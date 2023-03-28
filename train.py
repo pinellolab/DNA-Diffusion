@@ -5,7 +5,7 @@ from hydra.core.config_store import ConfigStore
 from hydra_zen import MISSING, instantiate, make_config
 from omegaconf import DictConfig
 
-from dnadiffusion.configs import LightningTrainer, sample
+from src.dnadiffusion.configs import LightningTrainer, sample
 
 Config = make_config(
     hydra_defaults=[

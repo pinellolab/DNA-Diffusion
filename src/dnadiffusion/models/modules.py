@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from einops import rearrange
 from torch import einsum, nn
 
-from dnadiffusion.utils.utils import default, exists, l2norm
+from src.dnadiffusion.utils.utils import default, exists, l2norm
 
 
 class SinusoidalPositionEmbeddings(nn.Module):

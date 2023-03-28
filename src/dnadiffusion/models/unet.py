@@ -5,7 +5,7 @@ import torch
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
 from torch import nn
 
-from dnadiffusion.models.modules import (
+from src.dnadiffusion.models.modules import (
     Attention,
     Downsample,
     LearnedSinusoidalPosEmb,
@@ -15,7 +15,7 @@ from dnadiffusion.models.modules import (
     ResnetBlock,
     Upsample,
 )
-from dnadiffusion.utils.utils import default
+from src.dnadiffusion.utils.utils import default
 
 
 class Unet(nn.Module):
