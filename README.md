@@ -224,3 +224,158 @@ hatch run docs-serve
 ```
 
 This will automatically watch for changes in your code.
+```
+DNA-Diffusion
+├─ .editorconfig
+├─ .git
+│  ├─ config
+│  ├─ description
+│  ├─ HEAD
+│  ├─ hooks
+│  │  ├─ applypatch-msg.sample
+│  │  ├─ commit-msg.sample
+│  │  ├─ fsmonitor-watchman.sample
+│  │  ├─ post-update.sample
+│  │  ├─ pre-applypatch.sample
+│  │  ├─ pre-commit.sample
+│  │  ├─ pre-merge-commit.sample
+│  │  ├─ pre-push.sample
+│  │  ├─ pre-rebase.sample
+│  │  ├─ pre-receive.sample
+│  │  ├─ prepare-commit-msg.sample
+│  │  ├─ push-to-checkout.sample
+│  │  └─ update.sample
+│  ├─ index
+│  ├─ info
+│  │  └─ exclude
+│  ├─ objects
+│  │  ├─ info
+│  │  └─ pack
+│  │     ├─ pack-50f2563450901276069c6c0124bdf552fb248dcb.idx
+│  │     └─ pack-50f2563450901276069c6c0124bdf552fb248dcb.pack
+│  ├─ packed-refs
+│  └─ refs
+│     ├─ heads
+│     │  ├─ dna_diff_specifications
+│     │  └─ main
+│     ├─ remotes
+│     │  └─ origin
+│     │     └─ HEAD
+│     └─ tags
+├─ .github
+│  ├─ labels.yml
+│  ├─ PULL_REQUEST_TEMPLATE.md
+│  ├─ release-drafter.yml
+│  └─ workflows
+│     ├─ build.yml
+│     ├─ docker.yml
+│     ├─ documentation.yml
+│     ├─ inactive-issues-prs.yml
+│     ├─ labeler.yml
+│     ├─ release.yml
+│     └─ test-release.yml
+├─ .gitignore
+├─ CITATION.cff
+├─ CODE_OF_CONDUCT.md
+├─ dockerfiles
+│  └─ Dockerfile
+├─ docs
+│  ├─ contributors.md
+│  ├─ images
+│  │  ├─ diff_first.gif
+│  │  └─ diff_first_lossy.gif
+│  ├─ index.md
+│  ├─ reference
+│  │  └─ dnadiffusion.md
+│  └─ specification.md
+├─ environments
+│  ├─ cluster
+│  │  ├─ create_conda.sh
+│  │  ├─ dnadiffusion_run.sh
+│  │  ├─ install_mambaforge.sh
+│  │  ├─ README.md
+│  │  ├─ slurm_interactive.sh
+│  │  └─ test_path.sh
+│  └─ conda
+│     └─ environment.yml
+├─ LICENSE.md
+├─ Makefile
+├─ mkdocs.yml
+├─ notebooks
+│  ├─ experiments
+│  │  ├─ conditional_diffusion
+│  │  │  ├─ accelerate_diffusion_conditional_4_cells.ipynb
+│  │  │  ├─ dna_diff_baseline_conditional_UNET.ipynb
+│  │  │  ├─ dna_diff_baseline_conditional_UNET_with_time_warping.ipynb
+│  │  │  ├─ easy_training_Conditional_Code_to_refactor_UNET_ANNOTATED_v4 (2).ipynb
+│  │  │  ├─ full_script_version_from_accelerate_notebook
+│  │  │  │  ├─ dnadiffusion.py
+│  │  │  │  ├─ filter_data.ipynb
+│  │  │  │  ├─ master_dataset.ipynb
+│  │  │  │  └─ README.MD
+│  │  │  ├─ previous_version
+│  │  │  │  └─ Conditional_Code_to_refactor_UNET_ANNOTATED_v3 (2).ipynb
+│  │  │  ├─ README.MD
+│  │  │  ├─ vq_vae_accelerate_diffusion_conditional_4_cells.ipynb
+│  │  │  └─ VQ_VAE_LATENT_SPACE_WITH_METRICS.ipynb
+│  │  └─ README.md
+│  ├─ README.md
+│  ├─ refactoring
+│  │  └─ README.md
+│  └─ tutorials
+│     └─ README.md
+├─ pyproject.toml
+├─ README.md
+├─ src
+│  └─ dnadiffusion
+│     ├─ callbacks
+│     │  ├─ ema.py
+│     │  └─ sampling.py
+│     ├─ cli
+│     │  └─ __init__.py
+│     ├─ configs.py
+│     ├─ data
+│     │  ├─ dataloader.py
+│     │  ├─ encode_data.npy
+│     │  ├─ encode_data.pkl
+│     │  ├─ K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt
+│     │  ├─ model4cells_train_split_3_50_dims.pkl
+│     │  ├─ README.md
+│     │  └─ __init__.py
+│     ├─ metrics
+│     │  ├─ README.md
+│     │  ├─ sampling_metrics.py
+│     │  ├─ validation_metrics.py
+│     │  └─ __init__.py
+│     ├─ models
+│     │  ├─ diffusion.py
+│     │  ├─ modules.py
+│     │  ├─ networks.py
+│     │  ├─ README.md
+│     │  ├─ training_modules.py
+│     │  ├─ unet.py
+│     │  └─ __init__.py
+│     ├─ sample.py
+│     ├─ trainer.py
+│     ├─ utils
+│     │  ├─ ema.py
+│     │  ├─ losses
+│     │  │  ├─ README.md
+│     │  │  └─ __init__.py
+│     │  ├─ README.md
+│     │  ├─ scheduler.py
+│     │  ├─ utils.py
+│     │  └─ __init__.py
+│     ├─ __init__.py
+│     └─ __main__.py
+├─ tests
+│  ├─ conftest.py
+│  ├─ test_add.py
+│  ├─ test_inference.py
+│  ├─ test_main.py
+│  ├─ test_train.py
+│  └─ __init__.py
+├─ test_environment.py
+└─ train.py
+
+```
