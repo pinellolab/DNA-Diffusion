@@ -10,6 +10,7 @@ import pybedtools
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 
 def inference(one_hot_seqs, model):
@@ -214,3 +215,31 @@ def tab_to_bedgraph(enformer_bedgraph, cell_type):
             df_bedgraph['output'] = means
             df_bedgraph.to_csv(f"../outputs/experimental_bedgraphs/{tab_file[:-4]}.bedGraph", sep='\t', header=False,
                                index=False)
+
+
+def plot_tracks(height=1.5):
+    enf_files = os.listdir('../outputs/enformer_bedgraphs/')
+    exp_files = os.listdir('../outputs/experimental_bedgraphs/')
+    for exp_file in exp_files:
+        fig, axes = plt.subplots(2, 1, figsize=(20, height * 2), sharex=True)
+        cell_type = exp_file.split('_')[0]
+        assay_type = enf_files[1].split('_')[2].split('.')[0]
+        for enf_file in enf_files:
+            cell_type_enf = enf_file.split('_')[1]
+            if cell_type in cell_type_enf:
+                df = pd.read_csv(f'../outputs/enformer_bedgraphs/{enf_file}', sep='\t', header=None)
+                pred = list(df[3].values)
+                df = pd.read_csv(f'../outputs/experimental_bedgraphs/{exp_file}', sep='\t', header=None)
+                target = list(df[3].values)
+                chr = df[0].values[0]
+                start = df[1].values[0]
+                end = df[2].values[-1]
+                tracks = [pred, target]
+                sources = ['Enformer', 'Experimental']
+                for ax, y, source in zip(axes, tracks, sources):
+                    ax.fill_between(np.linspace(start, end, num=len(y)), y)
+                    ax.set_title(f"{source} {cell_type} {assay_type}")
+                    sns.despine(top=True, right=True, bottom=True)
+                    ax.set_xlabel(f'{chr}:{start}-{end}')
+                plt.tight_layout()
+                plt.savefig(f'../plots/genomic_track_experiment_visualisations/genomic_track_comp_enf_exp_{cell_type}_{assay_type}.pdf')

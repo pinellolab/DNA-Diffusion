@@ -1,7 +1,7 @@
 import os
 
 from inference import EnformerModel
-from utils import inference, create_enformer_bedgraph
+from utils import inference, create_enformer_bedgraph, plot_tracks
 from eval import scatter_evaluation
 
 if __name__ == "__main__":
@@ -16,5 +16,5 @@ if __name__ == "__main__":
     inference(one_hot_seqs, model)
     create_enformer_bedgraph(enformer_bed, cell_types, assay_type, chromosome)
 
+    plot_tracks()
     scatter_evaluation()
-    
