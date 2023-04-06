@@ -1,8 +1,4 @@
-.PHONY: clean lint requirements test dist publish bump_major_version \
-bump_minor_version bump_patch_version fetch_new_major_version \
-fetch_new_minor_version fetch_new_patch_version fetch_current_version \
-bump_build_version fetch_new_build_version bump_release_version \
-fetch_new_release_version
+.PHONY: clean requirements
 
 #################################################################################
 # Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
@@ -14,7 +10,7 @@ fetch_new_release_version
 # 5. Cleaning up intermediate files and artifacts
 
 # To use it type: make $command
-
+# NOTE: majority of the commands are exposed through hatch
 # TODO: fix the build process and the commands that accompany the build process
 #################################################################################
 
@@ -38,25 +34,13 @@ endif
 #################################################################################
 
 ## Install Python Dependencies 
-requirements: test_environment
+requirements:
 	conda install environments/conda/environment.yml
 
 ## Delete all compiled Python files
 clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
-
-## Perform style checks using pylint [TODO: change with other linter if needed]
-style_check:
-	PYTHONPATH=src pylint -j 4 -d duplicate-code src/
-	PYTHONPATH=src pylint -j 4 -d duplicate-code tests/*.py
-
-## Perform type checks using mypy [TODO: change with other type-checker if needed]
-type_check:
-	mypy --namespace-packages --ignore-missing-imports --disallow-untyped-defs src/
-
-## Perform style checks using pylint and type checks using mypy
-lint: style_check type_check
 
 ## Set up python interpreter environment
 create_environment:
@@ -85,20 +69,6 @@ test: requirements
 	PYTHONPATH=src/ py.test --cov=src/ --cov-report html:cov_html_doctests --doctest-modules -v tests/
 
 ## [TODO: add commands for packaging the project]
-
-## Format code
-format:
-	$(PYTHON_INTERPRETER) -m black \
-		--line-length 80 \
-		--target-version py38 \
-		src/ tests/
-
-## Format code
-format_check:
-	$(PYTHON_INTERPRETER) -m black --check \
-		--line-length 80 \
-		--target-version py38 \
-		src/ tests/
 
 #################################################################################
 # PROJECT RULES                                                                 #
