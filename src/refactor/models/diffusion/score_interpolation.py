@@ -1,4 +1,7 @@
 from functools import partial
+import random
+
+from einops import rearrange, repeat
 
 import torch
 import torch.nn.functional as F
@@ -11,6 +14,26 @@ from utils.schedules import (
     beta_linear_log_snr,
     linear_beta_schedule,
 )
+
+def interpolate_embeddings(logits, nucleotide_embeddings_tensor): 
+    softmax = torch.softmax(logits, dim=-2)
+    return torch.einsum("bwij, id -> bwjd", softmax, nucleotide_embeddings_tensor)
+
+
+def predict_logits(model, x_emb_norm, x_noisy, prev_embeds, t, classes):
+    model_input = torch.cat([x_emb_norm, x_noisy, prev_embeds], dim=-2)
+    logits = model(model_input, t, classes)
+    return logits
+
+
+def perform_forward_pass(model, x_emb_norm, x_noisy, prev_embeds, t, classes, use_clamp: bool = False): 
+    logits = predict_logits(model, x_emb_norm, x_noisy, prev_embeds, t, classes)
+    nucleotide_emb_norm = F.normalize(model.nucleotide_embeddings.weight, p=2, dim=-1)  # normalize across emb_dim
+    emb = interpolate_embeddings(logits, nucleotide_emb_norm)
+    if use_clamp: 
+        emb = torch.clamp(emb, -1., 1.)
+    return logits, emb
+
 
 
 class ScoreInterpolationModel(DiffusionModel):
@@ -99,6 +122,157 @@ class ScoreInterpolationModel(DiffusionModel):
         sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape)
 
         return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
+    
+    def cdcd_loss(
+        self,
+        model, 
+        x_start, 
+        t, 
+        classes, 
+        noise=None, 
+        p_uncond=0.1, 
+        use_reparameterization_trick=True, 
+        noise_normalized_emb=True, 
+        normalize_predicted_embs=False,
+        mse_coef: float = 0.
+    ):
+        """
+        Calculate the loss conditioned and noise injected.
+        """
+        x_idx = torch.argmax(x_start, dim=2)  # onehot -> index
+        x_emb = model.nucleotide_embeddings(x_idx)  # x_emb.shape = b,c,d,s
+        x_emb_normalized = F.normalize(x_emb, p=2, dim=-2)  # L2 normalize across emb_dim
+
+        
+        device = x_start.device
+        if noise is None:
+            if use_reparameterization_trick:
+                mean = torch.zeros_like(x_emb_normalized)
+                std = torch.ones_like(x_emb_normalized)
+
+                mean = torch.mean(x_emb_normalized, dim=0, keepdim=True)
+                std = torch.mean(x_emb_normalized, dim=0, keepdim=True)
+                epsilon = torch.randn_like(mean)
+                noise = mean + std * epsilon
+
+            else:
+                noise = torch.randn_like(x_emb_normalized) #  gauss noise 
+
+        if noise_normalized_emb: 
+            x_noisy_emb = self.q_sample(x_start=x_emb_normalized, t=t, noise=noise) #this is the auto generated noise given t and Noise
+        else: 
+            x_noisy_emb = self.q_sample(x_start=x_emb, t=t, noise=noise)
+
+        context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1-p_uncond)).to(device)
+
+        # mask for unconditional guidance
+        classes = classes * context_mask
+        classes = classes.type(torch.long)
+        
+        fwd = partial(
+            perform_forward_pass, 
+            model=model, 
+            x_emb_normalized=x_emb_normalized,
+            x_noisy_emb=x_noisy_emb,
+            t=t,
+            classes=classes
+        )
+
+        # self conditioning 
+        prev_embeds = torch.zeros_like(x_emb_normalized)
+        if random.random() > 0.5: 
+            with torch.no_grad():
+                prev_embeds = fwd(prev_embeds=prev_embeds)[1].detach()
+
+        predicted_logits, predicted_embs = fwd(prev_embeds=prev_embeds)
+
+        if normalize_predicted_embs: 
+            predicted_embs = F.normalize(predicted_embs, dim=-2)
+
+        mse_loss = F.mse_loss(predicted_embs, x_emb_normalized, reduction='mean')
+
+        predicted_logits = rearrange(predicted_logits, 'b c nucl s -> b nucl c s')
+        ce_loss = F.cross_entropy(predicted_logits, x_idx)
+
+        return dict(
+            loss=ce_loss + mse_loss * mse_coef, 
+            ce_loss=ce_loss,
+            mse_loss=mse_loss
+        )
+
+
+    @torch.no_grad()
+    def cdcd_sample(
+        self,
+        model,
+        init_shape,
+        num_steps: int,
+        classes,
+        *,
+        use_clamp: bool = False,
+        time_delta: float = 0.0,
+        input_ids = None,
+        cond_mask = None,
+        guide_name: str = None,
+        guide_scale: float = 1.0,
+        p_uncond: float=0.1
+    ):        
+        
+        """p sampler
+        Sampler for the reverse diffusion process (denoising).
+        Args:
+            time_delta: Asymmetric time interval shift, t → (t - Δ).
+            input_ids: Conditioning input sequence.
+            cond_mask: The conditioning mask for the input sequence.
+            guidance_name: The name of the guidance technique to use for the
+                generation. Choices: ["self_guidance", "class_free_guidance"]
+            guide_scale: The guidance scale >= 1.0.
+            use_clamp: Whether to clamp predicted embeddings to the range
+                [-1, 1] before each diffusion sampling step.
+        """
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        init_shape = [1, 1, 200, 200]
+        
+        
+        def predict_embeddings(x_noisy, prev_embeds, t, classes):
+            _, emb = perform_forward_pass(model, x_noisy, x_noisy, prev_embeds, t, classes, use_clamp=use_clamp)
+            return emb
+        
+
+        # Init noisy embedding and prev_embeds for self conditioning
+        x_emb_t = torch.randn(init_shape, device=device) 
+        prev_embeds = torch.zeros_like(x_emb_t)
+        for step in range(num_steps-1):
+
+            t_index = num_steps - step
+            time_now = torch.tensor([1 - step / num_steps], device=device).long()
+            t_next = torch.tensor([
+                torch.maximum(
+                    torch.tensor(1 - (step + 1 + time_delta) / num_steps),
+                    torch.tensor(0.0),
+                )
+            ], device=device).long()
+
+            x_0_pred = predict_embeddings(x_emb_t, prev_embeds, time_now, classes)
+
+            def score_interp(x_emb_t, t, *args):
+                x_0_pred_hat = x_0_pred.repeat(2, 1, 1, 1)  # need this for CFG
+                d, s = x_0_pred_hat.shape[-2:]
+                t = repeat(t, 'b -> b 1 d s', b=t.shape[0], d=d, s=s)
+                return (x_0_pred_hat - x_emb_t) * (t.float() ** 2)
+
+            context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1-p_uncond)).to(device)
+            x_emb_t = p_sample_guided(score_interp, x_emb_t, classes=classes, t=t_next, t_index=t_index, context_mask=context_mask)
+
+            prev_embeds = x_0_pred
+        
+        step = num_steps - 1
+        time_now = torch.tensor([1 - step / num_steps], device=device)
+        logits = predict_logits(x_emb_t, x_emb_t, prev_embeds, time_now, classes)
+        logits = torch.softmax(logits, dim=-2)
+        return logits
+
 
     @torch.no_grad()
     def p_sample(self, x, t, t_index):
@@ -118,6 +292,7 @@ class ScoreInterpolationModel(DiffusionModel):
             noise = torch.randn_like(x)
             # Algorithm 2 line 4:
             return model_mean + torch.sqrt(posterior_variance_t) * noise
+        
 
     @torch.no_grad()
     def p_sample_guided(self, x, classes, t, t_index, context_mask, cond_weight=0.0):
