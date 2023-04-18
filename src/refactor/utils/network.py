@@ -211,3 +211,203 @@ class Attention(nn.Module):
         out = einsum("b h i j, b h d j -> b h i d", attn, v)
         out = rearrange(out, "b h (x y) d -> b (h d) x y", x=h, y=w)
         return self.to_out(out)
+    
+
+
+def rotate_half(x):
+    x1, x2 = x.chunk(2, dim=-1)
+    return torch.cat((-x2, x1), dim=-1)
+
+
+@torch.jit.script
+def apply_rotary_positional_embedding(
+    x: torch.Tensor,    # ["batch", "heads", "pos", "dim"]
+    sin: torch.Tensor,  # ["1", "1", "pos", "dim"]
+    cos: torch.Tensor,  # ["1", "1", "pos", "dim"]
+):
+    return (x * cos) + (rotate_half(x) * sin)
+
+
+class AttentionWithRotaryPosEmb(nn.Module):
+    def __init__(self, dim, heads = 4, dim_head = 32, scale = 10):
+        super().__init__()
+        self.scale = scale
+        self.heads = heads
+        hidden_dim = dim_head * heads
+        self.to_qkv = nn.Conv2d(dim, hidden_dim * 3, 1, bias = False)
+        self.to_out = nn.Conv2d(hidden_dim, dim, 1)
+
+        dim_rotary_embed = dim_head // 2
+        self.rotary_pos_embed = RotaryPositionalEmbedding(dim_rotary_embed)
+
+    def forward(self, x):
+        b, c, h, w = x.shape
+        qkv = self.to_qkv(x).chunk(3, dim = 1)
+        q, k, v = map(lambda t: rearrange(t, 'b (h c) x y -> b h c (x y)', h = self.heads), qkv)
+        
+        q = rearrange(q, "b h d s -> b h s d")
+        k = rearrange(k, "b h d s -> b h s d")
+
+        # print(q.shape, k.shape, v.shape)
+        # torch.Size([16, 8, 16, 200]) torch.Size([16, 8, 16, 200]) torch.Size([16, 8, 16, 200])
+        sin, cos = self.rotary_pos_embed(k)
+        rot_dim = sin.shape[-1]
+
+        q_left, q_right = q[..., :rot_dim], q[..., rot_dim:]
+        k_left, k_right = k[..., :rot_dim], k[..., rot_dim:]
+
+        q_left = apply_rotary_positional_embedding(q_left, sin, cos)
+        k_left = apply_rotary_positional_embedding(k_left, sin, cos)
+
+        k = torch.cat([k_left, k_right], dim=-1)
+        q = torch.cat([q_left, q_right], dim=-1)
+
+        q = rearrange(q, "b h s d -> b h d s")
+        k = rearrange(k, "b h s d -> b h d s")
+
+        q, k = map(l2norm, (q, k))
+
+        sim = einsum('b h d i, b h d j -> b h i j', q, k) * self.scale
+        attn = sim.softmax(dim = -1)
+        out = einsum('b h i j, b h d j -> b h i d', attn, v)
+        out = rearrange(out, 'b h (x y) d -> b (h d) x y', x = h, y = w) 
+        return self.to_out(out)
+
+
+class RotaryPositionalEmbedding(nn.Module):
+    """GPT-NeoX style rotary positional embedding."""
+
+    def __init__(
+        self,
+        dim: int,
+        max_period: int = 10_000,
+        precision: torch.dtype = torch.float32,
+    ):
+        super().__init__()
+        inv_freq = 1.0 / (max_period ** (torch.arange(0, dim, 2).float() / dim))
+        self.register_buffer("inv_freq", inv_freq)
+        self.seq_len_cached = None
+        self.cos_cached = None
+        self.sin_cached = None
+        self.precision = precision
+
+    def forward(self, x, seq_dim: int = -2):
+        seq_len = x.shape[seq_dim]
+        if seq_len != self.seq_len_cached:
+            self.seq_len_cached = seq_len
+            t = torch.arange(seq_len, device=x.device).type_as(self.inv_freq)
+            freqs = torch.einsum("i , j -> i j", t, self.inv_freq)
+            embeds = torch.cat((freqs, freqs), dim=-1).to(x.device)
+
+            # Shapes: ["batch", "heads", "pos", "dim"]
+            self.sin_cached = embeds.sin()[None, None, :, :]
+            self.cos_cached = embeds.cos()[None, None, :, :]
+        return self.sin_cached, self.cos_cached
+
+
+class CDCDEmbedFC(nn.Module):
+    def __init__(self, input_dim, emb_dim):
+        super().__init__()
+        
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, emb_dim),
+            nn.GELU(),
+            nn.Linear(emb_dim, input_dim)
+        )
+
+    def forward(self, x):
+        x = rearrange(x, "b d w h -> b h w d")
+        x = self.net(x)
+        x = rearrange(x, "b h w d -> b d w h")
+        return x
+
+
+class CDCDTransformerBlock(nn.Module):
+    def __init__(self, dim_in: int, hidden_dim: int, mlp_hidden_dim: int = 4096, num_attention_heads: int = 8):
+        super().__init__()
+
+        dim_attention_head = hidden_dim // num_attention_heads
+        self.residual_norm_attention = Residual(
+            PreNorm(
+                dim_in,
+                AttentionWithRotaryPosEmb(dim_in, heads=num_attention_heads, dim_head=dim_attention_head)
+            )
+        )
+
+        mlp = CDCDEmbedFC(input_dim=hidden_dim, emb_dim=mlp_hidden_dim)
+
+        self.residual_norm_mlp = Residual(
+            PreNorm(
+                dim_in,
+                mlp
+            )
+        )
+
+    def forward(self, inputs):
+        x, t_emb = inputs
+        x = self.residual_norm_attention(x, t_emb)
+        x = self.residual_norm_mlp(x, t_emb)
+        return x, t_emb
+
+
+class CDCDTransformerEncoder(nn.Module):
+    def __init__(
+        self, 
+        init_dim: int, 
+        time_dim: int, 
+        num_layers: int = 8, 
+        num_attention_heads: int = 8,
+        hidden_dim: int = 1024,
+        mlp_hidden_dim: int = 4096, 
+        resnet_block_groups: int = 8,
+        embed_dim: int = None
+    ):
+        super().__init__()
+        self.num_layers = num_layers
+        self.num_attention_heads = num_attention_heads
+        self.hidden_dim = hidden_dim
+        self.embed_dim = init_dim if embed_dim is None else embed_dim
+
+        self.x_lin_in = nn.Linear(init_dim, hidden_dim)
+        self.time_lin_in = nn.Linear(time_dim, hidden_dim)
+
+        attention_layers = []
+        for _ in range(num_layers):
+            block = CDCDTransformerBlock(
+                dim_in=hidden_dim,
+                hidden_dim=hidden_dim,
+                mlp_hidden_dim=mlp_hidden_dim
+            )
+            attention_layers.append(
+                block
+            )
+
+        self.net = nn.Sequential(*attention_layers)
+        self.lin_out = nn.Linear(hidden_dim, init_dim)
+        self.final_res_block = ResnetBlock(init_dim * 2, embed_dim, groups=resnet_block_groups, time_emb_dim=time_dim)
+
+
+    def forward(self, x, t_emb=None):
+        x = rearrange(x, "b w d h -> b w h d")
+        r = x.clone()  # b w h d
+        t_end = t_emb.clone()
+
+        x = self.x_lin_in(x)
+        t_emb = self.time_lin_in(t_emb)
+        
+        t_emb = rearrange(t_emb, "b d -> b d 1 1")
+        x = rearrange(x, "b h w d -> b d w h")
+        x, *_ = self.net((x, t_emb))
+        
+        x = rearrange(x, "b d h w -> b w h d")
+        x = self.lin_out(x)
+
+        x = rearrange(x, "b w h d -> b d h w")
+        r = rearrange(r, "b w h d -> b d h w")
+
+        x = torch.cat((x, r), dim=1)
+        x = self.final_res_block(x, t_end)
+        
+        x = rearrange(x, "b d h w -> b w h d")
+        return x
+    
