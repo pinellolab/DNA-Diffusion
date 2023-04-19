@@ -44,7 +44,7 @@ class ScoreInterpolationModel(DiffusionModel):
         timesteps=50,
         noise_schedule="cosine",
         time_difference=0.0,
-        network: nn.Module,
+        cdcd_transformer: nn.Module,
         is_conditional: bool,
         p_uncond: float = 0.1,
         use_fp16: bool,
@@ -60,7 +60,7 @@ class ScoreInterpolationModel(DiffusionModel):
         p2_k: float = 1,
     ):
         super().__init__(
-            network,
+            cdcd_transformer,
             is_conditional,
             use_fp16,
             logdir,
@@ -202,77 +202,73 @@ class ScoreInterpolationModel(DiffusionModel):
 
 
     @torch.no_grad()
-    def cdcd_sample(
+    def sample_cdcd(
         self,
-        model,
-        init_shape,
-        num_steps: int,
+        shape,
+        timesteps: int,
         classes,
         *,
         use_clamp: bool = False,
         time_delta: float = 0.0,
-        input_ids = None,
-        cond_mask = None,
-        guide_name: str = None,
-        guide_scale: float = 1.0,
-        p_uncond: float=0.1
+        cond_weight=0
     ):        
-        
-        """p sampler
-        Sampler for the reverse diffusion process (denoising).
-        Args:
-            time_delta: Asymmetric time interval shift, t → (t - Δ).
-            input_ids: Conditioning input sequence.
-            cond_mask: The conditioning mask for the input sequence.
-            guidance_name: The name of the guidance technique to use for the
-                generation. Choices: ["self_guidance", "class_free_guidance"]
-            guide_scale: The guidance scale >= 1.0.
-            use_clamp: Whether to clamp predicted embeddings to the range
-                [-1, 1] before each diffusion sampling step.
-        """
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        init_shape = [1, 1, 200, 200]
-        
-        
+        b = shape[0]
+        embed_t = torch.randn(shape)
+        model = self.model
+
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         def predict_embeddings(x_noisy, prev_embeds, t, classes):
             _, emb = perform_forward_pass(model, x_noisy, x_noisy, prev_embeds, t, classes, use_clamp=use_clamp)
             return emb
         
-
-        # Init noisy embedding and prev_embeds for self conditioning
-        x_emb_t = torch.randn(init_shape, device=device) 
-        prev_embeds = torch.zeros_like(x_emb_t)
-        for step in range(num_steps-1):
-
-            t_index = num_steps - step
-            time_now = torch.tensor([1 - step / num_steps], device=device).long()
-            t_next = torch.tensor([
-                torch.maximum(
-                    torch.tensor(1 - (step + 1 + time_delta) / num_steps),
-                    torch.tensor(0.0),
-                )
-            ], device=device).long()
-
-            x_0_pred = predict_embeddings(x_emb_t, prev_embeds, time_now, classes)
-
-            def score_interp(x_emb_t, t, *args):
-                x_0_pred_hat = x_0_pred.repeat(2, 1, 1, 1)  # need this for CFG
-                d, s = x_0_pred_hat.shape[-2:]
-                t = repeat(t, 'b -> b 1 d s', b=t.shape[0], d=d, s=s)
-                return (x_0_pred_hat - x_emb_t) * (t.float() ** 2)
-
-            context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1-p_uncond)).to(device)
-            x_emb_t = p_sample_guided(score_interp, x_emb_t, classes=classes, t=t_next, t_index=t_index, context_mask=context_mask)
-
-            prev_embeds = x_0_pred
+        # self cond
+        prev_embeds = torch.zeros_like(embed_t)
         
-        step = num_steps - 1
-        time_now = torch.tensor([1 - step / num_steps], device=device)
-        logits = predict_logits(x_emb_t, x_emb_t, prev_embeds, time_now, classes)
-        logits = torch.softmax(logits, dim=-2)
-        return logits
+        # from p_sample_loop
+        if classes is not None:
+            prev_embeds = prev_embeds.repeat(2, 1, 1, 1)
 
+            n_sample = classes.shape[0]
+            context_mask = torch.ones_like(classes).to(device)
+            # make 0 index unconditional
+            # double the batch
+            classes = classes.repeat(2)
+            context_mask = context_mask.repeat(2)
+            context_mask[n_sample:] = 0.0  # makes second half of batch context free
+            sampling_fn = partial(
+                self.p_sample_guided,
+                classes=classes,
+                cond_weight=cond_weight,
+                context_mask=context_mask,
+            )
+        else: 
+            sampling_fn = partial(self.p_sample)
+
+
+        images = [] # accumulate all steps
+        embed_t = torch.randn(shape, device=device) 
+        for i in tqdm(
+            reversed(range(0, timesteps)),
+            desc="sampling loop time step",
+            total=timesteps,
+        ):
+
+            def compute_score_interpolation(embed_t, time, classes):
+                nonlocal prev_embeds
+                prev_embeds = predict_embeddings(embed_t, prev_embeds, time, classes)
+                time = time[:, None, None, None]
+                return (prev_embeds - embed_t) * (time ** 2)
+            
+            time_next = torch.full((b,), i, device=device, dtype=torch.long)
+            embed_t = sampling_fn(compute_score_interpolation, embed_t, t=time_next, t_index=i)
+
+            # project to output space
+            out = model.linear_out(embed_t)
+            out = torch.softmax(out, dim=-2)
+            images.append(out.cpu().numpy())
+        
+        return images
 
     @torch.no_grad()
     def p_sample(self, x, t, t_index):
@@ -295,7 +291,7 @@ class ScoreInterpolationModel(DiffusionModel):
         
 
     @torch.no_grad()
-    def p_sample_guided(self, x, classes, t, t_index, context_mask, cond_weight=0.0):
+    def p_sample_guided(self, fwd_f, x, classes, t, t_index, context_mask, cond_weight=0.0):
         # adapted from: https://openreview.net/pdf?id=qw8AKxfYbI
         # print (classes[0])
         batch_size = x.shape[0]
@@ -310,7 +306,7 @@ class ScoreInterpolationModel(DiffusionModel):
         classes_masked = classes * context_mask
         classes_masked = classes_masked.type(torch.long)
         # print ('class masked', classes_masked)
-        preds = self.model(x_double, time=t_double, classes=classes_masked)
+        preds = fwd_f(x_double, time=t_double, classes=classes_masked)
         eps1 = (1 + cond_weight) * preds[:batch_size]
         eps2 = cond_weight * preds[batch_size:]
         x_t = eps1 - eps2
