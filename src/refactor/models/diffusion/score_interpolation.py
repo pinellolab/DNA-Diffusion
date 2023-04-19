@@ -212,10 +212,10 @@ class ScoreInterpolationModel(DiffusionModel):
         time_delta: float = 0.0,
         cond_weight=0
     ):        
+        model = self.model
 
         b = shape[0]
         embed_t = torch.randn(shape)
-        model = self.model
 
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         def predict_embeddings(x_noisy, prev_embeds, t, classes):
@@ -253,7 +253,7 @@ class ScoreInterpolationModel(DiffusionModel):
             desc="sampling loop time step",
             total=timesteps,
         ):
-
+            
             def compute_score_interpolation(embed_t, time, classes):
                 nonlocal prev_embeds
                 prev_embeds = predict_embeddings(embed_t, prev_embeds, time, classes)
@@ -265,6 +265,7 @@ class ScoreInterpolationModel(DiffusionModel):
 
             # project to output space
             out = model.linear_out(embed_t)
+            out = rearrange(out, "b w s nucl -> b w nucl s")
             out = torch.softmax(out, dim=-2)
             images.append(out.cpu().numpy())
         
