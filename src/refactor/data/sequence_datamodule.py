@@ -1,107 +1,66 @@
-from typing import Any, Dict, Optional, Tuple
+import pickle
+import random
+from typing import Any, Dict, List, Optional, Tuple
+import os
+from pathlib import Path
 
+import pandas as pd
 import numpy as np
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningDataModule
+from pytorch_lightning.utilities import rank_zero_only
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 
-# from torchvision.transforms import transforms
+import torchvision.transforms as T
+
+from refactor.utils.data import get_motif, read_master_dataset, subset_by_experiment
+from refactor.utils.misc import one_hot_encode
+
+DEFAULT_BASE_PATH = Path('.')
+DEFAULT_DATA_DIR_PATH = DEFAULT_BASE_PATH / Path("data")
+DEFAULT_DATA_ENCODE_FILENAME = Path("encode_data.pkl")
+DEFAULT_DATA_ENCODE_PATH = DEFAULT_DATA_DIR_PATH / DEFAULT_DATA_ENCODE_FILENAME
+DEFAULT_SEQUENCES_PER_GROUP_FILENAME = Path("K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt")
+DEFAULT_SEQUENCES_PER_GROUP_PATH = DEFAULT_DATA_DIR_PATH / DEFAULT_SEQUENCES_PER_GROUP_FILENAME
+
+DEFAULT_SUBSET_COMPONENTS = [
+    "GM12878_ENCLB441ZZZ",
+    "hESCT0_ENCLB449ZZZ",
+    "K562_ENCLB843GMH",
+    "HepG2_ENCLB029COU",
+]
 
 
-class SequenceDatasetBase(Dataset):
-    """
-    Base class for sequence datasets.
-
-    Args:
-        df (pd.DataFrame): Dataframe containing the all sequence metadata
-        sequence_length (int): Length of the sequence
-        sequence_encoding (str): Encoding scheme for the sequence ("polar", "onehot", "ordinal")
-        sequence_transform (callable): Transformation for the sequence
-        cell_type_transform (callable): Transformation for the cell type
-    """
-
+class SequenceDataset(Dataset):
     def __init__(
         self,
-        df,
-        sequence_length: int = 200,
-        sequence_encoding: str = "polar",
-        sequence_transform=None,
-        cell_type_transform=None,
-    ) -> None:
-        super().__init__()
-        self.data = df
-        self.sequence_length = sequence_length
-        self.sequence_encoding = sequence_encoding
+        seqs: str,
+        c: str,
+        sequence_transform: Optional[T.Compose] = T.Compose([T.ToTensor()]),
+        cell_type_transform: Optional[T.Compose] = T.Compose([T.ToTensor()])
+    ):
+        "Initialization"
+        self.seqs = seqs
+        self.c = c
         self.sequence_transform = sequence_transform
         self.cell_type_transform = cell_type_transform
-        self.alphabet = ["A", "C", "T", "G"]
-        self.check_data_validity()
 
-    def __len__(self) -> int:
-        return len(self.data)
+    def __len__(self):
+        "Denotes the total number of samples"
+        return len(self.seqs)
 
     def __getitem__(self, index):
-        # Iterating through DNA sequences from dataset and one-hot encoding all nucleotides
-        current_seq = self.data["sequence"][index]
-        if "N" not in current_seq:
-            X_seq = self.encode_sequence(current_seq, encoding=self.sequence_encoding)
+        "Generates one sample of data"
+        x = self.seqs[index]
+        if self.sequence_transform:
+            x = self.transform(x)
 
-            # Reading cell component at current index
-            X_cell_type = self.data["TAG"][index]
+        y = self.c[index]
+        if self.cell_type_transform: 
+            y = self.cell_type_transform(y)
 
-            if self.sequence_transform is not None:
-                X_seq = self.sequence_transform(X_seq)
-            if self.cell_type_transform is not None:
-                X_cell_type = self.cell_type_transform(X_cell_type)
-
-            return X_seq, X_cell_type
-
-    def check_data_validity(self) -> None:
-        """
-        Checks if the data is valid.
-        """
-        if not set("".join(self.data["sequence"])).issubset(set(self.alphabet)):
-            raise ValueError(f"Sequence contains invalid characters.")
-
-        uniq_raw_seq_len = self.data["sequence"].str.len().unique()
-        if len(uniq_raw_seq_len) != 1 or uniq_raw_seq_len[0] != self.sequence_length:
-            raise ValueError(f"The sequence length does not match the data.")
-
-    def encode_sequence(self, seq, encoding):
-        """
-        Encodes a sequence using the given encoding scheme ("polar", "onehot", "ordinal").
-        """
-        if encoding == "polar":
-            seq = self.one_hot_encode(seq).T
-            seq[seq == 0] = -1
-        elif encoding == "onehot":
-            seq = self.one_hot_encode(seq).T
-        elif encoding == "ordinal":
-            seq = np.array([self.alphabet.index(n) for n in seq])
-        else:
-            raise ValueError(f"Unknown encoding scheme: {encoding}")
-        return seq
-
-    # Function for one hot encoding each line of the sequence dataset
-    def one_hot_encode(self, seq) -> np.ndarray:
-        """
-        One-hot encoding a sequence
-        """
-        seq_len = len(seq)
-        seq_array = np.zeros((self.sequence_length, len(self.alphabet)))
-        for i in range(seq_len):
-            seq_array[i, self.alphabet.index(seq[i])] = 1
-        return seq_array
-
-    def create_sequence_dataset(self, df):
-        return SequenceDatasetBase(
-            df=df,
-            sequence_length=self.sequence_length,
-            sequence_encoding=self.sequence_encoding,
-            sequence_transform=self.sequence_transform,
-            cell_type_transform=self.cell_type_transform,
-        )
+        return x, y
 
 
 class SequenceDataModule(pl.LightningDataModule):
@@ -118,47 +77,165 @@ class SequenceDataModule(pl.LightningDataModule):
         num_workers (int): Number of workers
     """
 
+    df_train = None
+    df_validation = None
+    df_test = None
+
+    train_chr: List[str] = None
+    val_chr: List[str] = ['chr1']
+    test_chr: List[str] = ['chr2']
+
     def __init__(
         self,
         data_dir: str,
+        encoded_filename: str=DEFAULT_DATA_ENCODE_FILENAME,
+        sequences_per_group_filename: str=DEFAULT_SEQUENCES_PER_GROUP_FILENAME,
         sequence_length: int = 200,
         sequence_encoding: str = "polar",
         sequence_transform=None,
         cell_type_transform=None,
         batch_size=None,
         num_workers: int = 0,
+        load_saved_data: bool = True, 
+        train_chr: List[str] = None, 
+        val_chr: List[str] = None,
+        test_chr: List[str] = None,
+        subset_components: List[str] = DEFAULT_SUBSET_COMPONENTS,
+        number_of_sequences_to_motif_creation: int = 1000,
     ) -> None:
+        
         super().__init__()
         self.save_hyperparameters(logger=False)
         # self.df_train, self.df_validation, self.df_test = Optional[Dataset] = None
+        self.number_of_sequences_to_motif_creation = number_of_sequences_to_motif_creation
         self.sequence_length = sequence_length
         self.sequence_encoding = sequence_encoding
         self.sequence_transform = sequence_transform
         self.cell_type_transform = cell_type_transform
-        self.data_dir = data_dir
+        self.data_dir = data_dir  # 'data'
+        self.data_path = Path(self.data_dir)
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.load_saved_data = load_saved_data
+        self.subset_components = subset_components
+        
+        self.encoded_filename = encoded_filename
+        self.sequences_per_group_filename = sequences_per_group_filename
+
+        self.train_chr = train_chr
+        
+        if val_chr: 
+            self.val_chr = val_chr
+
+        if test_chr: 
+            self.test_chr = test_chr
+
+    def prepare_data(self) -> None:
+        if self.load_saved_data: 
+            return 
+        
+        print("Preparing data...")
+        data_path = self.data_path / DEFAULT_SEQUENCES_PER_GROUP_FILENAME
+        df = read_master_dataset(data_path)
+        if len(self.subset_components) < 4:
+            df = subset_by_experiment(df, subset_components=self.subset_components)
+        
+        if not self.df_train and not self.df_validation and not self.df_test:
+            self.df_train, self.df_validation, self.df_test = self.create_train_groups(df)
+        
+        self.df_train, self.df_validation, self.df_test = get_motif(
+            self.df_train, 
+            self.df_validation, 
+            self.df_test,
+            self.subset_components,
+            self.number_of_sequences_to_motif_creation
+        )
+
+        combined_dict = {
+            "train": self.df_train,
+            "test": self.df_test,
+            "train_shuffle": self.df_validation,
+        }
+
+        encode_path = self.data_path / self.encoded_filename  # src/refactor/data/encode_data.pkl
+        with open(encode_path, "wb") as f:
+            pickle.dump(combined_dict, f)
+
+        print("Preparing data DONE!")
 
     def setup(self, stage: str):
         # TODO: incorporate some extra information after the split (experiement -> split -> motif -> train/test assignment)
         # WARNING: have to be able to call loading_data on the main process of accelerate/fabric bc of gimme_motifs caching dependecies
         # Creating sequence datasets unless they exist already
-        self.df = pd.read_csv(data_path, sep="\t")
-        if not self.data_train and not self.data_test and not self.data_test:
-            df_test = self.df[self.df.chr == "chr1"].reset_index(drop=True)
-            df_validation = self.df[self.df.chr == "chr2"].reset_index(drop=True)
-            df_train = self.df[~self.df.chr.isin(["chr1", "chr2"])].reset_index(drop=True)
 
-        train_data = self.create_sequence_dataset(self.df_train)
-        validation_data = self.create_sequence_dataset(self.df_validation)
-        test_data = self.create_sequence_dataset(self.df_test)
+        print("Setup...")
+        data_path = self.data_path / self.encoded_filename
+        with open(data_path, "rb") as f:
+            # f.seek(0)
+            encode_data = pickle.load(f)
+        print(encode_data.keys())
+        train = encode_data["train"]
+        test = encode_data["test"]
+        validation = encode_data["train_shuffle"]
+
+        # Getting motif related data from encode_data
+        self.train_motifs = train["motifs"]
+        self.test_motifs = test["motifs"]
+        self.shuffle_motifs = validation["motifs"]
+
+        self.train_motifs_per_components_dict = train["motifs_per_components_dict"]
+        self.test_motifs_per_components_dict = test["motifs_per_components_dict"]
+        self.shuffle_motifs_per_components_dict = validation["motifs_per_components_dict"]
+
+        self.train_dataset = self.create_sequence_dataset(train)
+        self.val_dataset = self.create_sequence_dataset(validation)
+        self.test_dataset = self.create_sequence_dataset(test)
 
         # Creating sequence dataloaders
-        self.train_dl = self.create_dataloader(self.train_data, self.batch_size, self.num_workers)
-        self.validation_dl = self.create_dataloader(self.validation_data, self.batch_size, self.num_workers)
-        self.test_dl = self.create_dataloader(self.test_data, self.batch_size, self.num_workers)
+        # self.train_dl = self.create_dataloader(self.train_data, self.batch_size, self.num_workers)
+        # self.validation_dl = self.create_dataloader(self.validation_data, self.batch_size, self.num_workers)
+        # self.test_dl = self.create_dataloader(self.test_data, self.batch_size, self.num_workers)
+        print("Setup OK!")
+
+    def create_sequence_dataset(self, data):
+        df = data["dataset"]
+        self.cell_components = df.sort_values("TAG")["TAG"].unique().tolist()
+        self.tag_to_numeric = {x: n + 1 for n, x in enumerate(df.TAG.unique())}
+        self.numeric_to_tag = {n + 1: x for n, x in enumerate(df.TAG.unique())}
+
+        self.cell_types = sorted(self.numeric_to_tag.keys())
+        X_cell_types = torch.from_numpy(df["TAG"].apply(lambda x: self.tag_to_numeric[x]).to_numpy())
+        
+        nucleotides = ["A", "C", "G", "T"]
+        X_sequences = np.array([one_hot_encode(x, nucleotides, 200) for x in (df["sequence"]) if "N" not in x])
+        X_sequences = np.array([x.T.tolist() for x in X_sequences])
+        X_sequences[X_sequences == 0] = -1
+        
+        return SequenceDataset(
+            X_sequences, 
+            X_cell_types,
+            sequence_transform=self.sequence_transform,
+            cell_type_transform=self.cell_type_transform,
+        )
+
+    def create_train_groups(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        if self.train_chr is None: 
+            val_test_chr = self.val_chr + self.test_chr
+            df_train = df[~df.chr.isin(val_test_chr)].reset_index(drop=True)
+        else: 
+            df_train = df[df.chr.isin(self.train_chr)].reset_index(drop=True)
+
+        df_validation = df[df.chr.isin(self.val_chr)].reset_index(drop=True)
+        df_test = df[df.chr.isin(self.test_chr)].reset_index(drop=True)
+
+        df_validation["sequence"] = df_validation["sequence"].apply(
+            lambda x: "".join(random.sample(list(x), len(x)))
+        )
+        return df_train, df_validation, df_test
 
     def train_dataloader(self):
         return DataLoader(
-            dataset=self.data_train,
+            dataset=self.train_dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             # pin_memory=self.hparams.pin_memory,
@@ -167,7 +244,7 @@ class SequenceDataModule(pl.LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(
-            dataset=self.data_val,
+            dataset=self.val_dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             # pin_memory=self.hparams.pin_memory,
@@ -176,7 +253,7 @@ class SequenceDataModule(pl.LightningDataModule):
 
     def test_dataloader(self):
         return DataLoader(
-            dataset=self.data_test,
+            dataset=self.test_dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             # pin_memory=self.hparams.pin_memory,
@@ -198,3 +275,5 @@ class SequenceDataModule(pl.LightningDataModule):
 
 if __name__ == "__main__":
     _ = SequenceDataModule()
+
+
