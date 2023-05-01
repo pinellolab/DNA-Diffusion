@@ -25,7 +25,6 @@ def read_master_dataset(input_csv: str, limit_total_sequences=0, change_comp_ind
 
 def motifs_from_fasta(fasta: str):
     print("Computing Motifs....")
-
     os.system(f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed")
     
     df_results_seq_guime = pd.read_csv("train_results_motifs.bed", sep="\t", skiprows=5, header=None)
@@ -53,7 +52,9 @@ def generate_motifs_and_fastas(df: pd.DataFrame, name: str, subset_components: L
     """return fasta anem , and dict with components motifs"""
     print("Generating Fasta and Motis:", name)
     print("---" * 10)
-    fasta_saved = save_fasta(df, f"{name}_{'_'.join([str(c) for c in subset_components])}", number_of_sequences_to_motif_creation)
+    name_fasta =  f"{name}_{'_'.join([str(c) for c in subset_components])}"
+    fasta_saved = save_fasta(df, name_fasta, number_of_sequences_to_motif_creation)
+    print("FASTA SAVED", fasta_saved)
     print("Generating Motifs (all seqs)")
     motif_all_components = motifs_from_fasta(fasta_saved)
     print("Generating Motifs per component")
