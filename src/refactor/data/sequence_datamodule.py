@@ -90,9 +90,9 @@ class SequenceDataModule(pl.LightningDataModule):
     val_dataset: Dataset = None
     test_dataset: Dataset = None
 
-    datasets_per_stage: Dict[str, Dataset] = dict()
-    motifs_per_stage: Dict[str, Any] = dict()
-    motifs_per_components_dict_per_stage: Dict[str, Dict[str, Any]] = dict()
+    datasets_per_split: Dict[str, Dataset] = dict()
+    motifs_per_split: Dict[str, Any] = dict()
+    motifs_per_components_dict_per_split: Dict[str, Dict[str, Any]] = dict()
 
     def __init__(
         self,
@@ -162,13 +162,13 @@ class SequenceDataModule(pl.LightningDataModule):
 
         combined_dict = {
             "train": self.df_train,
-            "validation": self.df_validation,
+            "val": self.df_validation,
             "test": self.df_test,
         }
 
-        for stage, data in combined_dict.items(): 
-            stage_data_path = self.data_path / f"{stage}_{self.encoded_filename}" # src/refactor/data/encode_data.pkl
-            with open(stage_data_path, "wb") as f: 
+        for split, data in combined_dict.items(): 
+            split_data_path = self.data_path / f"{split}_{self.encoded_filename}" # src/refactor/data/encode_data.pkl
+            with open(split_data_path, "wb") as f: 
                 pickle.dump(data, f)
 
         print("Preparing data DONE!")
@@ -177,17 +177,27 @@ class SequenceDataModule(pl.LightningDataModule):
         # TODO: incorporate some extra information after the split (experiement -> split -> motif -> train/test assignment)
         # WARNING: have to be able to call loading_data on the main process of accelerate/fabric bc of gimme_motifs caching dependecies
         # Creating sequence datasets unless they exist already
+        if stage == 'fit' or stage is None: # then load train and val splits
+            self._setup_split('train')
+            self._setup_split('val')
+        
+        if stage in ('test', 'predict') or stage is None:
+            self._setup_split('test')
+        
 
-        print(f"Loading {stage}...")
-        stage_data_path = self.data_path / f"{stage}_{self.encoded_filename}"
+    def _setup_split(self, split: str):
+
+        print(f"Loading {split}...")
+        stage_data_path = self.data_path / f"{split}_{self.encoded_filename}"
         with open(stage_data_path, "rb") as f: 
             encode_data = pickle.load(f)
 
-        self.motifs_per_stage[stage] = encode_data['motifs']
-        self.motifs_per_components_dict_per_stage[stage] = encode_data["motifs_per_components_dict"]
-        self.datasets_per_stage[stage] =  self.create_sequence_dataset(encode_data)
-        print(f"Loading {stage} DONE!")
+        self.motifs_per_split[split] = encode_data['motifs']
+        self.motifs_per_components_dict_per_split[split] = encode_data["motifs_per_components_dict"]
+        self.datasets_per_split[split] =  self.create_sequence_dataset(encode_data)
+        print(f"Loading {split} split  DONE!")
 
+        
 
     def create_sequence_dataset(self, data):
         df = data["dataset"]
@@ -226,7 +236,7 @@ class SequenceDataModule(pl.LightningDataModule):
         return df_train, df_validation, df_test
 
     def train_dataloader(self):
-        train_dataset = self.datasets_per_stage['train']
+        train_dataset = self.datasets_per_split['train']
         return DataLoader(
             dataset=train_dataset,
             batch_size=self.hparams.batch_size,
@@ -236,7 +246,7 @@ class SequenceDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
-        val_dataset = self.datasets_per_stage['val']
+        val_dataset = self.datasets_per_split['val']
         return DataLoader(
             dataset=val_dataset,
             batch_size=self.hparams.batch_size,
@@ -246,7 +256,7 @@ class SequenceDataModule(pl.LightningDataModule):
         )
 
     def test_dataloader(self):
-        test_dataset = self.datasets_per_stage['test']
+        test_dataset = self.datasets_per_split['test']
         return DataLoader(
             dataset=test_dataset,
             batch_size=self.hparams.batch_size,
