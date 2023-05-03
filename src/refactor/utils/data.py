@@ -45,7 +45,7 @@ def get_motif(
     
     train = generate_motifs_and_fastas(df_train, "train", subset_components=subset_components, number_of_sequences_to_motif_creation=number_of_sequences_to_motif_creation)
     test = generate_motifs_and_fastas(df_test, "test", subset_components=subset_components, number_of_sequences_to_motif_creation=number_of_sequences_to_motif_creation)
-    train_shuffle = generate_motifs_and_fastas(df_shuffled, "shuffled", subset_components=subset_components, number_of_sequences_to_motif_creation=number_of_sequences_to_motif_creation)
+    train_shuffle = generate_motifs_and_fastas(df_shuffled, "val", subset_components=subset_components, number_of_sequences_to_motif_creation=number_of_sequences_to_motif_creation)
     return train, test, train_shuffle
 
 def generate_motifs_and_fastas(df: pd.DataFrame, name: str, subset_components: List[str], number_of_sequences_to_motif_creation) -> Dict[str, Any]:

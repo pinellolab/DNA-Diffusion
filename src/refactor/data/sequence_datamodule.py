@@ -19,9 +19,9 @@ from refactor.utils.misc import one_hot_encode
 
 DEFAULT_BASE_PATH = Path('.')
 DEFAULT_DATA_DIR_PATH = DEFAULT_BASE_PATH / Path("data")
-DEFAULT_DATA_ENCODE_FILENAME = Path("encode_data.pkl")
+DEFAULT_DATA_ENCODE_FILENAME = "encode_data.pkl"
 DEFAULT_DATA_ENCODE_PATH = DEFAULT_DATA_DIR_PATH / DEFAULT_DATA_ENCODE_FILENAME
-DEFAULT_SEQUENCES_PER_GROUP_FILENAME = Path("K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt")
+DEFAULT_SEQUENCES_PER_GROUP_FILENAME = "K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
 DEFAULT_SEQUENCES_PER_GROUP_PATH = DEFAULT_DATA_DIR_PATH / DEFAULT_SEQUENCES_PER_GROUP_FILENAME
 
 DEFAULT_SUBSET_COMPONENTS = [
@@ -85,6 +85,15 @@ class SequenceDataModule(pl.LightningDataModule):
     val_chr: List[str] = ['chr1']
     test_chr: List[str] = ['chr2']
 
+    encode_data = None
+    train_dataset: Dataset = None
+    val_dataset: Dataset = None
+    test_dataset: Dataset = None
+
+    datasets_per_split: Dict[str, Dataset] = dict()
+    motifs_per_split: Dict[str, Any] = dict()
+    motifs_per_components_dict_per_split: Dict[str, Dict[str, Any]] = dict()
+
     def __init__(
         self,
         data_dir: str,
@@ -135,7 +144,7 @@ class SequenceDataModule(pl.LightningDataModule):
             return 
         
         print("Preparing data...")
-        data_path = self.data_path / DEFAULT_SEQUENCES_PER_GROUP_FILENAME
+        data_path = self.data_path / self.sequences_per_group_filename
         df = read_master_dataset(data_path)
         if len(self.subset_components) < 4:
             df = subset_by_experiment(df, subset_components=self.subset_components)
@@ -153,13 +162,14 @@ class SequenceDataModule(pl.LightningDataModule):
 
         combined_dict = {
             "train": self.df_train,
+            "val": self.df_validation,
             "test": self.df_test,
-            "train_shuffle": self.df_validation,
         }
 
-        encode_path = self.data_path / self.encoded_filename  # src/refactor/data/encode_data.pkl
-        with open(encode_path, "wb") as f:
-            pickle.dump(combined_dict, f)
+        for split, data in combined_dict.items(): 
+            split_data_path = self.data_path / f"{split}_{self.encoded_filename}" # src/refactor/data/encode_data.pkl
+            with open(split_data_path, "wb") as f: 
+                pickle.dump(data, f)
 
         print("Preparing data DONE!")
 
@@ -167,35 +177,27 @@ class SequenceDataModule(pl.LightningDataModule):
         # TODO: incorporate some extra information after the split (experiement -> split -> motif -> train/test assignment)
         # WARNING: have to be able to call loading_data on the main process of accelerate/fabric bc of gimme_motifs caching dependecies
         # Creating sequence datasets unless they exist already
+        if stage == 'fit' or stage is None: # then load train and val splits
+            self._setup_split('train')
+            self._setup_split('val')
+        
+        if stage in ('test', 'predict') or stage is None:
+            self._setup_split('test')
+        
 
-        print("Setup...")
-        data_path = self.data_path / self.encoded_filename
-        with open(data_path, "rb") as f:
-            # f.seek(0)
+    def _setup_split(self, split: str):
+
+        print(f"Loading {split}...")
+        stage_data_path = self.data_path / f"{split}_{self.encoded_filename}"
+        with open(stage_data_path, "rb") as f: 
             encode_data = pickle.load(f)
-        print(encode_data.keys())
-        train = encode_data["train"]
-        test = encode_data["test"]
-        validation = encode_data["train_shuffle"]
 
-        # Getting motif related data from encode_data
-        self.train_motifs = train["motifs"]
-        self.test_motifs = test["motifs"]
-        self.shuffle_motifs = validation["motifs"]
+        self.motifs_per_split[split] = encode_data['motifs']
+        self.motifs_per_components_dict_per_split[split] = encode_data["motifs_per_components_dict"]
+        self.datasets_per_split[split] =  self.create_sequence_dataset(encode_data)
+        print(f"Loading {split} split  DONE!")
 
-        self.train_motifs_per_components_dict = train["motifs_per_components_dict"]
-        self.test_motifs_per_components_dict = test["motifs_per_components_dict"]
-        self.shuffle_motifs_per_components_dict = validation["motifs_per_components_dict"]
-
-        self.train_dataset = self.create_sequence_dataset(train)
-        self.val_dataset = self.create_sequence_dataset(validation)
-        self.test_dataset = self.create_sequence_dataset(test)
-
-        # Creating sequence dataloaders
-        # self.train_dl = self.create_dataloader(self.train_data, self.batch_size, self.num_workers)
-        # self.validation_dl = self.create_dataloader(self.validation_data, self.batch_size, self.num_workers)
-        # self.test_dl = self.create_dataloader(self.test_data, self.batch_size, self.num_workers)
-        print("Setup OK!")
+        
 
     def create_sequence_dataset(self, data):
         df = data["dataset"]
@@ -234,8 +236,9 @@ class SequenceDataModule(pl.LightningDataModule):
         return df_train, df_validation, df_test
 
     def train_dataloader(self):
+        train_dataset = self.datasets_per_split['train']
         return DataLoader(
-            dataset=self.train_dataset,
+            dataset=train_dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             # pin_memory=self.hparams.pin_memory,
@@ -243,8 +246,9 @@ class SequenceDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
+        val_dataset = self.datasets_per_split['val']
         return DataLoader(
-            dataset=self.val_dataset,
+            dataset=val_dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             # pin_memory=self.hparams.pin_memory,
@@ -252,8 +256,9 @@ class SequenceDataModule(pl.LightningDataModule):
         )
 
     def test_dataloader(self):
+        test_dataset = self.datasets_per_split['test']
         return DataLoader(
-            dataset=self.test_dataset,
+            dataset=test_dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             # pin_memory=self.hparams.pin_memory,
