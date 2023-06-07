@@ -1,24 +1,11 @@
 from functools import partial
-from typing import Optional
 
-import torch
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
-from torch import nn
 
-from dnadiffusion.models.modules import (
-    Attention,
-    Downsample,
-    LearnedSinusoidalPosEmb,
-    LinearAttention,
-    PreNorm,
-    Residual,
-    ResnetBlock,
-    Upsample,
-)
-from dnadiffusion.utils.utils import default
+from dnadiffusion.models.layers import *
 
 
-class Unet(nn.Module):
+class UNet(nn.Module):
     def __init__(
         self,
         dim: int,
@@ -77,7 +64,9 @@ class Unet(nn.Module):
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_in, LinearAttention(dim_in))),
-                        Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding=1),
+                        Downsample(dim_in, dim_out)
+                        if not is_last
+                        else nn.Conv2d(dim_in, dim_out, 3, padding=1),
                     ]
                 )
             )
@@ -95,7 +84,9 @@ class Unet(nn.Module):
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_out, LinearAttention(dim_out))),
-                        Upsample(dim_out, dim_in) if not is_last else nn.Conv2d(dim_out, dim_in, 3, padding=1),
+                        Upsample(dim_out, dim_in)
+                        if not is_last
+                        else nn.Conv2d(dim_out, dim_in, 3, padding=1),
                     ]
                 )
             )
