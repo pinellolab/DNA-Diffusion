@@ -53,9 +53,7 @@ def load_data(
     # Creating sequence dataset
     df = encode_data["train"]["df"]
     nucleotides = ["A", "C", "G", "T"]
-    x_train_seq = np.array(
-        [one_hot_encode(x, nucleotides, 200) for x in df["sequence"] if "N" not in x]
-    )
+    x_train_seq = np.array([one_hot_encode(x, nucleotides, 200) for x in df["sequence"] if "N" not in x])
     X_train = np.array([x.T.tolist() for x in x_train_seq])
     X_train[X_train == 0] = -1
 
@@ -68,9 +66,7 @@ def load_data(
     # Wrapping data into dataloader
     tf = T.Compose([T.ToTensor()])
     seq_dataset = SequenceDataset(seqs=X_train, c=x_train_cell_type, transform=tf)
-    train_dl = DataLoader(
-        seq_dataset, batch_size, shuffle=True, num_workers=96, pin_memory=True
-    )
+    train_dl = DataLoader(seq_dataset, batch_size, shuffle=True, num_workers=96, pin_memory=True)
 
     # Collecting variables into a dict
     encode_data_dict = {
@@ -91,34 +87,20 @@ def load_data(
 
 def motifs_from_fasta(fasta: str):
     print("Computing Motifs....")
-    os.system(
-        f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed"
-    )
-    df_results_seq_guime = pd.read_csv(
-        "train_results_motifs.bed", sep="\t", skiprows=5, header=None
-    )
-    df_results_seq_guime["motifs"] = df_results_seq_guime[8].apply(
-        lambda x: x.split('motif_name "')[1].split('"')[0]
-    )
+    os.system(f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed")
+    df_results_seq_guime = pd.read_csv("train_results_motifs.bed", sep="\t", skiprows=5, header=None)
+    df_results_seq_guime["motifs"] = df_results_seq_guime[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
 
-    df_results_seq_guime[0] = df_results_seq_guime[0].apply(
-        lambda x: "_".join(x.split("_")[:-1])
-    )
-    df_results_seq_guime_count_out = (
-        df_results_seq_guime[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
-    )
+    df_results_seq_guime[0] = df_results_seq_guime[0].apply(lambda x: "_".join(x.split("_")[:-1]))
+    df_results_seq_guime_count_out = df_results_seq_guime[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
     plt.rcParams["figure.figsize"] = (30, 2)
-    df_results_seq_guime_count_out.sort_values(0, ascending=False).head(50)[
-        0
-    ].plot.bar()
+    df_results_seq_guime_count_out.sort_values(0, ascending=False).head(50)[0].plot.bar()
     plt.title("Top 50 MOTIFS on component 0 ")
     plt.show()
     return df_results_seq_guime_count_out
 
 
-def save_fasta(
-    df: pd.DataFrame, name: str, num_sequences: int, seq_to_subset_comp: bool = False
-) -> str:
+def save_fasta(df: pd.DataFrame, name: str, num_sequences: int, seq_to_subset_comp: bool = False) -> str:
     fasta_path = f"{name}.fasta"
     save_fasta_file = open(fasta_path, "w")
     num_to_sample = df.shape[0]
@@ -149,9 +131,7 @@ def generate_motifs_and_fastas(
 
     # Saving fasta
     if subset_list:
-        fasta_path = save_fasta(
-            df, f"{name}_{'_'.join([str(c) for c in subset_list])}", num_sequences
-        )
+        fasta_path = save_fasta(df, f"{name}_{'_'.join([str(c) for c in subset_list])}", num_sequences)
     else:
         fasta_path = save_fasta(df, name, num_sequences)
 
@@ -162,9 +142,7 @@ def generate_motifs_and_fastas(
     final_subset_motifs = {}
     for comp, v_comp in df.groupby("TAG"):
         print(comp)
-        c_fasta = save_fasta(
-            v_comp, f"{name}_{comp}", num_sequences, seq_to_subset_comp=True
-        )
+        c_fasta = save_fasta(v_comp, f"{name}_{comp}", num_sequences, seq_to_subset_comp=True)
         final_subset_motifs[comp] = motifs_from_fasta(c_fasta)
 
     return {
@@ -199,21 +177,15 @@ def preprocess_data(
     # Creating train/test/shuffle groups
     df_test = df[df["chr"] == "chr1"].reset_index(drop=True)
     df_train_shuffled = df[df["chr"] == "chr2"].reset_index(drop=True)
-    df_train = df_train = df[(df["chr"] != "chr1") & (df["chr"] != "chr2")].reset_index(
-        drop=True
-    )
+    df_train = df_train = df[(df["chr"] != "chr1") & (df["chr"] != "chr2")].reset_index(drop=True)
 
     df_train_shuffled["sequence"] = df_train_shuffled["sequence"].apply(
         lambda x: "".join(random.sample(list(x), len(x)))
     )
 
     # Getting motif information from the sequences
-    train = generate_motifs_and_fastas(
-        df_train, "train", number_of_sequences_to_motif_creation, subset_list
-    )
-    test = generate_motifs_and_fastas(
-        df_test, "test", number_of_sequences_to_motif_creation, subset_list
-    )
+    train = generate_motifs_and_fastas(df_train, "train", number_of_sequences_to_motif_creation, subset_list)
+    test = generate_motifs_and_fastas(df_test, "test", number_of_sequences_to_motif_creation, subset_list)
     train_shuffled = generate_motifs_and_fastas(
         df_train_shuffled,
         "train_shuffled",

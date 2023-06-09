@@ -1485,7 +1485,7 @@ class Trainer:
                 print("KL_SHUFFLE", self.shuffle_kl, "KL")
 
             if epoch != 0 and epoch % 500 == 0 and self.accelerator.is_main_process:
-                model_path = f"./models/epoch_{str(epoch)}_{self.model_name}.pt"
+                model_path = f"./models/epoch_{epoch!s}_{self.model_name}.pt"
                 self.save(epoch, model_path)
 
 

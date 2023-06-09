@@ -11,9 +11,7 @@ from sample import create_sample
 
 def compare_motif_list(df_motifs_a: pd.DataFrame, df_motifs_b: pd.DataFrame):
     # Using KL divergence to compare motifs lists distribution
-    set_all_mot = set(
-        df_motifs_a.index.values.tolist() + df_motifs_b.index.values.tolist()
-    )
+    set_all_mot = set(df_motifs_a.index.values.tolist() + df_motifs_b.index.values.tolist())
     create_new_matrix = []
     for x in set_all_mot:
         list_in = []
@@ -42,9 +40,7 @@ def compare_motif_list(df_motifs_a: pd.DataFrame, df_motifs_b: pd.DataFrame):
     plt.title('Motifs Probs')
     plt.show()
     """
-    kl_pq = rel_entr(
-        df_motifs["Diffusion_seqs"].values, df_motifs["Training_seqs"].values
-    )
+    kl_pq = rel_entr(df_motifs["Diffusion_seqs"].values, df_motifs["Training_seqs"].values)
     return np.sum(kl_pq)
 
 
@@ -90,9 +86,7 @@ def kl_comparison_generated_sequences(
     return final_comp_kl
 
 
-def generate_heatmap(
-    df_heat: pd.DataFrame, x_label: str, y_label: str, cell_components: str
-):
+def generate_heatmap(df_heat: pd.DataFrame, x_label: str, y_label: str, cell_components: str):
     plt.clf()
     plt.rcdefaults()
     plt.rcParams["figure.figsize"] = (10, 10)
@@ -100,9 +94,7 @@ def generate_heatmap(
     df_plot.columns = [x.split("_")[0] for x in cell_components]
     df_plot.index = df_plot.columns
     sns.heatmap(df_plot, cmap="Blues_r", annot=True, lw=0.1, vmax=1, vmin=0)
-    plt.title(
-        f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities"
-    )
+    plt.title(f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities")
     plt.xlabel(f"{x_label} Sequences  \n(motifs dist)")
     plt.ylabel(f"{y_label} \n (motifs dist)")
     plt.grid(False)
@@ -114,11 +106,7 @@ def generate_similarity_metric():
     """Capture the syn_motifs.fasta and compare with the  dataset motifs"""
     nucleotides = ["A", "C", "G", "T"]
     seqs_file = open("synthetic_motifs.fasta").readlines()
-    seqs_to_hotencoder = [
-        one_hot_encode(s.replace("\n", ""), nucleotides, 200).T
-        for s in seqs_file
-        if ">" not in s
-    ]
+    seqs_to_hotencoder = [one_hot_encode(s.replace("\n", ""), nucleotides, 200).T for s in seqs_file if ">" not in s]
 
     return seqs_to_hotencoder
 
@@ -128,9 +116,7 @@ def get_best_match(db, x_seq):  # transforming in a function
 
 
 def calculate_mean_similarity(database, input_query_seqs, seq_len=200):
-    final_base_max_match = np.mean(
-        [get_best_match(database, x) for x in tqdm(input_query_seqs)]
-    )
+    final_base_max_match = np.mean([get_best_match(database, x) for x in tqdm(input_query_seqs)])
     return final_base_max_match / seq_len
 
 

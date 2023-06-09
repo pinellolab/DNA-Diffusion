@@ -46,9 +46,7 @@ class TrainLoop:
         self.seq_similarity = 1
 
         # Prepare for training
-        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(
-            self.model, self.optimizer, self.train_dl
-        )
+        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(self.model, self.optimizer, self.train_dl)
 
     def train_loop(self):
         # Initialize wandb
@@ -123,9 +121,7 @@ class TrainLoop:
         self.seq_similarity = generate_similarity_using_train(self.encode_data["X_train"])
         self.train_kl = compare_motif_list(synt_df, self.encode_data["train_motifs"])
         self.test_kl = compare_motif_list(synt_df, self.encode_data["test_motifs"])
-        self.shuffle_kl = compare_motif_list(
-            synt_df, self.encode_data["shuffle_motifs"]
-        )
+        self.shuffle_kl = compare_motif_list(synt_df, self.encode_data["shuffle_motifs"])
         print("Similarity", self.seq_similarity, "Similarity")
         print("KL_TRAIN", self.train_kl, "KL")
         print("KL_TEST", self.test_kl, "KL")

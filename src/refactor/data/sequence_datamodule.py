@@ -38,7 +38,7 @@ class SequenceDataset(Dataset):
         seqs: str,
         c: str,
         sequence_transform: Optional[T.Compose] = T.Compose([T.ToTensor()]),
-        cell_type_transform: Optional[T.Compose] = T.Compose([T.ToTensor()])
+        cell_type_transform: Optional[T.Compose] = T.Compose([T.ToTensor()]),
     ):
         "Initialization"
         self.seqs = seqs
@@ -57,7 +57,7 @@ class SequenceDataset(Dataset):
             x = self.transform(x)
 
         y = self.c[index]
-        if self.cell_type_transform: 
+        if self.cell_type_transform:
             y = self.cell_type_transform(y)
 
         return x, y
@@ -97,22 +97,21 @@ class SequenceDataModule(pl.LightningDataModule):
     def __init__(
         self,
         data_dir: str,
-        encoded_filename: str=DEFAULT_DATA_ENCODE_FILENAME,
-        sequences_per_group_filename: str=DEFAULT_SEQUENCES_PER_GROUP_FILENAME,
+        encoded_filename: str = DEFAULT_DATA_ENCODE_FILENAME,
+        sequences_per_group_filename: str = DEFAULT_SEQUENCES_PER_GROUP_FILENAME,
         sequence_length: int = 200,
         sequence_encoding: str = "polar",
         sequence_transform=None,
         cell_type_transform=None,
         batch_size=None,
         num_workers: int = 0,
-        load_saved_data: bool = True, 
-        train_chr: List[str] = None, 
+        load_saved_data: bool = True,
+        train_chr: List[str] = None,
         val_chr: List[str] = None,
         test_chr: List[str] = None,
         subset_components: List[str] = DEFAULT_SUBSET_COMPONENTS,
         number_of_sequences_to_motif_creation: int = 1000,
     ) -> None:
-        
         super().__init__()
         self.save_hyperparameters(logger=False)
         # self.df_train, self.df_validation, self.df_test = Optional[Dataset] = None
@@ -121,43 +120,43 @@ class SequenceDataModule(pl.LightningDataModule):
         self.sequence_encoding = sequence_encoding
         self.sequence_transform = sequence_transform
         self.cell_type_transform = cell_type_transform
-        self.data_dir = data_dir  # 'data'
+        self.data_dir = data_dir  # 'data'
         self.data_path = Path(self.data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.load_saved_data = load_saved_data
         self.subset_components = subset_components
-        
+
         self.encoded_filename = encoded_filename
         self.sequences_per_group_filename = sequences_per_group_filename
 
         self.train_chr = train_chr
-        
-        if val_chr: 
+
+        if val_chr:
             self.val_chr = val_chr
 
-        if test_chr: 
+        if test_chr:
             self.test_chr = test_chr
 
     def prepare_data(self) -> None:
-        if self.load_saved_data: 
-            return 
-        
+        if self.load_saved_data:
+            return
+
         print("Preparing data...")
         data_path = self.data_path / self.sequences_per_group_filename
         df = read_master_dataset(data_path)
         if len(self.subset_components) < 4:
             df = subset_by_experiment(df, subset_components=self.subset_components)
-        
+
         if not self.df_train and not self.df_validation and not self.df_test:
             self.df_train, self.df_validation, self.df_test = self.create_train_groups(df)
-        
+
         self.df_train, self.df_validation, self.df_test = get_motif(
-            self.df_train, 
-            self.df_validation, 
+            self.df_train,
+            self.df_validation,
             self.df_test,
             self.subset_components,
-            self.number_of_sequences_to_motif_creation
+            self.number_of_sequences_to_motif_creation,
         )
 
         combined_dict = {
@@ -166,9 +165,9 @@ class SequenceDataModule(pl.LightningDataModule):
             "test": self.df_test,
         }
 
-        for split, data in combined_dict.items(): 
-            split_data_path = self.data_path / f"{split}_{self.encoded_filename}" # src/refactor/data/encode_data.pkl
-            with open(split_data_path, "wb") as f: 
+        for split, data in combined_dict.items():
+            split_data_path = self.data_path / f"{split}_{self.encoded_filename}"  # src/refactor/data/encode_data.pkl
+            with open(split_data_path, "wb") as f:
                 pickle.dump(data, f)
 
         print("Preparing data DONE!")
@@ -177,27 +176,23 @@ class SequenceDataModule(pl.LightningDataModule):
         # TODO: incorporate some extra information after the split (experiement -> split -> motif -> train/test assignment)
         # WARNING: have to be able to call loading_data on the main process of accelerate/fabric bc of gimme_motifs caching dependecies
         # Creating sequence datasets unless they exist already
-        if stage == 'fit' or stage is None: # then load train and val splits
+        if stage == 'fit' or stage is None:  # then load train and val splits
             self._setup_split('train')
             self._setup_split('val')
-        
+
         if stage in ('test', 'predict') or stage is None:
             self._setup_split('test')
-        
 
     def _setup_split(self, split: str):
-
         print(f"Loading {split}...")
         stage_data_path = self.data_path / f"{split}_{self.encoded_filename}"
-        with open(stage_data_path, "rb") as f: 
+        with open(stage_data_path, "rb") as f:
             encode_data = pickle.load(f)
 
         self.motifs_per_split[split] = encode_data['motifs']
         self.motifs_per_components_dict_per_split[split] = encode_data["motifs_per_components_dict"]
-        self.datasets_per_split[split] =  self.create_sequence_dataset(encode_data)
+        self.datasets_per_split[split] = self.create_sequence_dataset(encode_data)
         print(f"Loading {split} split  DONE!")
-
-        
 
     def create_sequence_dataset(self, data):
         df = data["dataset"]
@@ -207,32 +202,30 @@ class SequenceDataModule(pl.LightningDataModule):
 
         self.cell_types = sorted(self.numeric_to_tag.keys())
         X_cell_types = torch.from_numpy(df["TAG"].apply(lambda x: self.tag_to_numeric[x]).to_numpy())
-        
+
         nucleotides = ["A", "C", "G", "T"]
         X_sequences = np.array([one_hot_encode(x, nucleotides, 200) for x in (df["sequence"]) if "N" not in x])
         X_sequences = np.array([x.T.tolist() for x in X_sequences])
         X_sequences[X_sequences == 0] = -1
-        
+
         return SequenceDataset(
-            X_sequences, 
+            X_sequences,
             X_cell_types,
             sequence_transform=self.sequence_transform,
             cell_type_transform=self.cell_type_transform,
         )
 
     def create_train_groups(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        if self.train_chr is None: 
+        if self.train_chr is None:
             val_test_chr = self.val_chr + self.test_chr
             df_train = df[~df.chr.isin(val_test_chr)].reset_index(drop=True)
-        else: 
+        else:
             df_train = df[df.chr.isin(self.train_chr)].reset_index(drop=True)
 
         df_validation = df[df.chr.isin(self.val_chr)].reset_index(drop=True)
         df_test = df[df.chr.isin(self.test_chr)].reset_index(drop=True)
 
-        df_validation["sequence"] = df_validation["sequence"].apply(
-            lambda x: "".join(random.sample(list(x), len(x)))
-        )
+        df_validation["sequence"] = df_validation["sequence"].apply(lambda x: "".join(random.sample(list(x), len(x))))
         return df_train, df_validation, df_test
 
     def train_dataloader(self):
@@ -280,5 +273,3 @@ class SequenceDataModule(pl.LightningDataModule):
 
 if __name__ == "__main__":
     _ = SequenceDataModule()
-
-

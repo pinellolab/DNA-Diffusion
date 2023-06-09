@@ -186,15 +186,9 @@ class Block(nn.Module):
 
 
 class ResnetBlock(nn.Module):
-    def __init__(
-        self, dim: int, dim_out: int, *, time_emb_dim: Optional[int], groups: int = 8
-    ) -> None:
+    def __init__(self, dim: int, dim_out: int, *, time_emb_dim: Optional[int], groups: int = 8) -> None:
         super().__init__()
-        self.mlp = (
-            (nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2)))
-            if exists(time_emb_dim)
-            else None
-        )
+        self.mlp = (nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))) if exists(time_emb_dim) else None
 
         self.block1 = Block(dim, dim_out, groups=groups)
         self.block2 = Block(dim_out, dim_out, groups=groups)
@@ -226,9 +220,7 @@ class LinearAttention(nn.Module):
     def forward(self, x: torch.Tensor):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = (
-            rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv
-        )
+        q, k, v = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv)
 
         q = q.softmax(dim=-2)
         k = k.softmax(dim=-1)
@@ -244,9 +236,7 @@ class LinearAttention(nn.Module):
 
 
 class Attention(nn.Module):
-    def __init__(
-        self, dim: int, heads: int = 4, dim_head: int = 32, scale: int = 10
-    ) -> None:
+    def __init__(self, dim: int, heads: int = 4, dim_head: int = 32, scale: int = 10) -> None:
         super().__init__()
         self.scale = scale
         self.heads = heads
@@ -257,9 +247,7 @@ class Attention(nn.Module):
     def forward(self, x: torch.Tensor):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x).chunk(3, dim=1)
-        q, k, v = (
-            rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv
-        )
+        q, k, v = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv)
 
         q, k = map(l2norm, (q, k))
 
@@ -271,9 +259,7 @@ class Attention(nn.Module):
 
 
 class CrossAttention_lucas(nn.Module):
-    def __init__(
-        self, dim: int, heads: int = 1, dim_head: int = 32, scale: int = 10
-    ) -> None:
+    def __init__(self, dim: int, heads: int = 1, dim_head: int = 32, scale: int = 10) -> None:
         super().__init__()
         self.scale = scale
         self.heads = heads
@@ -288,13 +274,9 @@ class CrossAttention_lucas(nn.Module):
         qkv_x = self.to_qkv(x).chunk(3, dim=1)
         qkv_y = self.to_qkv(y).chunk(3, dim=1)
 
-        q_x, k_x, v_x = (
-            rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv_x
-        )
+        q_x, k_x, v_x = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv_x)
 
-        q_y, k_y, v_y = (
-            rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv_y
-        )
+        q_y, k_y, v_y = (rearrange(t, "b (h c) x y -> b h c (x y)", h=self.heads) for t in qkv_y)
 
         q, k = map(l2norm, (q_x, k_y))
 

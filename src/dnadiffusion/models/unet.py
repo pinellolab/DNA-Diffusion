@@ -64,9 +64,7 @@ class UNet(nn.Module):
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_in, LinearAttention(dim_in))),
-                        Downsample(dim_in, dim_out)
-                        if not is_last
-                        else nn.Conv2d(dim_in, dim_out, 3, padding=1),
+                        Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding=1),
                     ]
                 )
             )
@@ -84,9 +82,7 @@ class UNet(nn.Module):
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_out, LinearAttention(dim_out))),
-                        Upsample(dim_out, dim_in)
-                        if not is_last
-                        else nn.Conv2d(dim_out, dim_in, 3, padding=1),
+                        Upsample(dim_out, dim_in) if not is_last else nn.Conv2d(dim_out, dim_in, 3, padding=1),
                     ]
                 )
             )
