@@ -1,24 +1,11 @@
 from functools import partial
-from typing import Optional
 
-import torch
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
-from torch import nn
 
-from dnadiffusion.models.modules import (
-    Attention,
-    Downsample,
-    LearnedSinusoidalPosEmb,
-    LinearAttention,
-    PreNorm,
-    Residual,
-    ResnetBlock,
-    Upsample,
-)
-from dnadiffusion.utils.utils import default
+from dnadiffusion.models.layers import *
 
 
-class Unet(nn.Module):
+class UNet(nn.Module):
     def __init__(
         self,
         dim: int,
