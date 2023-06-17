@@ -45,10 +45,12 @@ class TrainLoop:
         self.train_kl, self.test_kl, self.shuffle_kl = 1, 1, 1
         self.seq_similarity = 1
 
+        self.start_epoch = 0
+
+    def train_loop(self):
         # Prepare for training
         self.model, self.optimizer, self.train_dl = self.accelerator.prepare(self.model, self.optimizer, self.train_dl)
 
-    def train_loop(self):
         # Initialize wandb
         if self.accelerator.is_main_process:
             self.accelerator.init_trackers(
@@ -56,7 +58,7 @@ class TrainLoop:
                 init_kwargs={"wandb": {"notes": "testing wandb accelerate script"}},
             )
 
-        for epoch in tqdm(range(self.epochs)):
+        for epoch in tqdm(range(self.start_epoch, self.epochs)):
             self.model.train()
 
             # Getting loss of current batch
@@ -64,15 +66,15 @@ class TrainLoop:
                 loss = self.train_step(batch)
 
             # Logging loss
-            if epoch % self.loss_show_epoch == 0 and self.accelerator.is_main_process:
+            if (epoch + 1) % self.loss_show_epoch == 0 and self.accelerator.is_main_process:
                 self.log_step(loss, epoch)
 
             # Sampling
-            if epoch % self.sample_epoch == 0 and self.accelerator.is_main_process:
+            if (epoch + 1) % self.sample_epoch == 0 and self.accelerator.is_main_process:
                 self.sample()
 
             # Saving model
-            if epoch % self.save_epoch == 0:
+            if (epoch + 1) % self.save_epoch == 0 and self.accelerator.is_main_process:
                 self.save_model(epoch)
 
     def train_step(self, batch):
@@ -138,3 +140,14 @@ class TrainLoop:
             checkpoint_dict,
             f"dnadiffusion/checkpoints/epoch_{epoch}_{self.model_name}.pt",
         )
+
+    def load(self, path):
+        checkpoint_dict = torch.load(path)
+        self.model.load_state_dict(checkpoint_dict["model"])
+        self.optimizer.load_state_dict(checkpoint_dict["optimizer"])
+        self.start_epoch = checkpoint_dict["epoch"]
+
+        if self.accelerator.is_main_process:
+            self.ema_model.load_state_dict(checkpoint_dict["ema_model"])
+
+        self.train_loop()
