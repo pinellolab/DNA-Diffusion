@@ -10,7 +10,7 @@ class UNet(nn.Module):
     def __init__(
         self,
         dim: int,
-        init_dim: Optional[Optional[int]] = None,
+        init_dim: int | None = None,
         dim_mults: tuple = (1, 2, 4),
         channels: int = 1,
         resnet_block_groups: int = 8,
