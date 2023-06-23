@@ -2,17 +2,7 @@
 
 ## dnadiffusion
 
-::: dnadiffusion.trainer
-    options:
-      show_root_heading: true
-      show_source: false
-
-::: dnadiffusion.configs
-    options:
-      show_root_heading: true
-      show_source: false
-
-::: dnadiffusion.sample
+::: dnadiffusion.utils.train_util
     options:
       show_root_heading: true
       show_source: false
@@ -26,17 +16,12 @@
 
 ## models
 
-::: dnadiffusion.models.modules
+::: dnadiffusion.models.layers
     options:
       show_root_heading: true
       show_source: false
 
-::: dnadiffusion.models.training_modules
-    options:
-      show_root_heading: true
-      show_source: false
-    
-::: dnadiffusion.models.networks
+::: dnadiffusion.models.diffusion
     options:
       show_root_heading: true
       show_source: false
