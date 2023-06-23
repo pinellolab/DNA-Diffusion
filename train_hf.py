@@ -26,7 +26,6 @@ def train():
         limit_total_sequences=0,
         num_sampling_to_compare_cells=1000,
         load_saved_data=True,
-        batch_size=960,
     )
 
     unet = UNet(

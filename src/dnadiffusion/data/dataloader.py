@@ -25,7 +25,6 @@ def load_data(
     limit_total_sequences: int = 0,
     num_sampling_to_compare_cells: int = 1000,
     load_saved_data: bool = False,
-    batch_size: int = 960,
 ):
     # Preprocessing data
     if load_saved_data:
@@ -63,11 +62,6 @@ def load_data(
     cell_types = list(numeric_to_tag.keys())
     x_train_cell_type = torch.tensor([tag_to_numeric[x] for x in df["TAG"]])
 
-    # Wrapping data into dataloader
-    tf = T.Compose([T.ToTensor()])
-    seq_dataset = SequenceDataset(seqs=X_train, c=x_train_cell_type, transform=tf)
-    train_dl = DataLoader(seq_dataset, batch_size, shuffle=True, num_workers=8, pin_memory=True)
-
     # Collecting variables into a dict
     encode_data_dict = {
         "train_motifs": train_motifs,
@@ -80,9 +74,10 @@ def load_data(
         "numeric_to_tag": numeric_to_tag,
         "cell_types": cell_types,
         "X_train": X_train,
+        "x_train_cell_type": x_train_cell_type,
     }
 
-    return encode_data_dict, train_dl
+    return encode_data_dict
 
 
 def motifs_from_fasta(fasta: str):
@@ -209,7 +204,7 @@ class SequenceDataset(Dataset):
         self,
         seqs: np.ndarray,
         c: torch.Tensor,
-        transform: Optional[T.Compose] = T.Compose([T.ToTensor()]),
+        transform: T.Compose = T.Compose([T.ToTensor()]),
     ):
         "Initialization"
         self.seqs = seqs
