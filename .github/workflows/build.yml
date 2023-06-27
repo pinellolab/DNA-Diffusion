@@ -29,7 +29,6 @@ jobs:
         hatch run lint-check
     - name: Test
       run: |
-        hatch run test
         hatch run test-cov-xml
     - uses: codecov/codecov-action@v3
       with:
