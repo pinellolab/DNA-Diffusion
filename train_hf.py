@@ -15,8 +15,8 @@ def train():
     )
 
     data = load_data(
-        data_path="dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
-        saved_data_path="dnadiffusion/data/encode_data.pkl",
+        data_path="src/dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
+        saved_data_path="src/dnadiffusion/data/encode_data.pkl",
         subset_list=[
             "GM12878_ENCLB441ZZZ",
             "hESCT0_ENCLB449ZZZ",
@@ -26,7 +26,6 @@ def train():
         limit_total_sequences=0,
         num_sampling_to_compare_cells=1000,
         load_saved_data=True,
-        batch_size=960,
     )
 
     unet = UNet(

@@ -1,11 +1,14 @@
 import copy
-from typing import Dict, Tuple
+from typing import Any, Dict
 
 import torch
+import torchvision.transforms as T
 from accelerate import Accelerator
 from torch.optim import Adam
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from dnadiffusion.data.dataloader import SequenceDataset
 from dnadiffusion.metrics.metrics import compare_motif_list, generate_similarity_using_train
 from dnadiffusion.utils.sample_util import create_sample
 from dnadiffusion.utils.utils import EMA
@@ -14,7 +17,7 @@ from dnadiffusion.utils.utils import EMA
 class TrainLoop:
     def __init__(
         self,
-        data: Tuple[Dict[str, object], torch.utils.data.DataLoader],
+        data: Dict[str, Any],
         model: torch.nn.Module,
         accelerator: Accelerator,
         epochs: int = 10000,
@@ -24,8 +27,9 @@ class TrainLoop:
         model_name: str = "model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k",
         image_size: int = 200,
         num_sampling_to_compare_cells: int = 1000,
+        batch_size: int = 960,
     ):
-        self.encode_data, self.train_dl = data
+        self.encode_data = data
         self.model = model
         self.optimizer = Adam(self.model.parameters(), lr=1e-4)
         self.accelerator = accelerator
@@ -46,6 +50,10 @@ class TrainLoop:
         self.seq_similarity = 1
 
         self.start_epoch = 0
+
+        # Dataloader
+        seq_dataset = SequenceDataset(seqs=self.encode_data["X_train"], c=self.encode_data["x_train_cell_type"])
+        self.train_dl = DataLoader(seq_dataset, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
 
     def train_loop(self):
         # Prepare for training
