@@ -67,9 +67,11 @@ def sample(model_path: str, num_samples: int = 1000):
             specific_group=True,
             group_number=i,
             cond_weight_to_metric=1,
-            save_timestep_dataframe=True,
+            save_timesteps=False,
+            save_dataframe=True,
         )
 
 
 if __name__ == "__main__":
-    sample("../../../Documents/epoch_8500_model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k.pt", 10)
+    # Uncomment and add checkpoint path to create samples
+    #sample()
