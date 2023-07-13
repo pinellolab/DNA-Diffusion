@@ -5,8 +5,8 @@ import seaborn as sns
 from scipy.special import rel_entr
 from tqdm import tqdm
 
-from dnadiffusion.utils.utils import one_hot_encode
 from dnadiffusion.utils.sample_util import create_sample
+from dnadiffusion.utils.utils import one_hot_encode
 
 
 def compare_motif_list(df_motifs_a: pd.DataFrame, df_motifs_b: pd.DataFrame):

@@ -16,11 +16,11 @@ def create_sample(
     specific_group: bool = False,
     group_number: Optional[list] = None,
     cond_weight_to_metric: int = 0,
-    save_timestep_dataframe: bool = False,
+    save_timesteps: bool = False,
+    save_dataframe: bool = False,
 ):
     nucleotides = ["A", "C", "G", "T"]
     final_sequences = []
-    final_df = []
     for n_a in range(number_of_samples):
         print(n_a)
         sample_bs = 10
@@ -32,11 +32,31 @@ def create_sample(
         classes = sampled.float().to(diffusion_model.device)
         sampled_images = diffusion_model.sample(classes, (sample_bs, 1, 4, 200), cond_weight_to_metric)
 
-        if save_timestep_dataframe:
+        if save_timesteps:
             seqs_to_df = {}
             for en, step in enumerate(sampled_images):
                 seqs_to_df[en] = [convert_to_seq(x, nucleotides) for x in step]
-            final_df.append(pd.DataFrame(seqs_to_df))
+            final_sequences.append(pd.DataFrame(seqs_to_df))
+
+            # Saving dataframe containing sequences for each timestep
+            pd.concat(final_sequences, ignore_index=True).to_csv(
+                f"final_{conditional_numeric_to_tag[group_number]}.txt",
+                header=True,
+                sep="\t",
+                index=False,
+            )
+            return
+
+        elif save_dataframe:
+            seqs_list = []
+            # Only using the last timestep
+            for en, step in enumerate(sampled_images[-1]):
+                seqs_list.append(convert_to_seq(step, nucleotides))
+
+            # saving list of sequences to txt file
+            with open(f"final_{conditional_numeric_to_tag[group_number]}.txt", "w") as f:
+                f.write("\n".join(seqs_list))
+            return
 
         else:
             for n_b, x in enumerate(sampled_images[-1]):
@@ -45,21 +65,11 @@ def create_sample(
                 )
                 final_sequences.append(seq_final)
 
-    if save_timestep_dataframe:
-        pd.concat(final_df, ignore_index=True).to_csv(
-            f"final_{conditional_numeric_to_tag[group_number]}.txt",
-            header=True,
-            sep="\t",
-            index=False,
-        )
-        return
-
-    else:
-        save_motifs_syn = open("synthetic_motifs.fasta", "w")
-        save_motifs_syn.write("\n".join(final_sequences))
-        save_motifs_syn.close()
-        os.system("gimme scan synthetic_motifs.fasta -p JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed")
-        df_results_syn = pd.read_csv("syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
+    save_motifs_syn = open("synthetic_motifs.fasta", "w")
+    save_motifs_syn.write("\n".join(final_sequences))
+    save_motifs_syn.close()
+    os.system("gimme scan synthetic_motifs.fasta -p JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed")
+    df_results_syn = pd.read_csv("syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
 
     df_results_syn["motifs"] = df_results_syn[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
     df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
