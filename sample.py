@@ -73,5 +73,4 @@ def sample(model_path: str, num_samples: int = 1000):
 
 
 if __name__ == "__main__":
-    # Uncomment and add checkpoint path to create samples
-    #sample()
+    sample()
