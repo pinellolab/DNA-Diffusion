@@ -170,7 +170,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
   "click",
-  "torch==2.0.0",
+  "torch>=2.0.0",
   "torchvision",
   "accelerate",
   "matplotlib",
@@ -179,8 +179,6 @@ dependencies = [
   "einops",
   "wandb",
   "genomepy",
-  "pytorch-lightning",
-  "hydra-core",
   "sourmash",
   "gimmemotifs",
   "memory-efficient-attention-pytorch",
