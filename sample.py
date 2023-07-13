@@ -1,4 +1,5 @@
 import torch
+from accelerate import Accelerator, DistributedDataParallelKwargs
 
 from dnadiffusion.data.dataloader import load_data
 from dnadiffusion.models.diffusion import Diffusion
@@ -7,12 +8,18 @@ from dnadiffusion.utils.sample_util import create_sample
 
 
 def sample(model_path: str, num_samples: int = 1000):
+    kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    accelerator = Accelerator(
+        kwargs_handlers=[kwargs],
+        split_batches=True,
+        log_with=["wandb"],
+    )
     # Instantiating data and model
 
     print("Loading data")
-    encode_data, _ = load_data(
-        data_path="dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
-        saved_data_path="dnadiffusion/data/encode_data.pkl",
+    encode_data = load_data(
+        data_path="src/dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
+        saved_data_path="src/dnadiffusion/data/encode_data.pkl",
         subset_list=[
             "GM12878_ENCLB441ZZZ",
             "hESCT0_ENCLB449ZZZ",
@@ -22,7 +29,6 @@ def sample(model_path: str, num_samples: int = 1000):
         limit_total_sequences=0,
         num_sampling_to_compare_cells=1000,
         load_saved_data=True,
-        batch_size=240,
     )
 
     print("Instantiating unet")
@@ -44,6 +50,10 @@ def sample(model_path: str, num_samples: int = 1000):
     checkpoint_dict = torch.load(model_path)
     diffusion.load_state_dict(checkpoint_dict["model"])
 
+    # Preparing model for sampling
+    print("Preparing model for sampling")
+    diffusion = accelerator.prepare(diffusion)
+
     # Generating cell specific samples
     cell_num_list = encode_data["tag_to_numeric"].values()
 
@@ -53,7 +63,7 @@ def sample(model_path: str, num_samples: int = 1000):
             diffusion,
             conditional_numeric_to_tag=encode_data["numeric_to_tag"],
             cell_types=encode_data["cell_types"],
-            num_sampling_to_compare_cells=int(num_samples / 10),
+            number_of_samples=int(num_samples / 10),
             specific_group=True,
             group_number=i,
             cond_weight_to_metric=1,
@@ -62,4 +72,4 @@ def sample(model_path: str, num_samples: int = 1000):
 
 
 if __name__ == "__main__":
-    sample()
+    sample("../../../Documents/epoch_8500_model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k.pt", 10)
