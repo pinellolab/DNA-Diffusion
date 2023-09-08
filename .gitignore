@@ -144,3 +144,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+src/dnadiffusion/models/unet_attention_induction.py
