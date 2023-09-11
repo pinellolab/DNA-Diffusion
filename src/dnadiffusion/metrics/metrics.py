@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -60,7 +61,7 @@ def kl_comparison_generated_sequences(
         print(conditional_numeric_to_tag[r])
         comp_array = []
         group_compare = r
-        synt_df_cond = create_sample(
+        """synt_df_cond = create_sample(
             [r],
             conditional_numeric_to_tag,
             additional_variables,
@@ -71,6 +72,7 @@ def kl_comparison_generated_sequences(
             save_timesteps=False,
             save_dataframe=False,
         )
+        """
         for k in use_cell_list:
             v = dict_target_cells[conditional_numeric_to_tag[k]]
             kl_out = compare_motif_list(synt_df_cond, v)
@@ -78,6 +80,19 @@ def kl_comparison_generated_sequences(
         final_comp_kl.append(comp_array)
     return final_comp_kl
 
+def kl_heatmap(
+    cell_list: str,
+    target_cells_dict: dict,
+    numeric_to_tag: dict,
+):
+    final_comp_kl = []
+    for cell in cell_list:
+        file_name = [f for f in os.listdir(os.getcwd()) if cell in f][0]
+        df = pd.read_csv(file_name, header=None)
+        v = target_cells_dict[numeric_to_tag[cell]]
+        kl_out = compare_motif_list(df, v)
+        final_comp_kl.append(kl_out)
+    return final_comp_kl
 
 def generate_heatmap(df_heat: pd.DataFrame, x_label: str, y_label: str, cell_components: str):
     plt.clf()
