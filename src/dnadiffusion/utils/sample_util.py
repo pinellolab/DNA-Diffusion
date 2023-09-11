@@ -19,7 +19,9 @@ def create_sample(
     cond_weight_to_metric: int = 0,
     save_timesteps: bool = False,
     save_dataframe: bool = False,
+    generate_attention_maps: bool = False,
 ):
+    print("sample_util")
     nucleotides = ["A", "C", "G", "T"]
     final_sequences = []
     for n_a in tqdm(range(number_of_samples)):
@@ -30,7 +32,16 @@ def create_sample(
             sampled = torch.from_numpy(np.random.choice(cell_types, sample_bs))
 
         classes = sampled.float().to(diffusion_model.device)
-        sampled_images = diffusion_model.sample(classes, (sample_bs, 1, 4, 200), cond_weight_to_metric)
+
+        if generate_attention_maps:
+            sampled_images, cross_att_values = diffusion_model.sample_cross(
+                classes, (sample_bs, 1, 4, 200), cond_weight_to_metric
+            )
+            # save cross attention maps in a numpy array
+            np.save(f"cross_att_values_{conditional_numeric_to_tag[group_number]}.npy", cross_att_values)
+
+        else:
+            sampled_images = diffusion_model.sample(classes, (sample_bs, 1, 4, 200), cond_weight_to_metric)
 
         if save_timesteps:
             seqs_to_df = {}

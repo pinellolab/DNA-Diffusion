@@ -48,6 +48,15 @@ class Diffusion(nn.Module):
         )
 
     @torch.no_grad()
+    def sample_cross(self, classes, shape, cond_weight):
+        return self.p_sample_loop(
+            classes=classes,
+            image_size=shape,
+            cond_weight=cond_weight,
+            get_cross_map=True,
+        )
+
+    @torch.no_grad()
     def p_sample_loop(self, classes, image_size, cond_weight, get_cross_map=False):
         b = image_size[0]
         device = self.device
