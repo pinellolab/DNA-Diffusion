@@ -4,6 +4,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 import torch
+from tqdm import tqdm
 
 from dnadiffusion.utils.utils import convert_to_seq
 
@@ -12,7 +13,7 @@ def create_sample(
     diffusion_model,
     cell_types: list,
     conditional_numeric_to_tag: dict,
-    number_of_samples: int = 20,
+    number_of_samples: int = 1000,
     specific_group: bool = False,
     group_number: Optional[list] = None,
     cond_weight_to_metric: int = 0,
@@ -21,8 +22,7 @@ def create_sample(
 ):
     nucleotides = ["A", "C", "G", "T"]
     final_sequences = []
-    for n_a in range(number_of_samples):
-        print(n_a)
+    for n_a in tqdm(range(number_of_samples)):
         sample_bs = 10
         if specific_group:
             sampled = torch.from_numpy(np.array([group_number] * sample_bs))
@@ -68,10 +68,10 @@ def create_sample(
     save_motifs_syn = open("synthetic_motifs.fasta", "w")
     save_motifs_syn.write("\n".join(final_sequences))
     save_motifs_syn.close()
-    os.system("gimme scan synthetic_motifs.fasta -p JASPAR2020_vertebrates -g hg38 > syn_results_motifs.bed")
+    os.system("gimme scan synthetic_motifs.fasta -p JASPAR2020_vertebrates -g hg38 -n 20> syn_results_motifs.bed")
     df_results_syn = pd.read_csv("syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
 
     df_results_syn["motifs"] = df_results_syn[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
     df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
-    df_motifs_count_syn = df_results_syn[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
+    df_motifs_count_syn = df_results_syn[[0, "motifs"]].groupby("motifs").count()
     return df_motifs_count_syn

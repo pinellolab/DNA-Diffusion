@@ -32,14 +32,6 @@ def compare_motif_list(df_motifs_a: pd.DataFrame, df_motifs_b: pd.DataFrame):
 
     df_motifs["Diffusion_seqs"] = df_motifs["motif_a"] / df_motifs["motif_a"].sum()
     df_motifs["Training_seqs"] = df_motifs["motif_b"] / df_motifs["motif_b"].sum()
-    """
-    plt.rcParams["figure.figsize"] = (3,3)
-    sns.regplot(x='Diffusion_seqs',  y='Training_seqs',data=df_motifs)
-    plt.xlabel('Diffusion Seqs')
-    plt.ylabel('Training Seqs')
-    plt.title('Motifs Probs')
-    plt.show()
-    """
     kl_pq = rel_entr(df_motifs["Diffusion_seqs"].values, df_motifs["Training_seqs"].values)
     return np.sum(kl_pq)
 
@@ -65,7 +57,6 @@ def kl_comparison_generated_sequences(
     final_comp_kl = []
     use_cell_list = cell_list
     for r in use_cell_list:
-        # print(r)
         print(conditional_numeric_to_tag[r])
         comp_array = []
         group_compare = r
@@ -77,6 +68,8 @@ def kl_comparison_generated_sequences(
             specific_group=True,
             group_number=group_compare,
             cond_weight_to_metric=1,
+            save_timesteps=False,
+            save_dataframe=False
         )
         for k in use_cell_list:
             v = dict_target_cells[conditional_numeric_to_tag[k]]
@@ -84,7 +77,6 @@ def kl_comparison_generated_sequences(
             comp_array.append(kl_out)
         final_comp_kl.append(comp_array)
     return final_comp_kl
-
 
 def generate_heatmap(df_heat: pd.DataFrame, x_label: str, y_label: str, cell_components: str):
     plt.clf()
@@ -99,7 +91,6 @@ def generate_heatmap(df_heat: pd.DataFrame, x_label: str, y_label: str, cell_com
     plt.ylabel(f"{y_label} \n (motifs dist)")
     plt.grid(False)
     plt.savefig(f"./graphs/{x_label}_{y_label}_kl_heatmap.png")
-    # wandb.log({f"Kl divergence \n {x_label} sequences x  {y_label} sequences \n MOTIFS probabilities": plt})
 
 
 def generate_similarity_metric():
