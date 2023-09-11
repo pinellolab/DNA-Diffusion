@@ -15,7 +15,7 @@ from dnadiffusion.utils.utils import one_hot_encode
 
 def load_data(
     data_path: str = "K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
-    saved_data_path: str = "encode_data_dict.npy",
+    saved_data_path: str = "encode_data.pkl",
     subset_list: List = [
         "GM12878_ENCLB441ZZZ",
         "hESCT0_ENCLB449ZZZ",
@@ -82,16 +82,12 @@ def load_data(
 
 def motifs_from_fasta(fasta: str):
     print("Computing Motifs....")
-    os.system(f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 > train_results_motifs.bed")
+    os.system(f"gimme scan {fasta} -p  JASPAR2020_vertebrates -g hg38 -n 20> train_results_motifs.bed")
     df_results_seq_guime = pd.read_csv("train_results_motifs.bed", sep="\t", skiprows=5, header=None)
     df_results_seq_guime["motifs"] = df_results_seq_guime[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
 
     df_results_seq_guime[0] = df_results_seq_guime[0].apply(lambda x: "_".join(x.split("_")[:-1]))
-    df_results_seq_guime_count_out = df_results_seq_guime[[0, "motifs"]].drop_duplicates().groupby("motifs").count()
-    plt.rcParams["figure.figsize"] = (30, 2)
-    df_results_seq_guime_count_out.sort_values(0, ascending=False).head(50)[0].plot.bar()
-    plt.title("Top 50 MOTIFS on component 0 ")
-    plt.show()
+    df_results_seq_guime_count_out = df_results_seq_guime[[0, "motifs"]].groupby("motifs").count()
     return df_results_seq_guime_count_out
 
 
@@ -162,10 +158,10 @@ def preprocess_data(
     if subset_list:
         print(" or ".join([f"TAG == {c}" for c in subset_list]))
         df = df.query(" or ".join([f'TAG == "{c}" ' for c in subset_list]))
-        print("Subseting...")
+        print("Subsetting...")
 
     # Limiting the total number of sequences
-    if limit_total_sequences:
+    if limit_total_sequences > 0:
         print(f"Limiting total sequences to {limit_total_sequences}")
         df = df.sample(limit_total_sequences)
 
@@ -193,7 +189,7 @@ def preprocess_data(
     # Writing to pickle
     if save_output:
         # Saving all train, test, train_shuffled dictionaries to pickle
-        with open("dnadiffusion/data/encode_data.pkl", "wb") as f:
+        with open("src/dnadiffusion/data/encode_data.pkl", "wb") as f:
             pickle.dump(combined_dict, f)
 
     return combined_dict

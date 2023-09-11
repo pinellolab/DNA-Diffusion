@@ -15,6 +15,10 @@ dnadiffusion/checkpoints/*
 # Wandb folder
 wandb/*
 
+# Gimme output files
+*.fasta
+*.bed
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
