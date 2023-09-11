@@ -69,7 +69,7 @@ def kl_comparison_generated_sequences(
             group_number=group_compare,
             cond_weight_to_metric=1,
             save_timesteps=False,
-            save_dataframe=False
+            save_dataframe=False,
         )
         for k in use_cell_list:
             v = dict_target_cells[conditional_numeric_to_tag[k]]
@@ -77,6 +77,7 @@ def kl_comparison_generated_sequences(
             comp_array.append(kl_out)
         final_comp_kl.append(comp_array)
     return final_comp_kl
+
 
 def generate_heatmap(df_heat: pd.DataFrame, x_label: str, y_label: str, cell_components: str):
     plt.clf()
