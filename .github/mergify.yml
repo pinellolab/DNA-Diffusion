@@ -1,0 +1,20 @@
+pull_request_rules:
+  - name: self-assign PRs
+    conditions:
+      - -merged
+      - -closed
+      - "#assignee=0"
+    actions:
+      assign:
+        add_users:
+          - "{{ author }}"
+  - name: automatic merge for main when CI passes and 2 reviews and not WIP
+    conditions:
+      - "#approved-reviews-by>=1"
+      - check-success=test (3.10)
+      - check-success=build-and-push-image
+      - base=main
+      - label!=work-in-progress
+    actions:
+      merge:
+        method: squash
