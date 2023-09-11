@@ -1,0 +1,11 @@
+pull_request_rules:
+  - name: automatic merge for main when CI passes and 2 reviews and not WIP
+    conditions:
+      - "#approved-reviews-by>=1"
+      - check-success=Build / test (3.10) (pull_request)
+      - check-success=Docker / build-and-push-image (pull_request)
+      - base=main
+      - label!=work-in-progress
+    actions:
+      merge:
+        method: squash
