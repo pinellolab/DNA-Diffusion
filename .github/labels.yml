@@ -64,3 +64,6 @@
 - name: wontfix
   description: This will not be worked on
   color: ffffff
+- name: work-in-progress
+  description: Work in progress that should not be auto-merged
+  color: ffffff
