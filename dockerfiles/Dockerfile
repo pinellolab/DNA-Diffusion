@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM condaforge/mambaforge:22.11.1-4
+FROM condaforge/mambaforge:23.1.0-4
 WORKDIR /DNA-Diffusion
 COPY . .
 
