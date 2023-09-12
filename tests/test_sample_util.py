@@ -1,8 +1,10 @@
 from unittest.mock import patch
-import pytest
-import pandas as pd
 
-from dnadiffusion.utils.sample_util import extract_motifs, convert_sample_to_fasta 
+import pandas as pd
+import pytest
+
+from dnadiffusion.utils.sample_util import convert_sample_to_fasta, extract_motifs
+
 
 @pytest.fixture
 def mock_bed(tmpdir):
@@ -21,7 +23,7 @@ def mock_bed(tmpdir):
     ]
 
     # Writing to a bed fille
-    sample_path = tmpdir.join('syn_results_motifs.bed')
+    sample_path = tmpdir.join("syn_results_motifs.bed")
     with open("syn_results_motifs.bed", "w") as f:
         f.write("# GimmeMotifs version 0.18.0\n")
         f.write("# Input: synthetic_motifs.fasta\n")
@@ -33,15 +35,17 @@ def mock_bed(tmpdir):
 
     return str(sample_path)
 
+
 @pytest.fixture
 def mock_fasta(tmpdir):
     # Creating mock sequence list
     sequence_list = ["ATGC", "CGTA"]
-    synthetic_motifs_fasta = tmpdir.join('synthetic_motifs.fasta')
+    synthetic_motifs_fasta = tmpdir.join("synthetic_motifs.fasta")
     with open("synthetic_motifs.fasta", "w") as f:
         for i, seq in enumerate(sequence_list):
             f.write(f">sequence_{i}\n{seq}\n")
     return str(synthetic_motifs_fasta)
+
 
 def test_extract_motifs(mock_fasta, mock_bed):
     # Mock os.system function
@@ -57,13 +61,14 @@ def test_extract_motifs(mock_fasta, mock_bed):
 
 @pytest.fixture
 def mock_convert_sample_to_fasta_file(tmpdir):
-    sample_path = tmpdir.join('sample.txt')
-    with open(sample_path, 'w') as f:
-        f.write('ATGC\nCGTA')
+    sample_path = tmpdir.join("sample.txt")
+    with open(sample_path, "w") as f:
+        f.write("ATGC\nCGTA")
     return str(sample_path)
+
 
 def test_convert_sample_to_fasta(mock_convert_sample_to_fasta_file):
     # Call function with mock sample file
     sequences = convert_sample_to_fasta(mock_convert_sample_to_fasta_file)
     # Assert format is correct
-    assert sequences == ['>sequence_0\nATGC', '>sequence_1\nCGTA']
+    assert sequences == [">sequence_0\nATGC", ">sequence_1\nCGTA"]

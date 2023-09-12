@@ -62,7 +62,7 @@ def kl_comparison_generated_sequences(
         print(conditional_numeric_to_tag[r])
         comp_array = []
         group_compare = r
-        """synt_df_cond = create_sample(
+        synt_df_cond = create_sample(
             [r],
             conditional_numeric_to_tag,
             additional_variables,
@@ -73,7 +73,6 @@ def kl_comparison_generated_sequences(
             save_timesteps=False,
             save_dataframe=False,
         )
-        """
         for k in use_cell_list:
             v = dict_target_cells[conditional_numeric_to_tag[k]]
             kl_out = compare_motif_list(synt_df_cond, v)
