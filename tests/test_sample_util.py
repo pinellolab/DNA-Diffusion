@@ -1,15 +1,11 @@
-import os
 from unittest.mock import patch
-
+import pytest
 import pandas as pd
 
-from dnadiffusion.utils.sample_util import extract_motifs
+from dnadiffusion.utils.sample_util import extract_motifs, convert_sample_to_fasta 
 
-
-def test_extract_motifs():
-    # Creating mock sequence list
-    sequence_list = ["ATGC", "CGTA"]
-
+@pytest.fixture
+def mock_bed(tmpdir):
     # Defining example motif data
     test_bed = [
         'sequence_0\tpfmscan\tmisc_feature\t123\t130\t8.931999505513964\t-\t.\tmotif_name "MA0607.1_Bhlha15" ; motif_instance "ACATATGC"',
@@ -24,7 +20,8 @@ def test_extract_motifs():
         'sequence_1\tpfmscan\tmisc_feature\t62\t81\t12.509519971299817\t+\t.\tmotif_name "MA0080.5_SPI1" ; motif_instance "TAAAATGAGGAACTGAAGTA"',
     ]
 
-    # Writing to a bed file
+    # Writing to a bed fille
+    sample_path = tmpdir.join('syn_results_motifs.bed')
     with open("syn_results_motifs.bed", "w") as f:
         f.write("# GimmeMotifs version 0.18.0\n")
         f.write("# Input: synthetic_motifs.fasta\n")
@@ -34,12 +31,22 @@ def test_extract_motifs():
         for line in test_bed:
             f.write(line + "\n")
 
+    return str(sample_path)
+
+@pytest.fixture
+def mock_fasta(tmpdir):
+    # Creating mock sequence list
+    sequence_list = ["ATGC", "CGTA"]
+    synthetic_motifs_fasta = tmpdir.join('synthetic_motifs.fasta')
+    with open("synthetic_motifs.fasta", "w") as f:
+        for i, seq in enumerate(sequence_list):
+            f.write(f">sequence_{i}\n{seq}\n")
+    return str(synthetic_motifs_fasta)
+
+def test_extract_motifs(mock_fasta, mock_bed):
     # Mock os.system function
     with patch("os.system", return_value=0):
-        df_motifs_count_syn = extract_motifs(sequence_list)
-
-    # Assert synthetic_motifs.fasta file was created
-    assert os.path.exists("synthetic_motifs.fasta")
+        df_motifs_count_syn = extract_motifs(mock_fasta)
 
     # Asserting that the output is a dataframe
     assert isinstance(df_motifs_count_syn, pd.DataFrame)
@@ -47,12 +54,16 @@ def test_extract_motifs():
     # Asserting that the output file is not empty
     assert df_motifs_count_syn.shape[0] > 0
 
-    # Asserting function created the expected files
-    assert os.path.exists("synthetic_motifs.bed")
-    assert os.path.exists("syn_results_motifs.bed")
 
-    # Remove synthetic_motifs.fasta file
-    os.remove("synthetic_motifs.fasta")
+@pytest.fixture
+def mock_convert_sample_to_fasta_file(tmpdir):
+    sample_path = tmpdir.join('sample.txt')
+    with open(sample_path, 'w') as f:
+        f.write('ATGC\nCGTA')
+    return str(sample_path)
 
-    # Removing files created by the function
-    os.remove("syn_results_motifs.bed")
+def test_convert_sample_to_fasta(mock_convert_sample_to_fasta_file):
+    # Call function with mock sample file
+    sequences = convert_sample_to_fasta(mock_convert_sample_to_fasta_file)
+    # Assert format is correct
+    assert sequences == ['>sequence_0\nATGC', '>sequence_1\nCGTA']
