@@ -41,7 +41,7 @@ jobs:
     - name: Build
       run: hatch run docs-build
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v2
       with:
         path: ./site
 
