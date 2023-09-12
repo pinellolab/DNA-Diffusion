@@ -6,5 +6,6 @@
     ":semanticCommits",
     ":semanticCommitTypeAll(chore)",
     ":semanticCommitScope(deps)"
-  ]
+  ],
+  "labels": ["dependencies"]
 }
