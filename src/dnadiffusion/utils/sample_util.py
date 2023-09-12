@@ -76,9 +76,15 @@ def create_sample(
             f.write("\n".join(final_sequences))
         return
 
-    save_motifs_syn = open("synthetic_motifs.fasta", "w")
-    save_motifs_syn.write("\n".join(final_sequences))
-    save_motifs_syn.close()
+    df_motifs_count_syn = extract_motifs(final_sequences)
+    return df_motifs_count_syn
+
+
+def extract_motifs(sequence_list: list):
+    """Extract motifs from a list of sequences"""
+    motifs = open("synthetic_motifs.fasta", "w")
+    motifs.write("\n".join(sequence_list))
+    motifs.close()
     os.system("gimme scan synthetic_motifs.fasta -p JASPAR2020_vertebrates -g hg38 -n 20> syn_results_motifs.bed")
     df_results_syn = pd.read_csv("syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
 
@@ -86,3 +92,15 @@ def create_sample(
     df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
     df_motifs_count_syn = df_results_syn[[0, "motifs"]].groupby("motifs").count()
     return df_motifs_count_syn
+
+
+def convert_sample_to_fasta(sample_path: list):
+    """Convert cell specific samples to a fasta format"""
+    sequences = []
+    samples = pd.read_csv(sample_path, sep="\t", header=None)
+    # Extract each line of the dataframe into a list
+    samples_list = samples[0].tolist()
+    # Convert into a fasta format
+    for i, seq in enumerate(samples_list):
+        sequences.append(f">sequence_{i}\n" + seq)
+    return sequences
