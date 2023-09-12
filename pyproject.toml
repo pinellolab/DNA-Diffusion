@@ -169,19 +169,19 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-  "click",
+  "click>=8.1.0",
   "torch>=2.0.0",
-  "torchvision",
-  "accelerate",
-  "matplotlib",
-  "pandas",
-  "seaborn",
-  "einops",
-  "wandb",
-  "genomepy",
-  "sourmash",
-  "gimmemotifs",
-  "memory-efficient-attention-pytorch",
+  "torchvision>=0.15.0",
+  "accelerate>=0.20.0",
+  "matplotlib>=3.7.0",
+  "pandas>=2.0.0",
+  "seaborn>=0.12.0",
+  "einops>=0.6.0",
+  "wandb>=0.15.0",
+  "genomepy>=0.16.0",
+  "sourmash>=4.8.0",
+  "gimmemotifs>=0.18.0",
+  "memory-efficient-attention-pytorch>0.1.0",
 ]
 
 [project.scripts]
