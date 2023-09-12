@@ -83,7 +83,7 @@ def sample(model_path: str, num_samples: int = 1000, heatmap: bool = False):
 
         # Generate synthetic vs test heatmap
         motif_df = kl_heatmap(
-            cell_list, 
+            cell_list,
             encode_data["test_motifs_cell_specific"],
         )
         generate_heatmap(motif_df, "DNADiffusion", "Test", cell_list)

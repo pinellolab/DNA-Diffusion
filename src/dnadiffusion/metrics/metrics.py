@@ -7,7 +7,7 @@ import seaborn as sns
 from scipy.special import rel_entr
 from tqdm import tqdm
 
-from dnadiffusion.utils.sample_util import create_sample, extract_motifs, convert_sample_to_fasta
+from dnadiffusion.utils.sample_util import convert_sample_to_fasta, create_sample, extract_motifs
 from dnadiffusion.utils.utils import one_hot_encode
 
 
