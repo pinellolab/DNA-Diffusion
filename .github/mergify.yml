@@ -1,0 +1,26 @@
+pull_request_rules:
+  - name: self-assign PRs
+    conditions:
+      - -merged
+      - -closed
+      - "#assignee=0"
+    actions:
+      assign:
+        add_users:
+          - "{{ author }}"
+  - name: automatic queue when not WIP, CI passes, and at least 1 approving review
+    conditions:
+      - "#approved-reviews-by>=1"
+      - check-success=test (3.10)
+      - check-success=build-and-push-image
+      - base=main
+      - label!=work-in-progress
+    actions:
+      queue:
+        method: squash
+        name: default
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=test (3.10)
+      - check-success=build-and-push-image

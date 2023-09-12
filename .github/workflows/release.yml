@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Check out the repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 2
 
@@ -40,14 +40,14 @@ jobs:
 
     - name: Publish package on PyPI
       if: ${{ inputs.release_enabled }}
-      uses: pypa/gh-action-pypi-publish@v1.6.4
+      uses: pypa/gh-action-pypi-publish@v1.8.10
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
 
     - name: Publish the release notes
       if: ${{ inputs.release_enabled }}
-      uses: release-drafter/release-drafter@v5.23.0
+      uses: release-drafter/release-drafter@v5.24.0
       with:
         publish: true
         prerelease: false
