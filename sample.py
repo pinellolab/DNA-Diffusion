@@ -2,12 +2,13 @@ import torch
 from accelerate import Accelerator, DistributedDataParallelKwargs
 
 from dnadiffusion.data.dataloader import load_data
+from dnadiffusion.metrics.metrics import generate_heatmap, kl_heatmap
 from dnadiffusion.models.diffusion import Diffusion
 from dnadiffusion.models.unet import UNet
 from dnadiffusion.utils.sample_util import create_sample
 
 
-def sample(model_path: str, num_samples: int = 1000):
+def sample(model_path: str, num_samples: int = 1000, heatmap: bool = False):
     kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
     accelerator = Accelerator(
         kwargs_handlers=[kwargs],
@@ -55,9 +56,10 @@ def sample(model_path: str, num_samples: int = 1000):
     diffusion = accelerator.prepare(diffusion)
 
     # Generating cell specific samples
-    cell_num_list = encode_data["tag_to_numeric"].values()
+    cell_num_list = encode_data["cell_types"]
+    cell_list = list(encode_data["tag_to_numeric"].keys())
 
-    for i in cell_num_list:
+    """for i in cell_num_list:
         print(f"Generating {num_samples} samples for cell {encode_data['numeric_to_tag'][i]}")
         create_sample(
             diffusion,
@@ -70,6 +72,31 @@ def sample(model_path: str, num_samples: int = 1000):
             save_timesteps=False,
             save_dataframe=True,
         )
+    """
+    if heatmap:
+        # Generate synthetic vs train heatmap
+        motif_df = kl_heatmap(
+            cell_list,
+            encode_data["train_motifs_cell_specific"],
+        )
+        generate_heatmap(motif_df, "DNADiffusion", "Train", cell_list)
+
+        # Generate synthetic vs test heatmap
+        motif_df = kl_heatmap(
+            cell_list,
+            encode_data["test_motifs_cell_specific"],
+        )
+        generate_heatmap(motif_df, "DNADiffusion", "Test", cell_list)
+
+        # Generate synthetic vs shuffle heatmap
+        motif_df = kl_heatmap(
+            cell_list,
+            encode_data["shuffle_motifs_cell_specific"],
+        )
+        generate_heatmap(motif_df, "DNADiffusion", "Shuffle", cell_list)
+
+        print("Finished generating heatmaps")
+        return
 
 
 if __name__ == "__main__":
