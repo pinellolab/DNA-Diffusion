@@ -1,5 +1,4 @@
 import torch
-from accelerate import Accelerator, DistributedDataParallelKwargs
 
 from dnadiffusion.data.dataloader import load_data
 from dnadiffusion.metrics.metrics import generate_heatmap, kl_heatmap
@@ -9,12 +8,6 @@ from dnadiffusion.utils.sample_util import create_sample
 
 
 def sample(model_path: str, num_samples: int = 1000, heatmap: bool = False):
-    kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
-    accelerator = Accelerator(
-        kwargs_handlers=[kwargs],
-        split_batches=True,
-        log_with=["wandb"],
-    )
     # Instantiating data and model
 
     print("Loading data")
@@ -51,28 +44,26 @@ def sample(model_path: str, num_samples: int = 1000, heatmap: bool = False):
     checkpoint_dict = torch.load(model_path)
     diffusion.load_state_dict(checkpoint_dict["model"])
 
-    # Preparing model for sampling
-    print("Preparing model for sampling")
-    diffusion = accelerator.prepare(diffusion)
+    # Send model to device
+    print("Sending model to device")
+    diffusion = diffusion.to("cuda")
 
     # Generating cell specific samples
     cell_num_list = encode_data["cell_types"]
     cell_list = list(encode_data["tag_to_numeric"].keys())
 
-    """for i in cell_num_list:
+    for i in cell_num_list:
         print(f"Generating {num_samples} samples for cell {encode_data['numeric_to_tag'][i]}")
         create_sample(
             diffusion,
             conditional_numeric_to_tag=encode_data["numeric_to_tag"],
             cell_types=encode_data["cell_types"],
             number_of_samples=int(num_samples / 10),
-            specific_group=True,
             group_number=i,
             cond_weight_to_metric=1,
             save_timesteps=False,
             save_dataframe=True,
         )
-    """
     if heatmap:
         # Generate synthetic vs train heatmap
         motif_df = kl_heatmap(
