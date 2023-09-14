@@ -19,12 +19,12 @@ def compare_motif_list(df_motifs_a: pd.DataFrame, df_motifs_b: pd.DataFrame):
         list_in = []
         list_in.append(x)  # adding the name
         if x in df_motifs_a.index:
-            list_in.append(df_motifs_a.loc[x, '0'])
+            list_in.append(df_motifs_a.loc[x, "0"])
         else:
             list_in.append(1)
 
         if x in df_motifs_b.index:
-            list_in.append(df_motifs_b.loc[x, '0'])
+            list_in.append(df_motifs_b.loc[x, "0"])
         else:
             list_in.append(1)
 
