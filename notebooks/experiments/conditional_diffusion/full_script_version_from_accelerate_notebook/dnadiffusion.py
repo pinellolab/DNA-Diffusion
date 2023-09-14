@@ -24,7 +24,6 @@ from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 
-
 # Helper Modules
 def exists(x):
     return x is not None
