@@ -9,7 +9,6 @@ from dnadiffusion.utils.sample_util import create_sample
 
 def sample(model_path: str, num_samples: int = 1000, heatmap: bool = False):
     # Instantiating data and model
-
     print("Loading data")
     encode_data = load_data(
         data_path="src/dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
