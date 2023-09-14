@@ -181,7 +181,7 @@ dependencies = [
   "genomepy>=0.16.0",
   "sourmash>=4.8.0",
   "gimmemotifs>=0.18.0",
-  "memory-efficient-attention-pytorch>0.1.0",
+  "memory-efficient-attention-pytorch==0.1.6",
 ]
 
 [project.scripts]
