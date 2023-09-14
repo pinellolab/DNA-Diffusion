@@ -22,7 +22,7 @@ class TrainLoop:
         accelerator: Accelerator,
         epochs: int = 10000,
         loss_show_epoch: int = 10,
-        sample_epoch: int = 100,
+        sample_epoch: int = 500,
         save_epoch: int = 500,
         model_name: str = "model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k",
         image_size: int = 200,
@@ -49,7 +49,7 @@ class TrainLoop:
         self.train_kl, self.test_kl, self.shuffle_kl = 1, 1, 1
         self.seq_similarity = 1
 
-        self.start_epoch = 0
+        self.start_epoch = 1
 
         # Dataloader
         seq_dataset = SequenceDataset(seqs=self.encode_data["X_train"], c=self.encode_data["x_train_cell_type"])
@@ -66,7 +66,7 @@ class TrainLoop:
                 init_kwargs={"wandb": {"notes": "testing wandb accelerate script"}},
             )
 
-        for epoch in tqdm(range(self.start_epoch, self.epochs)):
+        for epoch in tqdm(range(self.start_epoch, self.epochs + 1)):
             self.model.train()
 
             # Getting loss of current batch
@@ -74,15 +74,15 @@ class TrainLoop:
                 loss = self.train_step(batch)
 
             # Logging loss
-            if (epoch + 1) % self.loss_show_epoch == 0 and self.accelerator.is_main_process:
+            if epoch % self.loss_show_epoch == 0 and self.accelerator.is_main_process:
                 self.log_step(loss, epoch)
 
             # Sampling
-            if (epoch + 1) % self.sample_epoch == 0 and self.accelerator.is_main_process:
+            if epoch % self.sample_epoch == 0 and self.accelerator.is_main_process:
                 self.sample()
 
             # Saving model
-            if (epoch + 1) % self.save_epoch == 0 and self.accelerator.is_main_process:
+            if epoch % self.save_epoch == 0 and self.accelerator.is_main_process:
                 self.save_model(epoch)
 
     def train_step(self, batch):
@@ -146,7 +146,7 @@ class TrainLoop:
         }
         torch.save(
             checkpoint_dict,
-            f"dnadiffusion/checkpoints/epoch_{epoch}_{self.model_name}.pt",
+            f"checkpoints/epoch_{epoch}_{self.model_name}.pt",
         )
 
     def load(self, path):
