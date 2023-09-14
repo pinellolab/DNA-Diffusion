@@ -49,38 +49,6 @@ def kl_comparison_between_dataset(first_dict: dict, second_dict: dict):
     return final_comp_kl
 
 
-def kl_comparison_generated_sequences(
-    cell_list: list,
-    dict_target_cells: dict,
-    additional_variables: dict,
-    conditional_numeric_to_tag: dict,
-    number_of_sequences_sample_per_cell: int = 1000,
-):
-    final_comp_kl = []
-    use_cell_list = cell_list
-    for r in use_cell_list:
-        print(conditional_numeric_to_tag[r])
-        comp_array = []
-        group_compare = r
-        synt_df_cond = create_sample(
-            [r],
-            conditional_numeric_to_tag,
-            additional_variables,
-            int(number_of_sequences_sample_per_cell / 10),
-            specific_group=True,
-            group_number=group_compare,
-            cond_weight_to_metric=1,
-            save_timesteps=False,
-            save_dataframe=False,
-        )
-        for k in use_cell_list:
-            v = dict_target_cells[conditional_numeric_to_tag[k]]
-            kl_out = compare_motif_list(synt_df_cond, v)
-            comp_array.append(kl_out)
-        final_comp_kl.append(comp_array)
-    return final_comp_kl
-
-
 def kl_heatmap(
     cell_list: list,
     target_cells_dict: dict,
