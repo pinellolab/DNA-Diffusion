@@ -82,7 +82,7 @@ def kl_comparison_generated_sequences(
 
 
 def kl_heatmap(
-    cell_list: str,
+    cell_list: list,
     target_cells_dict: dict,
 ):
     final_comp_kl = []
