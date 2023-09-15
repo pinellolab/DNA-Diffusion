@@ -170,7 +170,7 @@ def validation_table(
     df_train_balanced["end"] = df_train_balanced["coord_center"] + 100
     # Selecting only the columns we need
     df_train_balanced = df_train_balanced[["chr", "start", "end", "dhs_id", "TAG", "sequence", "data_label"]]
-    df_train_balanced.columns = ["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "SOURCE"]
+    df_train_balanced.columns = ["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]
 
     # Reading the generated sequences
     print("Generating synthetic sequences dataframe")
