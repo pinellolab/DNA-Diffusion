@@ -177,7 +177,7 @@ dependencies = [
   "genomepy==0.16.1",
   "gimmemotifs==0.18.0",
   "matplotlib==3.7.3",
-  "memory-efficient-attention-pytorch==0.1.2",
+  "memory-efficient-attention-pytorch==0.1.6",
   "pandas==2.1.0",
   "seaborn==0.12.2",
   "sourmash==4.8.3",
