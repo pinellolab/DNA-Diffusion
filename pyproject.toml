@@ -124,16 +124,18 @@ path = "src/dnadiffusion/__about__.py"
 [tool.hatch.envs.default]
 python = "3.10"
 dependencies = [
+    "black==23.9.1",
     "black[jupyter]",
-    "mypy",
-    "ruff",
-    "pytest",
-    "pytest-cov",
-    "xdoctest",
-    "mkdocs-material",
+    "mkdocs-material==9.3.1",
+    "mkdocstrings==0.23.0",
     "mkdocstrings[python]",
-    "pytest-asyncio",
-    "types-tqdm",
+    "mypy==1.5.1",
+    "pytest==7.4.2",
+    "pytest-asyncio==0.21.1",
+    "pytest-cov==4.1.0",
+    "ruff==0.0.289",
+    "types-tqdm==4.66.0.2",
+    "xdoctest==1.1.1",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -169,19 +171,19 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-  "click>=8.1.0",
-  "torch>=2.0.0",
-  "torchvision>=0.15.0",
-  "accelerate>=0.20.0",
-  "matplotlib>=3.7.0",
-  "pandas>=2.0.0",
-  "seaborn>=0.12.0",
-  "einops>=0.6.0",
-  "wandb>=0.15.0",
-  "genomepy>=0.16.0",
-  "sourmash>=4.8.0",
-  "gimmemotifs>=0.18.0",
-  "memory-efficient-attention-pytorch>0.1.0",
+  "accelerate==0.23.0",
+  "click==8.1.7",
+  "einops==0.6.1",
+  "genomepy==0.16.1",
+  "gimmemotifs==0.18.0",
+  "matplotlib==3.7.3",
+  "memory-efficient-attention-pytorch==0.1.2",
+  "pandas==2.1.0",
+  "seaborn==0.12.2",
+  "sourmash==4.8.3",
+  "torch==2.0.1",
+  "torchvision==0.15.2",
+  "wandb==0.15.10",
 ]
 
 [project.scripts]
