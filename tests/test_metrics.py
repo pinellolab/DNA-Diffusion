@@ -13,7 +13,7 @@ def df_motifs_a():
         "motif_c": 4,
         "motif_d": 1,
     }
-    df = pd.DataFrame(list(data.items()), columns=["motifs", "0"])
+    df = pd.DataFrame(list(data.items()), columns=["motifs", 0])
     df.set_index("motifs", inplace=True)
     return df
 
@@ -26,7 +26,7 @@ def df_motifs_b():
         "motif_c": 1,
         "motif_d": 2,
     }
-    df = pd.DataFrame(list(data.items()), columns=["motifs", "0"])
+    df = pd.DataFrame(list(data.items()), columns=["motifs", 0])
     df.set_index("motifs", inplace=True)
     return df
 
