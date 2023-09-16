@@ -53,12 +53,7 @@ class TrainLoop:
 
         # Dataloader
         seq_dataset = SequenceDataset(seqs=self.encode_data["X_train"], c=self.encode_data["x_train_cell_type"])
-        # Split into train and test
-        self.train_dl, self.test_dl = torch.utils.data.random_split(
-            seq_dataset, [int(len(seq_dataset) * 0.8), len(seq_dataset) - int(len(seq_dataset) * 0.8)]
-        )
         self.train_dl = DataLoader(seq_dataset, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
-        self.test_dl = DataLoader(self.test_dl, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
 
     def train_loop(self):
         # Prepare for training
@@ -78,19 +73,16 @@ class TrainLoop:
             for _, batch in enumerate(self.train_dl):
                 loss = self.train_step(batch)
 
-            for _, batch_test in enumerate(self.test_dl):
-                test_loss = self.train_step(batch_test)
-
             # Logging loss
             if epoch % self.loss_show_epoch == 0 and self.accelerator.is_main_process:
-                self.log_step(loss, test_loss, epoch)
+                self.log_step(loss, epoch)
 
-                # Sampling
-                # if epoch % self.sample_epoch == 0 and self.accelerator.is_main_process:
+            # Sampling
+            if epoch % self.sample_epoch == 0 and self.accelerator.is_main_process:
                 self.sample()
 
-                # Saving model
-                # if epoch % self.save_epoch == 0 and self.accelerator.is_main_process:
+            # Saving model
+            if epoch % self.save_epoch == 0 and self.accelerator.is_main_process:
                 self.save_model(epoch)
 
     def train_step(self, batch):
@@ -111,7 +103,7 @@ class TrainLoop:
         self.accelerator.wait_for_everyone()
         return loss
 
-    def log_step(self, loss, test_loss, epoch):
+    def log_step(self, loss, epoch):
         if self.accelerator.is_main_process:
             self.accelerator.log(
                 {
@@ -119,7 +111,6 @@ class TrainLoop:
                     "test": self.test_kl,
                     "shuffle": self.shuffle_kl,
                     "loss": loss.item(),
-                    "test_loss": test_loss.item(),
                     "seq_similarity": self.seq_similarity,
                 },
                 step=epoch,
