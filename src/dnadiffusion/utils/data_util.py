@@ -12,10 +12,6 @@ class SEQ_EXTRACT:
     def extract_seq(self, tag, cell_type):
         return self.data.query(f'TAG == "{tag}" and CELL_TYPE == "{cell_type}" ').copy()
 
-    def __repr__(self):
-        display(self.data.groupby(["TAG", "CELL_TYPE"]).count())
-        return "Data structure"
-
 
 class GTFProcessing:
     # https://github.com/LucasSilvaFerreira/GTFProcessing
