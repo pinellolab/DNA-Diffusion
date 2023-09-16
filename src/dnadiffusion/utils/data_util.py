@@ -10,7 +10,7 @@ class SEQ_EXTRACT:
         self.data = pd.read_csv(data, sep="\t")
 
     def extract_seq(self, tag, cell_type):
-        return self.data.query(f'TAG == "{tag}" and CELL_TYPE == "{cell_type}" ')
+        return self.data.query(f'TAG == "{tag}" and CELL_TYPE == "{cell_type}" ').copy()
 
 
 class GTFProcessing:
