@@ -86,7 +86,7 @@ def validation_table(
     download_genome: bool = False,
     download_gtf_gene_annotation: bool = False,
     genome_path: str = "hg38",
-    save_output: bool = False,
+    save_output: bool = True,
 ) -> pd.DataFrame:
     """Consolidates the training dataset, generated sequences, randomized sequences and promoter sequences into a single dataframe
 
