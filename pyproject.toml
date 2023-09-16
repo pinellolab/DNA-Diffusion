@@ -182,7 +182,7 @@ dependencies = [
   "pandas==2.1.0",
   "pybedtools==0.9.1",
   "seaborn==0.12.2",
-  "sourmash==4.8.3",
+  "sourmash==4.8.4",
   "torch==2.0.1",
   "torchvision==0.15.2",
   "wandb==0.15.10",
