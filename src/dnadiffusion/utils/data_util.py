@@ -14,7 +14,7 @@ class SEQ_EXTRACT:
 
     def __repr__(self):
         display(self.data.groupby(["TAG", "CELL_TYPE"]).count())
-        return "Data structure"
+        return "SEQ_EXTRACT structure"
 
 
 class GTFProcessing:
