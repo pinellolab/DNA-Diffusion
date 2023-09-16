@@ -20,12 +20,12 @@ def test_seq_extract(data_path: str = "tests/test_data/data_util/seq_extract_dat
     for tag, cell_type in tag_dict.items():
         if isinstance(cell_type, list):
             for cell in cell_type:
-                input = seqs.extract_seq(tag, cell).reset_index(drop=True)
-                output = pd.read_csv(f"tests/test_data/data_util/{tag}_{cell}.txt", sep="\t", dtype=object)
+                seq_input = seqs.extract_seq(tag, cell).reset_index(drop=True)
+                seq_output = pd.read_csv(f"tests/test_data/data_util/{tag}_{cell}.txt", sep="\t", dtype=object)
                 # Assert the two dataframes are equal
-                pd.testing.assert_frame_equal(input, output)
+                pd.testing.assert_frame_equal(seq_input, seq_output)
         else:
-            input = seqs.extract_seq(tag, cell_type).reset_index(drop=True)
-            output = pd.read_csv(f"tests/test_data/data_util/{tag}.txt", sep="\t", dtype=object)
+            seq_input = seqs.extract_seq(tag, cell_type).reset_index(drop=True)
+            seq_output = pd.read_csv(f"tests/test_data/data_util/{tag}.txt", sep="\t", dtype=object)
             # Assert the two dataframes are equal
-            pd.testing.assert_frame_equal(input, output)
+            pd.testing.assert_frame_equal(seq_input, seq_output)
