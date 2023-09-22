@@ -185,7 +185,7 @@ dependencies = [
   "sourmash==4.8.4",
   "torch==2.0.1",
   "torchvision==0.15.2",
-  "wandb==0.15.10",
+  "wandb==0.15.11",
 ]
 
 [project.scripts]
