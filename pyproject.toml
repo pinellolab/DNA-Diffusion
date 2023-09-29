@@ -181,7 +181,7 @@ dependencies = [
   "memory-efficient-attention-pytorch==0.1.6",
   "pandas==2.1.1",
   "pybedtools==0.9.1",
-  "seaborn==0.12.2",
+  "seaborn==0.13.0",
   "sourmash==4.8.4",
   "torch==2.0.1",
   "torchvision==0.15.2",
