@@ -3,6 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from dnadiffusion.utils.data_util import ReferenceGenome
+
 
 def download_data(data_path: str) -> None:
     # Download DHS metadata and load into dataframe
@@ -207,7 +209,3 @@ class FilteringData:
             )
 
         return new_df
-
-
-
-
