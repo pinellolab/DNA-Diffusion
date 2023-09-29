@@ -7,17 +7,11 @@ from Bio import SeqIO
 
 
 def download_data(data_path: str, genome_path: str = ".local/share/genomes/hg38/hg38.fa"):
-    # Query the reference genome
-    genome = ReferenceGenome.from_path(genome_path)
-
     # Download DHS metadata and load into dataframe
     os.system(
         f"wget https://www.meuleman.org/DHS_Index_and_Vocabulary_metadata.tsv -O {data_path}/DHS_Index_and_Vocabulary_metadata.tsv"
     )
-    DHS_Index_and_Vocabulary_metadata = pd.read_table(f"{data_path}/DHS_Index_and_Vocabulary_metadata.tsv").iloc[:-1]
-
     # Collect basis arrays from NMF
-    # basis_array = requests.get("https://zenodo.org/record/3838751/files/2018-06-08NC16_NNDSVD_Basis.npy.gz?download=1")
     basis_array = os.system(
         f"wget 'https://zenodo.org/record/3838751/files/2018-06-08NC16_NNDSVD_Basis.npy.gz?download=1' -O {data_path}/2018-06-08NC16_NNDSVD_Basis.npy.gz"
     )
@@ -34,19 +28,7 @@ def download_data(data_path: str, genome_path: str = ".local/share/genomes/hg38/
     nmf_loadings = pd.read_csv(f"{data_path}/2018-06-08NC16_NNDSVD_Basis.csv", header=None)
     nmf_loadings.columns = ['C' + str(i) for i in range(1, 17)]
 
-    # Joining metadata with component presence matrix
-    DHS_Index_and_Vocabulary_metadata = pd.concat([DHS_Index_and_Vocabulary_metadata, nmf_loadings], axis=1)
-
-    component_columns = ['C' + str(i) for i in range(1, 17)]
-
-    DHS_Index_and_Vocabulary_metadata['component'] = (
-        DHS_Index_and_Vocabulary_metadata[component_columns].idxmax(axis=1).apply(lambda x: int(x[1:]))
-    )
-
     # Downloading mixture array that contains 3.5M x 16 matrix of peak presence/absence decomposed into 16 components
-    # mixture_array = requests.get(
-    #     "https://zenodo.org/record/3838751/files/2018-06-08NC16_NNDSVD_Mixture.npy.gz?download=1"
-    # )
     mixture_array = os.system(
         f"wget 'https://zenodo.org/record/3838751/files/2018-06-08NC16_NNDSVD_Mixture.npy.gz?download=1' -O {data_path}/2018-06-08NC16_NNDSVD_Mixture.npy.gz"
     )
@@ -56,9 +38,6 @@ def download_data(data_path: str, genome_path: str = ".local/share/genomes/hg38/
     # Turning npy file into csv
     mixture_array = np.load(f"{data_path}/2018-06-08NC16_NNDSVD_Mixture.npy").T
     np.savetxt(f"{data_path}/2018-06-08NC16_NNDSVD_Mixture.csv", mixture_array, delimiter=",")
-
-    # Creating nmf_loadings matrix from csv and renaming columns
-    nmf_loadings = pd.read_csv(f"{data_path}/2018-06-08NC16_NNDSVD_Mixture.csv", header=None, names=component_columns)
 
     # Loading in DHS_Index_and_Vocabulary_metadata that contains the following information:
     # seqname, start, end, identifier, mean_signal, numsaples, summit, core_start, core_end, component
@@ -73,15 +52,32 @@ def download_data(data_path: str, genome_path: str = ".local/share/genomes/hg38/
     )
     os.system(f"gunzip -d {data_path}/dat_bin_FDR01_hg38.txt.gz")
 
-    return genome
+    print("Finished downloading data")
 
 
 def create_master_dataset(
     data_path: str,
-    genome: str,
+    genome_path: str,
 ):
+    # Query the reference genome
+    genome = ReferenceGenome.from_path(genome_path)
     # Redefine component columns
     component_columns = ['C' + str(i) for i in range(1, 17)]
+    DHS_Index_and_Vocabulary_metadata = pd.read_table(f"{data_path}/DHS_Index_and_Vocabulary_metadata.tsv").iloc[:-1]
+
+    # Component columns names
+    component_columns = ['C' + str(i) for i in range(1, 17)]
+
+    # Creating nmf_loadings matrix from csv
+    basis_nmf_loadings = pd.read_csv('2018-06-08NC16_NNDSVD_Basis.csv', header=None)
+    basis_nmf_loadings.columns = component_columns
+
+    # Joining metadata with component presence matrix
+    DHS_Index_and_Vocabulary_metadata = pd.concat([DHS_Index_and_Vocabulary_metadata, basis_nmf_loadings], axis=1)
+
+    DHS_Index_and_Vocabulary_metadata['component'] = (
+        DHS_Index_and_Vocabulary_metadata[component_columns].idxmax(axis=1).apply(lambda x: int(x[1:]))
+    )
 
     # Loading sequence metadata
     sequence_metadata = pd.read_table(f"{data_path}/DHS_Index_and_Vocabulary_hg38_WM20190703.txt", sep='\t')
@@ -89,8 +85,12 @@ def create_master_dataset(
     # Dropping component column that contains associated tissue rather than component number (We will use the component number from DHS_Index_and_Vocabulary_metadata)
     sequence_metadata = sequence_metadata.drop(columns=['component'], axis=1)
 
+    # Creating nmf_loadings matrix from csv and renaming columns
+    mixture_nmf_loadings = pd.read_csv(
+        f"{data_path}/2018-06-08NC16_NNDSVD_Mixture.csv", header=None, names=component_columns
+    )
     # Join metadata with component presence matrix
-    df = pd.concat([sequence_metadata, nmf_loadings], axis=1, sort=False)
+    df = pd.concat([sequence_metadata, mixture_nmf_loadings], axis=1, sort=False)
     # Recreating some of the columns from our original dataset
     df['component'] = df[component_columns].idxmax(axis=1).apply(lambda x: int(x[1:]))
     df['proportion'] = df[component_columns].max(axis=1) / df[component_columns].sum(axis=1)
