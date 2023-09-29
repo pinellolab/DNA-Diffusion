@@ -34,6 +34,8 @@ def download_data(data_path: str, genome_path: str = ".local/share/genomes/hg38/
     )
     with open(f"{data_path}/2018-06-08NC16_NNDSVD_Mixture.npy.gz", 'wb') as f:
         f.write(mixture_array.content)
+    # Extacting the gzip
+    os.system(f"gzip -d {data_path}/2018-06-08NC16_NNDSVD_Mixture.npy.gz")
 
     # Turning npy file into csv
     mixture_array = np.load(f"{data_path}/2018-06-08NC16_NNDSVD_Mixture.npy").T
@@ -138,6 +140,8 @@ def create_master_dataset(
 
     # Save as feather file
     master_dataset.to_feather(f"{data_path}/master_dataset.ftr")
+
+    print("Finished creating master dataset")
 
 
 class DataSource:
