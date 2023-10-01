@@ -1,15 +1,47 @@
 import os
+from typing import List
 
 import numpy as np
 import pandas as pd
 
-from dnadiffusion.utils.data_util import ReferenceGenome
+from dnadiffusion.utils.data_util import ReferenceGenome, add_sequence_column
+
+
+def preprocess_data(
+    data_path: str = "data/",
+    genome_path: str = ".local/share/genomes/hg38/hg38.fa",
+    cell_list: List = ['K562_ENCLB843GMH', 'hESCT0_ENCLB449ZZZ', 'HepG2_ENCLB029COU', 'GM12878_ENCLB441ZZZ'],
+    download_data_bool: bool = True,
+    create_master_dataset_bool: bool = True,
+    filter_data_bool: bool = True,
+    sort_replicates: bool = True,
+    balance_replicates: bool = True,
+) -> None:
+    """
+    Preprocesses the data for the DNA diffusion project.
+    """
+    if download_data_bool:
+        download_data(data_path)
+    if create_master_dataset_bool:
+        create_master_dataset(data_path, genome_path)
+    if filter_data_bool:
+        FilteringData(data_path + "master_dataset.ftr", cell_list).filter_exclusive_replicates(
+            sort=sort_replicates, balance=balance_replicates
+        )
+
+    print("Finished preprocessing data")
 
 
 def download_data(data_path: str) -> None:
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+
+    # Downloading the reference genome
+    os.system("genomepy install hg38")
+
     # Download DHS metadata and load into dataframe
     os.system(
-        f"wget https://www.meuleman.org/DHS_Index_and_Vocabulary_metadata.tsv -O {data_path}/DHS_Index_and_Vocabulary_metadata.tsv"
+        f"wget 'https://www.meuleman.org/DHS_Index_and_Vocabulary_metadata.tsv' -O {data_path}/DHS_Index_and_Vocabulary_metadata.tsv"
     )
     # Collect basis arrays from NMF
     basis_array = os.system(
@@ -44,7 +76,7 @@ def download_data(data_path: str) -> None:
     # Loading in DHS_Index_and_Vocabulary_metadata that contains the following information:
     # seqname, start, end, identifier, mean_signal, numsaples, summit, core_start, core_end, component
     os.system(
-        f"wget https://www.meuleman.org/DHS_Index_and_Vocabulary_hg38_WM20190703.txt.gz - O {data_path}/DHS_Index_and_Vocabulary_hg38_WM20190703.txt.gz"
+        f"wget 'https://www.meuleman.org/DHS_Index_and_Vocabulary_hg38_WM20190703.txt.gz' - O {data_path}/DHS_Index_and_Vocabulary_hg38_WM20190703.txt.gz"
     )
     os.system(f"gunzip -d {data_path}/DHS_Index_and_Vocabulary_hg38_WM20190703.txt.gz")
 
@@ -145,8 +177,8 @@ def create_master_dataset(
 
 
 class FilteringData:
-    def __init__(self, df: pd.DataFrame, cell_list: list):
-        self.df = df
+    def __init__(self, df_path: str, cell_list: list):
+        self.df = pd.read_feather(df_path)
         self.cell_list = cell_list
         self._test_data_structure()
 
@@ -209,3 +241,7 @@ class FilteringData:
             )
 
         return new_df
+
+
+if __name__ == "__main__":
+    preprocess_data()
