@@ -188,10 +188,9 @@ def create_master_dataset(
 
 class FilteringData:
     def __init__(self, data_path: str, df_path: str, cell_list: list):
-        self.data_path = data_path
         self.df = pd.read_feather(data_path + df_path)
         self.cell_list = cell_list
-        self.output_path = data_path + "/test_K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
+        self.output_path = data_path + "/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
         self._test_data_structure()
 
     def _test_data_structure(self):
