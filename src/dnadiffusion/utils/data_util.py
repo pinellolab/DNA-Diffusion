@@ -76,12 +76,12 @@ def add_sequence_column(df: pd.DataFrame, genome, length: int):
     """
     seqs = []
     for rowi, row in df.iterrows():
-        l, r = sequence_bounds(row['summit'], row['start'], row['end'], length)
-        seq = genome.sequence(row['seqname'], l, r)
+        l, r = sequence_bounds(row["summit"], row["start"], row["end"], length)
+        seq = genome.sequence(row["seqname"], l, r)
 
         seqs.append(seq)
 
-    df['sequence'] = seqs
+    df["sequence"] = seqs
     return df
 
 
