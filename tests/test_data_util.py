@@ -1,32 +1,29 @@
 import pandas as pd
 import pytest
 
-from dnadiffusion.utils.data_util import SEQ_EXTRACT, sequence_bounds, add_sequence_column
+from dnadiffusion.utils.data_util import SEQ_EXTRACT, add_sequence_column, sequence_bounds
+
 
 class MockGenome:
-  def sequence(self, seqname, start, end):
-    return "ACGT"
+    def sequence(self, seqname, start, end):
+        return "ACGT"
+
 
 @pytest.fixture
 def mock_df():
-  return pd.DataFrame({
-    'seqname': ['chr1', 'chr2'],
-    'start': [10, 20],
-    'end': [100, 200], 
-    'summit': [50, 150]
-  })
+    return pd.DataFrame({"seqname": ["chr1", "chr2"], "start": [10, 20], "end": [100, 200], "summit": [50, 150]})
+
 
 def test_add_sequence_column(mock_df):
-  
-  genome = MockGenome()
-  df = add_sequence_column(mock_df, genome, length=10)
+    genome = MockGenome()
+    df = add_sequence_column(mock_df, genome, length=10)
 
-  # Check sequence column added
-  assert 'sequence' in df.columns
+    # Check sequence column added
+    assert "sequence" in df.columns
 
-  # Check sequence values
-  expected_seqs = ['ACGT', 'ACGT']
-  assert df['sequence'].tolist() == expected_seqs
+    # Check sequence values
+    expected_seqs = ["ACGT", "ACGT"]
+    assert df["sequence"].tolist() == expected_seqs
 
 
 def test_sequence_bounds():
