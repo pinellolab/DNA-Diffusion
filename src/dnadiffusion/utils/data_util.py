@@ -49,13 +49,6 @@ def sequence_bounds(summit: int, start: int, end: int, length: int):
     """Calculate the sequence coordinates (bounds) for a given DHS.
     https://github.com/meuleman/SynthSeqs/blob/main/make_data/process.py
     """
-    if length <= 0:
-        msg = "Length must be positive"
-        raise ValueError(msg)
-
-    if length > end - start:
-        msg = "Length greater than full range"
-        raise ValueError(msg)
 
     half = length // 2
 
