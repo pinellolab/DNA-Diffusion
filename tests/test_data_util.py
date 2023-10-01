@@ -1,6 +1,41 @@
 import pandas as pd
+import pytest
 
-from dnadiffusion.utils.data_util import SEQ_EXTRACT
+from dnadiffusion.utils.data_util import SEQ_EXTRACT, sequence_bounds
+
+
+def test_sequence_bounds():
+    # Middle summit
+    summit = 100
+    start = 0
+    end = 200
+    length = 50
+    expected = (75, 125)
+    assert sequence_bounds(summit, start, end, length) == expected
+
+    # Start summit
+    summit = 0
+    start = 0
+    end = 100
+    length = 10
+    expected = (0, 10)
+    assert sequence_bounds(summit, start, end, length) == expected
+
+    # End summit
+    summit = 199
+    start = 100
+    end = 200
+    length = 20
+    expected = (180, 200)
+    assert sequence_bounds(summit, start, end, length) == expected
+
+    # Invalid length
+    summit = 100
+    start = 0
+    end = 200
+    length = 300
+    with pytest.raises(ValueError):
+        sequence_bounds(summit, start, end, length)
 
 
 def test_seq_extract(data_path: str = "tests/test_data/data_util/seq_extract_data.txt"):
