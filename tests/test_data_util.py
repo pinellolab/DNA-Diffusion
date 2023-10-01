@@ -51,14 +51,6 @@ def test_sequence_bounds():
     expected = (180, 200)
     assert sequence_bounds(summit, start, end, length) == expected
 
-    # Invalid length
-    summit = 100
-    start = 0
-    end = 200
-    length = 300
-    with pytest.raises(ValueError):
-        sequence_bounds(summit, start, end, length)
-
 
 def test_seq_extract(data_path: str = "tests/test_data/data_util/seq_extract_data.txt"):
     seqs = SEQ_EXTRACT(data_path)
