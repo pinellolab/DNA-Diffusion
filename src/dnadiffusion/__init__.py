@@ -1,17 +1,4 @@
-def add(a: int, b: int) -> int:
-    """
-    Add two integers.
+import pathlib
 
-    Args:
-        a:
-            The first operand.
-        b:
-            The second operand.
-
-    Examples:
-        Add two integers
-
-            r = add(2, 3)
-            print(r)  # 5
-    """
-    return a + b
+# Get path to the data directory in the same level as the src directory
+DATA_DIR = str(pathlib.Path(__file__).parent.parent.parent / 'data')
