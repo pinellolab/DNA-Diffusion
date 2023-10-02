@@ -1,8 +1,29 @@
 import pandas as pd
 import pytest
 
-from dnadiffusion.utils.data_util import SEQ_EXTRACT, add_sequence_column, sequence_bounds
+from dnadiffusion.utils.data_util import SEQ_EXTRACT, add_sequence_column, sequence_bounds, seq_extract
 
+@pytest.fixture
+def sample_df():
+    return pd.DataFrame({
+        "SEQUENCE" :["ACTG", "GATC", "TAGC", "GCTA", "ATCG"],
+        "CELL_TYPE": ["GM12878", "HEPG2", "HESCT0", "K562", "NO"],
+        "TAG": ["GENERATED", "PROMOTERS", "RANDOM_GENOME_REGIONS", "test", "training"]
+    })
+
+def test_seq_extract(tmp_path, sample_df):
+
+    seqs = seq_extract(sample_df, "GENERATED", "GM12878")
+    assert len(seqs) == 1
+    assert seqs["SEQUENCE"].tolist() == ["ACTG"]
+
+    expected = pd.DataFrame({
+        "SEQUENCE" :["ACTG"],
+        "CELL_TYPE": ["GM12878"],
+        "TAG": ["GENERATED"]
+    })
+
+    pd.testing.assert_frame_equal(seqs, expected)
 
 class MockGenome:
     def sequence(self, seqname, start, end):
