@@ -3,6 +3,9 @@
 .hatch/
 .ruff_cache/
 
+# Mac files
+.DS_Store
+
 # logs folder
 logs/*
 

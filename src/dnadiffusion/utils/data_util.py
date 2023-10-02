@@ -1,8 +1,89 @@
 import gtfparse
 import matplotlib.pyplot as plt
 import pandas as pd
+from Bio import SeqIO
 from IPython.display import HTML, display
 from tqdm import tqdm
+
+
+class DataSource:
+    # Sourced from https://github.com/meuleman/SynthSeqs/blob/main/make_data/source.py
+
+    def __init__(self, data, filepath):
+        self.raw_data = data
+        self.filepath = filepath
+
+    @property
+    def data(self):
+        return self.raw_data
+
+
+class ReferenceGenome(DataSource):
+    """Object for quickly loading and querying the reference genome."""
+
+    @classmethod
+    def from_path(cls, path):
+        genome_dict = {record.id: str(record.seq).upper() for record in SeqIO.parse(path, "fasta")}
+        return cls(genome_dict, path)
+
+    @classmethod
+    def from_dict(cls, data_dict):
+        return cls(data_dict, filepath=None)
+
+    @property
+    def genome(self):
+        return self.data
+
+    def sequence(self, chrom, start, end):
+        chrom_sequence = self.genome[chrom]
+
+        assert end < len(chrom_sequence), (
+            f"Sequence position bound out of range for chromosome {chrom}. "
+            f"{chrom} length {len(chrom_sequence)}, requested position {end}."
+        )
+        return chrom_sequence[start:end]
+
+
+# Functions used to create sequence column
+def sequence_bounds(summit: int, start: int, end: int, length: int):
+    """Calculate the sequence coordinates (bounds) for a given DHS.
+    https://github.com/meuleman/SynthSeqs/blob/main/make_data/process.py
+    """
+
+    half = length // 2
+
+    if (summit - start) < half:
+        return start, start + length
+    elif (end - summit) < half:
+        return end - length, end
+
+    return summit - half, summit + half
+
+
+def add_sequence_column(df: pd.DataFrame, genome, length: int):
+    """
+    Query the reference genome for each DHS and add the raw sequences
+    to the dataframe.
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The dataframe of DHS annotations and NMF loadings.
+    genome : ReferenceGenome(DataSource)
+        A reference genome object to query for sequences.
+    length : int
+        Length of a DHS.
+
+    https://github.com/meuleman/SynthSeqs/blob/main/make_data/process.py
+    """
+    seqs = []
+    for rowi, row in df.iterrows():
+        l, r = sequence_bounds(row["summit"], row["start"], row["end"], length)
+        seq = genome.sequence(row["seqname"], l, r)
+
+        seqs.append(seq)
+
+    df["sequence"] = seqs
+    return df
 
 
 class SEQ_EXTRACT:
