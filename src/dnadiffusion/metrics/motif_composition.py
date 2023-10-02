@@ -1,9 +1,12 @@
-import pandas as pd
 import re
 
-from dnadiffusion.utils.sample_util import extract_motifs
+import pandas as pd
 
-def motif_matrix(sequence_file_path: str, tag: str, cell_type: str) -> pd.Dataframe:
+from dnadiffusion import DATA_DIR
+from dnadiffusion.utils.data_util import motif_composition_helper, seq_extract
+
+
+def motif_matrix(df_file_path: str, tag: str, cell_type: str) -> pd.DataFrame:
     """Given an input sequence file path, tag, and cell type, return a matrix of motif counts.
 
     Args:
@@ -16,34 +19,43 @@ def motif_matrix(sequence_file_path: str, tag: str, cell_type: str) -> pd.Datafr
     Returns:
         pd.Dataframe: Matrix of motif counts.
     """
+    # Subselect desired tag/cell type from the dataframe
+    main_df = seq_extract(df_file_path, tag, cell_type)
+
     # Extract motifs from sequence file
-    df_motifs = extract_motifs(sequence_file_path, tag, cell_type)
+    df_motifs = motif_composition_helper(main_df)
     motifs = []
-    with open('JASPAR2020_vertebrates.pfm') as f:
+    with open(f"{DATA_DIR}/JASPAR2020_vertebrates.pfm") as f:
         for line in f:
-            if re.match('>', line):
-                motif = line.strip().replace('>', '')
+            if re.match(">", line):
+                motif = line.strip().replace(">", "")
                 motifs.append(motif)
-    motifs_dict = {k:v for v,k in enumerate(motifs)}
+
+    # Sorting motifs
+    motifs = sorted(motifs)
+    motifs_dict = {k: v for v, k in enumerate(motifs)}
     df_motifs["motifs_id_number"] = df_motifs["motifs"].apply(lambda x: motifs_dict[x])
     motif_count = []
     full_motif_list = df_motifs[0].unique().tolist()
     for k, v_df in df_motifs.groupby([0]):
-        partial_motif_count = [0] * len(full_motif_list)
+        partial_motif_count = [0] * len(motifs_dict)
         for i in v_df["motifs_id_number"].values:
-            partial_motif_count[i] += 1
-        full_motif_count = [k] + partial_motif_count
+            partial_motif_count[i] = partial_motif_count[i] + 1
+        full_motif_count = [k[0], *partial_motif_count]
         motif_count.append(full_motif_count)
 
     # Getting absence
-    for x_abs in df_motifs["ID"]:
+    for x_abs in main_df["ID"]:
         if x_abs not in full_motif_list:
-            partial_motif_count = [0] * len(full_motif_list)
-            full_motif_count = [x_abs] + partial_motif_count
+            partial_motif_count = [0] * len(motifs_dict)
+            full_motif_count = [x_abs, *partial_motif_count]
             motif_count.append(full_motif_count)
     df_captured_motifs = pd.DataFrame(motif_count)
-    df_captured_motifs.columns = ["ID"] + [x for x in motifs_dict.keys()]
-    df_motifs = df_motifs.set_index("ID")
-    df_captured_motifs = df_captured_motifs.set_index("ID")
-    output_df = pd.concat([df_motifs[[x for x in df_motifs.columns if x != "ID"]], df_captured_motifs.loc[df_motifs["ID"].values]], axis=1)
+    df_captured_motifs.columns = ["ID", *list(motifs_dict.keys())]
+    main_df = main_df.set_index("ID", drop=False)
+    df_captured_motifs = df_captured_motifs.set_index("ID", drop=False)
+    output_df = pd.concat(
+        [main_df[[x for x in main_df.columns if x != "ID"]], df_captured_motifs.loc[main_df["ID"].values]], axis=1
+    )
+    print(output_df.head())
     return output_df
