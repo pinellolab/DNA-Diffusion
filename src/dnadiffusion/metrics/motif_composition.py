@@ -1,3 +1,4 @@
+import os
 import re
 
 import pandas as pd
@@ -6,11 +7,11 @@ from dnadiffusion import DATA_DIR
 from dnadiffusion.utils.data_util import motif_composition_helper, seq_extract
 
 
-def motif_matrix(df_file_path: str, tag: str, cell_type: str) -> pd.DataFrame:
-    """Given an input sequence file path, tag, and cell type, return a matrix of motif counts.
+def motif_composition_matrix(df_file_path: str, tag: str, cell_type: str, download_data: bool = False) -> pd.DataFrame:
+    """Given an input df file path, tag, and cell type, return a matrix of motif counts for specified tag/cell type.
 
     Args:
-        sequence_file_path (str): Path to the input sequence file.
+        df_file_path (str): Path to the input txt file that a series of sequences across various tags
         tag (str): Tag for the sequence file. Possible options for our dataset are
             "GENERATED", "PROMOTERS", "RANDOM_GENOME_REGIONS", "test", "training", "validation".
         cell_type (str): Cell type for the sequence file. Possible options for our dataset are
@@ -19,6 +20,13 @@ def motif_matrix(df_file_path: str, tag: str, cell_type: str) -> pd.DataFrame:
     Returns:
         pd.Dataframe: Matrix of motif counts.
     """
+    if download_data:
+        # Download JASPAR2020_vertebrates.pfm
+        print("Downloading JASPAR2020_vertebrates.pfm...")
+        os.system(
+            f"wget 'https://raw.githubusercontent.com/vanheeringen-lab/gimmemotifs/master/data/motif_databases/JASPAR2020_vertebrates.pfm' - O {DATA_DIR}/JASPAR2020_vertebrates.pfm"
+        )
+
     # Subselect desired tag/cell type from the dataframe
     main_df = seq_extract(df_file_path, tag, cell_type)
 
@@ -57,5 +65,4 @@ def motif_matrix(df_file_path: str, tag: str, cell_type: str) -> pd.DataFrame:
     output_df = pd.concat(
         [main_df[[x for x in main_df.columns if x != "ID"]], df_captured_motifs.loc[main_df["ID"].values]], axis=1
     )
-    print(output_df.head())
     return output_df
