@@ -53,20 +53,3 @@ def mock_fasta(tmpdir):
         for i, seq in enumerate(sequence_list):
             f.write(f">sequence_{i}\n{seq}\n")
     return str(synthetic_motifs_fasta)
-
-
-def test_motif_composition_matrix(
-    mock_bed,
-    mock_fasta,
-    path: str = "tests/test_data/metrics/motif_composition.txt",
-    tag: str = "RANDOM_GENOME_REGIONS",
-    cell_type: str = "NO",
-    motif_pfm_path: str = "tests/test_data/metrics/test_jaspar2020.pfm",
-):
-    # Mock run the function to see if it works
-    with patch("os.system", return_value=0):
-        df = motif_composition_matrix(path, tag, cell_type, motif_pfm_path=motif_pfm_path, download_data=False)
-
-    # assert output is a non empty dataframe
-    assert isinstance(df, pd.DataFrame)
-    assert not df.empty

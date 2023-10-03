@@ -33,7 +33,7 @@ def motif_composition_matrix(
     # Extract motifs from sequence file
     df_motifs = motif_composition_helper(main_df)
     # Parsing motifs from JASPAR2020_vertebrates.pfm
-    motifs_dict = parse_motif_file(download_data=download_data)
+    motifs_dict = parse_motif_file(file_path=motif_pfm_path, download_data=download_data)
 
     df_motifs["motifs_id_number"] = df_motifs["motifs"].apply(lambda x: motifs_dict[x])
     motif_count = []
