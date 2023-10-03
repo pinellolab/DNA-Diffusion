@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from dnadiffusion import DATA_DIR
 
+
 class DataSource:
     # Sourced from https://github.com/meuleman/SynthSeqs/blob/main/make_data/source.py
 
@@ -246,7 +247,9 @@ def motif_composition_helper(df: pd.DataFrame):
     fasta_file = open("synthetic_motifs.fasta", "w")
     fasta_file.write("\n".join(df[["SEQUENCE", "ID"]].apply(lambda x: f">{x['ID']}\n{x['SEQUENCE']}", axis=1).tolist()))
     fasta_file.close()
-    os.system(f"gimme scan synthetic_motifs.fasta  -p  JASPAR2020_vertebrates -g hg38 -n 20 > {DATA_DIR}/syn_results_motifs.bed")
+    os.system(
+        f"gimme scan synthetic_motifs.fasta  -p  JASPAR2020_vertebrates -g hg38 -n 20 > {DATA_DIR}/syn_results_motifs.bed"
+    )
     df_motifs = pd.read_csv(f"{DATA_DIR}/syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
     df_motifs["motifs"] = df_motifs[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
     return df_motifs

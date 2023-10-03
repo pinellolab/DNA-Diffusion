@@ -1,29 +1,38 @@
+import shutil
+from unittest.mock import patch
+
 import pandas as pd
 import pytest
 
-from dnadiffusion.utils.data_util import SEQ_EXTRACT, add_sequence_column, sequence_bounds, seq_extract
+from dnadiffusion.utils.data_util import (
+    SEQ_EXTRACT,
+    add_sequence_column,
+    motif_composition_helper,
+    seq_extract,
+    sequence_bounds,
+)
+
 
 @pytest.fixture
 def sample_df():
-    return pd.DataFrame({
-        "SEQUENCE" :["ACTG", "GATC", "TAGC", "GCTA", "ATCG"],
-        "CELL_TYPE": ["GM12878", "HEPG2", "HESCT0", "K562", "NO"],
-        "TAG": ["GENERATED", "PROMOTERS", "RANDOM_GENOME_REGIONS", "test", "training"]
-    })
+    return pd.DataFrame(
+        {
+            "SEQUENCE": ["ACTG", "GATC", "TAGC", "GCTA", "ATCG"],
+            "CELL_TYPE": ["GM12878", "HEPG2", "HESCT0", "K562", "NO"],
+            "TAG": ["GENERATED", "PROMOTERS", "RANDOM_GENOME_REGIONS", "test", "training"],
+        }
+    )
+
 
 def test_seq_extract(tmp_path, sample_df):
-
     seqs = seq_extract(sample_df, "GENERATED", "GM12878")
     assert len(seqs) == 1
     assert seqs["SEQUENCE"].tolist() == ["ACTG"]
 
-    expected = pd.DataFrame({
-        "SEQUENCE" :["ACTG"],
-        "CELL_TYPE": ["GM12878"],
-        "TAG": ["GENERATED"]
-    })
+    expected = pd.DataFrame({"SEQUENCE": ["ACTG"], "CELL_TYPE": ["GM12878"], "TAG": ["GENERATED"]})
 
     pd.testing.assert_frame_equal(seqs, expected)
+
 
 class MockGenome:
     def sequence(self, seqname, start, end):
@@ -99,3 +108,16 @@ def test_seq_extract(data_path: str = "tests/test_data/data_util/seq_extract_dat
             seq_output = pd.read_csv(f"tests/test_data/data_util/{tag}.txt", sep="\t", dtype=object)
             # Assert the two dataframes are equal
             pd.testing.assert_frame_equal(seq_input, seq_output)
+
+
+def test_motif_composition_helper():
+    df = pd.read_csv("tests/test_data/data_util/motif_composition_helper_data.txt", sep="\t")
+
+    with patch("os.system", return_value=0):
+        df_motifs_count_syn = motif_composition_helper(df)
+
+    # Asserting that the output is a dataframe
+    assert isinstance(df_motifs_count_syn, pd.DataFrame)
+
+    # Asserting that the output file is not empty
+    assert df_motifs_count_syn.shape[0] > 0
