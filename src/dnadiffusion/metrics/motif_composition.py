@@ -21,20 +21,13 @@ def motif_composition_matrix(df_file_path: str, tag: str, cell_type: str, downlo
     Returns:
         pd.Dataframe: Matrix of motif counts.
     """
-    if download_data:
-        # Download JASPAR2020_vertebrates.pfm
-        print("Downloading JASPAR2020_vertebrates.pfm...")
-        os.system(
-            f"wget 'https://raw.githubusercontent.com/vanheeringen-lab/gimmemotifs/master/data/motif_databases/JASPAR2020_vertebrates.pfm' - O {DATA_DIR}/JASPAR2020_vertebrates.pfm"
-        )
-
     # Subselect desired tag/cell type from the dataframe
     main_df = seq_extract(df_file_path, tag, cell_type)
 
     # Extract motifs from sequence file
     df_motifs = motif_composition_helper(main_df)
     # Parsing motifs from JASPAR2020_vertebrates.pfm
-    motifs_dict = parse_motif_file()
+    motifs_dict = parse_motif_file(download_data=download_data)
 
     df_motifs["motifs_id_number"] = df_motifs["motifs"].apply(lambda x: motifs_dict[x])
     motif_count = []
@@ -54,16 +47,22 @@ def motif_composition_matrix(df_file_path: str, tag: str, cell_type: str, downlo
             motif_count.append(full_motif_count)
     df_captured_motifs = pd.DataFrame(motif_count)
     df_captured_motifs.columns = ["ID", *list(motifs_dict.keys())]
-    main_df = main_df.set_index("ID", drop=False)
-    df_captured_motifs = df_captured_motifs.set_index("ID", drop=False)
+    main_df.index = main_df["ID"].values
+    df_captured_motifs.index = df_captured_motifs["ID"].values
     output_df = pd.concat(
         [main_df[[x for x in main_df.columns if x != "ID"]], df_captured_motifs.loc[main_df["ID"].values]], axis=1
     )
     return output_df
 
 
-def parse_motif_file(file_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm") -> Dict:
+def parse_motif_file(file_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm", download_data: bool = False) -> Dict:
     """Given a file path to the motif pfm file, return a sorted dictionary of motifs."""
+    if download_data:
+        # Download JASPAR2020_vertebrates.pfm
+        print("Downloading JASPAR2020_vertebrates.pfm...")
+        os.system(
+            f"wget 'https://raw.githubusercontent.com/vanheeringen-lab/gimmemotifs/master/data/motif_databases/JASPAR2020_vertebrates.pfm' -O {file_path}"
+        )
     motifs = []
     with open(file_path) as f:
         for line in f:

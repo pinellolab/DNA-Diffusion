@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 
 from dnadiffusion.metrics.motif_composition import motif_composition_matrix, parse_motif_file
 
@@ -18,3 +17,16 @@ def test_parse_motif_file():
     }
 
     assert output == expected
+
+
+def test_motif_composition_matrix(
+    path: str = "tests/test_data/metrics/motif_composition.txt",
+    tag: str = "RANDOM_GENOME_REGIONS",
+    cell_type: str = "NO",
+):
+    # Mock run the function to see if it works
+    df = motif_composition_matrix(path, tag, cell_type, download_data=False)
+
+    # assert output is a non empty dataframe
+    assert isinstance(df, pd.DataFrame)
+    assert not df.empty
