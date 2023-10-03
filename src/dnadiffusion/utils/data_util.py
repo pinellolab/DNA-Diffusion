@@ -1,9 +1,13 @@
+import os
+
 import gtfparse
 import matplotlib.pyplot as plt
 import pandas as pd
 from Bio import SeqIO
 from IPython.display import HTML, display
 from tqdm import tqdm
+
+from dnadiffusion import DATA_DIR
 
 
 class DataSource:
@@ -92,6 +96,11 @@ class SEQ_EXTRACT:
 
     def extract_seq(self, tag, cell_type):
         return self.data.query(f'TAG == "{tag}" and CELL_TYPE == "{cell_type}" ').copy()
+
+
+def seq_extract(data_path: str, tag: str, cell_type: str):
+    df = pd.read_csv(data_path, sep="\t")
+    return df.query(f'TAG == "{tag}" and CELL_TYPE == "{cell_type}" ')
 
 
 class GTFProcessing:
@@ -232,3 +241,13 @@ class GTFProcessing:
 
         df_distal_exon_by_gene_id = pd.DataFrame(return_distal_tss, columns=first_exon_df.columns.values.tolist())
         return df_distal_exon_by_gene_id
+
+
+def motif_composition_helper(df: pd.DataFrame):
+    fasta_file = open(f"synthetic_motifs.fasta", "w")
+    fasta_file.write("\n".join(df[["SEQUENCE", "ID"]].apply(lambda x: f">{x['ID']}\n{x['SEQUENCE']}", axis=1).tolist()))
+    fasta_file.close()
+    os.system(f"gimme scan synthetic_motifs.fasta  -p  JASPAR2020_vertebrates -g hg38 -n 20 > syn_results_motifs.bed")
+    df_motifs = pd.read_csv(f"syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
+    df_motifs["motifs"] = df_motifs[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
+    return df_motifs
