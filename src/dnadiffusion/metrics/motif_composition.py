@@ -1,5 +1,6 @@
 import os
 import re
+from typing import Dict
 
 import pandas as pd
 
@@ -32,16 +33,9 @@ def motif_composition_matrix(df_file_path: str, tag: str, cell_type: str, downlo
 
     # Extract motifs from sequence file
     df_motifs = motif_composition_helper(main_df)
-    motifs = []
-    with open(f"{DATA_DIR}/JASPAR2020_vertebrates.pfm") as f:
-        for line in f:
-            if re.match(">", line):
-                motif = line.strip().replace(">", "")
-                motifs.append(motif)
+    # Parsing motifs from JASPAR2020_vertebrates.pfm
+    motifs_dict = parse_motif_file()
 
-    # Sorting motifs
-    motifs = sorted(motifs)
-    motifs_dict = {k: v for v, k in enumerate(motifs)}
     df_motifs["motifs_id_number"] = df_motifs["motifs"].apply(lambda x: motifs_dict[x])
     motif_count = []
     full_motif_list = df_motifs[0].unique().tolist()
@@ -66,3 +60,18 @@ def motif_composition_matrix(df_file_path: str, tag: str, cell_type: str, downlo
         [main_df[[x for x in main_df.columns if x != "ID"]], df_captured_motifs.loc[main_df["ID"].values]], axis=1
     )
     return output_df
+
+
+def parse_motif_file(file_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm") -> Dict:
+    """Given a file path to the motif pfm file, return a sorted dictionary of motifs."""
+    motifs = []
+    with open(file_path) as f:
+        for line in f:
+            if re.match(">", line):
+                motif = line.strip().replace(">", "")
+                motifs.append(motif)
+
+    # Sorting motifs
+    motifs = sorted(motifs)
+    motifs_dict = {k: v for v, k in enumerate(motifs)}
+    return motifs_dict
