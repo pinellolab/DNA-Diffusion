@@ -61,10 +61,11 @@ def test_motif_composition_matrix(
     path: str = "tests/test_data/metrics/motif_composition.txt",
     tag: str = "RANDOM_GENOME_REGIONS",
     cell_type: str = "NO",
+    motif_pfm_path: str = "tests/test_data/metrics/test_jaspar2020.pfm",
 ):
     # Mock run the function to see if it works
     with patch("os.system", return_value=0):
-        df = motif_composition_matrix(path, tag, cell_type, download_data=False)
+        df = motif_composition_matrix(path, tag, cell_type, motif_pfm_path=motif_pfm_path, download_data=False)
 
     # assert output is a non empty dataframe
     assert isinstance(df, pd.DataFrame)

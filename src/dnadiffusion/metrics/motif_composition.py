@@ -8,7 +8,13 @@ from dnadiffusion import DATA_DIR
 from dnadiffusion.utils.data_util import motif_composition_helper, seq_extract
 
 
-def motif_composition_matrix(df_file_path: str, tag: str, cell_type: str, download_data: bool = False) -> pd.DataFrame:
+def motif_composition_matrix(
+    df_file_path: str,
+    tag: str,
+    cell_type: str,
+    motif_pfm_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm",
+    download_data: bool = False,
+) -> pd.DataFrame:
     """Given an input df file path, tag, and cell type, return a matrix of motif counts for specified tag/cell type.
 
     Args:
