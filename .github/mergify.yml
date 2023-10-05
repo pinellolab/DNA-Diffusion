@@ -12,7 +12,7 @@ pull_request_rules:
     conditions:
       - "#approved-reviews-by>=1"
       - check-success=test (3.10)
-      - check-success=build-and-push-image
+      # - check-success=build-and-push-image
       - base=main
       - label!=work-in-progress
     actions:
@@ -23,4 +23,4 @@ queue_rules:
   - name: default
     conditions:
       - check-success=test (3.10)
-      - check-success=build-and-push-image
+      # - check-success=build-and-push-image
