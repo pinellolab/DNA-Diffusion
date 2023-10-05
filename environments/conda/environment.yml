@@ -21,11 +21,11 @@ dependencies:
     - biopython
     - pyBigWig
     - gtfparse
+    - gimmemotifs
     - pytorch
     - pytorch-cuda=12.1
     - torchvision
     - pip
     - pip:
         - tensorflow[and-cuda]
-        - gimmemotifs
         - memory-efficient-attention-pytorch
