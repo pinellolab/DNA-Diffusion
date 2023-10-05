@@ -8,5 +8,7 @@ ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
 WORKDIR /DNA-Diffusion
 COPY . .
 
-RUN mamba env update -n base -f environments/conda/environment.yml && \
-    pip install --no-deps -e .
+# RUN mamba env update -n base -f environments/conda/environment.yml && \
+#     pip install --no-deps -e .
+RUN mamba install python=3.10 --yes && \
+    pip install -e .
