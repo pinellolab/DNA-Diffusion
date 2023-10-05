@@ -1,14 +1,16 @@
-# syntax=docker/dockerfile:1
-FROM condaforge/mambaforge:23.1.0-4
+FROM python:3.10-slim
 
-ARG CONDA_OVERRIDE_CUDA=12.1
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
 
 WORKDIR /DNA-Diffusion
 COPY . .
 
-# RUN mamba env update -n base -f environments/conda/environment.yml && \
-#     pip install --no-deps -e .
-RUN mamba install python=3.10 --yes && \
+RUN apt-get update && \
+    apt-get install -y \
+    gcc \
+    build-essential \
+    zlib1g-dev
+
+RUN pip install --upgrade pip && \
     pip install -e .
