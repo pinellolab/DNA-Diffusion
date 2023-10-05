@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.10-slim
 
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
