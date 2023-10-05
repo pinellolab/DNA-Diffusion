@@ -2,10 +2,11 @@ name: Docker
 
 on:
   workflow_dispatch:
-  push:
+  """push:
     branches:
       - main
   pull_request:
+"""
 
 env:
   REGISTRY: ghcr.io
