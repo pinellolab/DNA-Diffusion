@@ -7,7 +7,7 @@ from dnadiffusion.utils.train_util import TrainLoop
 
 
 def train():
-    kwargs = DistributedDataParallelKwargs(find_unused_parameters=True)
+    kwargs = DistributedDataParallelKwargs()
     accelerator = Accelerator(kwargs_handlers=[kwargs], split_batches=True, log_with=["wandb"], mixed_precision="bf16")
 
     data = load_data(

@@ -152,7 +152,7 @@ class UNet(nn.Module):
             self.norm_to_cross(x_reshaped.reshape(-1, 800)).reshape(-1, 4, 200),
             context=t_cross_reshaped,
         )  # (-1,1, 4, 200)
-        crossattention_out = x.view(-1, 1, 4, 200)
+        crossattention_out = crossattention_out.view(-1, 1, 4, 200)
         x = x + crossattention_out
         if self.output_attention:
             return x, crossattention_out
