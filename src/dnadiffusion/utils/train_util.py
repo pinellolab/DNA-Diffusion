@@ -21,7 +21,7 @@ class TrainLoop:
         model: torch.nn.Module,
         accelerator: Accelerator,
         epochs: int = 10000,
-        loss_show_epoch: int = 10,
+        log_step_show: int = 50,
         sample_epoch: int = 500,
         save_epoch: int = 500,
         model_name: str = "model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k",
@@ -34,7 +34,7 @@ class TrainLoop:
         self.optimizer = Adam(self.model.parameters(), lr=1e-4)
         self.accelerator = accelerator
         self.epochs = epochs
-        self.loss_show_epoch = loss_show_epoch
+        self.log_step_show = log_step_show
         self.sample_epoch = sample_epoch
         self.save_epoch = save_epoch
         self.model_name = model_name
@@ -70,12 +70,14 @@ class TrainLoop:
             self.model.train()
 
             # Getting loss of current batch
-            for _, batch in enumerate(self.train_dl):
+            for step, batch in enumerate(self.train_dl):
+                self.global_step = epoch * len(self.train_dl) + step
+
                 loss = self.train_step(batch)
 
-            # Logging loss
-            if epoch % self.loss_show_epoch == 0 and self.accelerator.is_main_process:
-                self.log_step(loss, epoch)
+                # Logging loss
+                if self.global_step % self.log_step_show == 0 and self.accelerator.is_main_process:
+                    self.log_step(loss, epoch)
 
             # Sampling
             if epoch % self.sample_epoch == 0 and self.accelerator.is_main_process:
@@ -110,12 +112,12 @@ class TrainLoop:
                     "train": self.train_kl,
                     "test": self.test_kl,
                     "shuffle": self.shuffle_kl,
-                    "loss": loss.item(),
+                    "loss": loss.mean().item(),
+                    "epoch": epoch,
                     "seq_similarity": self.seq_similarity,
                 },
-                step=epoch,
+                step=self.global_step,
             )
-            print(f" Epoch {epoch} Loss:", loss.item())
 
     def sample(self):
         self.model.eval()

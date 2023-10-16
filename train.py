@@ -1,4 +1,4 @@
-from accelerate import Accelerator, DistributedDataParallelKwargs
+from accelerate import Accelerator
 
 from dnadiffusion.data.dataloader import load_data
 from dnadiffusion.models.diffusion import Diffusion
@@ -40,7 +40,7 @@ def train():
         model=diffusion,
         accelerator=accelerator,
         epochs=10000,
-        loss_show_epoch=10,
+        log_step_show=50,
         sample_epoch=500,
         save_epoch=500,
         model_name="model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k",
