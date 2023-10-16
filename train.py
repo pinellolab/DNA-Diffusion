@@ -1,4 +1,4 @@
-from accelerate import Accelerator, DistributedDataParallelKwargs
+from accelerate import Accelerator
 
 from dnadiffusion.data.dataloader import load_data
 from dnadiffusion.models.diffusion import Diffusion
