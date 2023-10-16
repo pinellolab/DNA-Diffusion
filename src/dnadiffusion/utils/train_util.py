@@ -21,7 +21,7 @@ class TrainLoop:
         model: torch.nn.Module,
         accelerator: Accelerator,
         epochs: int = 10000,
-        log_step_show: int = 10,
+        log_step_show: int = 50,
         sample_epoch: int = 500,
         save_epoch: int = 500,
         model_name: str = "model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k",

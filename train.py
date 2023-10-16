@@ -40,7 +40,7 @@ def train():
         model=diffusion,
         accelerator=accelerator,
         epochs=10000,
-        log_step_show=10,
+        log_step_show=50,
         sample_epoch=500,
         save_epoch=500,
         model_name="model_48k_sequences_per_group_K562_hESCT0_HepG2_GM12878_12k",
