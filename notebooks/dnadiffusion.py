@@ -1,4 +1,5 @@
 import copy
+import itertools
 import math
 import os
 import pickle
@@ -576,7 +577,8 @@ class Unet_lucas(nn.Module):
         self.init_conv = nn.Conv2d(input_channels, init_dim, (7, 7), padding=3)
         dims = [init_dim, *(dim * m for m in dim_mults)]
 
-        in_out = list(zip(dims[:-1], dims[1:]))
+        # in_out = list(zip(dims[:-1], dims[1:]))
+        in_out = itertools.pairwise(dims)
         block_klass = partial(ResnetBlock, groups=resnet_block_groups)
 
         # time embeddings
