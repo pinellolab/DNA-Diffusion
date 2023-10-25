@@ -1,7 +1,6 @@
 import os
 import shutil
 from pathlib import Path
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -13,7 +12,7 @@ from dnadiffusion.utils.data_util import ReferenceGenome, add_sequence_column
 def preprocess_data(
     data_path: Path = DATA_DIR,
     df_path: str = "/master_dataset.ftr",
-    cell_list: List = ["K562_ENCLB843GMH", "hESCT0_ENCLB449ZZZ", "HepG2_ENCLB029COU", "GM12878_ENCLB441ZZZ"],
+    cell_list: list = ["K562_ENCLB843GMH", "hESCT0_ENCLB449ZZZ", "HepG2_ENCLB029COU", "GM12878_ENCLB441ZZZ"],
     download_data_bool: bool = True,
     create_master_dataset_bool: bool = True,
     filter_data_bool: bool = True,

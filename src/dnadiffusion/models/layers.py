@@ -107,14 +107,14 @@ class Residual(nn.Module):
         return self.fn(x, *args, **kwargs) + x
 
 
-def Upsample(dim: int, dim_out: Optional[int]):
+def Upsample(dim: int, dim_out: int | None):
     return nn.Sequential(
         nn.Upsample(scale_factor=2, mode="nearest"),
         nn.Conv2d(dim, default(dim_out, dim), 3, padding=1),
     )
 
 
-def Downsample(dim: int, dim_out: Optional[int]):
+def Downsample(dim: int, dim_out: int | None):
     return nn.Conv2d(dim, default(dim_out, dim), 4, 2, 1)
 
 
@@ -173,7 +173,7 @@ class Block(nn.Module):
         self.norm = nn.GroupNorm(groups, dim_out)
         self.act = nn.SiLU()
 
-    def forward(self, x: torch.Tensor, scale_shift: Optional[torch.Tensor] = None):
+    def forward(self, x: torch.Tensor, scale_shift: torch.Tensor | None = None):
         x = self.proj(x)
         x = self.norm(x)
 
@@ -186,7 +186,7 @@ class Block(nn.Module):
 
 
 class ResnetBlock(nn.Module):
-    def __init__(self, dim: int, dim_out: int, *, time_emb_dim: Optional[int], groups: int = 8) -> None:
+    def __init__(self, dim: int, dim_out: int, *, time_emb_dim: int | None, groups: int = 8) -> None:
         super().__init__()
         self.mlp = (nn.Sequential(nn.SiLU(), nn.Linear(time_emb_dim, dim_out * 2))) if exists(time_emb_dim) else None
 
@@ -194,7 +194,7 @@ class ResnetBlock(nn.Module):
         self.block2 = Block(dim_out, dim_out, groups=groups)
         self.res_conv = nn.Conv2d(dim, dim_out, 1) if dim != dim_out else nn.Identity()
 
-    def forward(self, x: torch.Tensor, time_emb: Optional[torch.Tensor] = None):
+    def forward(self, x: torch.Tensor, time_emb: torch.Tensor | None = None):
         scale_shift = None
         if exists(self.mlp) and exists(time_emb):
             time_emb = self.mlp(time_emb)

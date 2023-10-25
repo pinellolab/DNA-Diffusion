@@ -3,9 +3,8 @@ import math
 import os
 import pickle
 import random
-import tempfile
 from functools import partial
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -118,7 +117,7 @@ def create_sample(
     conditional_numeric_to_tag: dict,
     number_of_samples: int = 20,
     specific_group: bool = False,
-    group_number: Optional[list] = None,
+    group_number: list | None = None,
     cond_weight_to_metric: int = 0,
     save_timestep_dataframe: bool = False,
 ):
@@ -744,8 +743,8 @@ def save_fasta(df: pd.DataFrame, name: str, num_sequences: int, seq_to_subset_co
 
 
 def generate_motifs_and_fastas(
-    df: pd.DataFrame, name: str, num_sequences: int, subset_list: Optional[List] = None
-) -> Dict[str, Any]:
+    df: pd.DataFrame, name: str, num_sequences: int, subset_list: list | None = None
+) -> dict[str, Any]:
     print("Generating Motifs and Fastas...", name)
     print("---" * 10)
 
@@ -775,8 +774,8 @@ def generate_motifs_and_fastas(
 
 def preprocess_data(
     input_csv: str,
-    subset_list: Optional[List] = None,
-    limit_total_sequences: Optional[int] = None,
+    subset_list: list | None = None,
+    limit_total_sequences: int | None = None,
     number_of_sequences_to_motif_creation: int = 1000,
     save_output: bool = True,
 ):
@@ -853,7 +852,7 @@ class SequenceDataset(Dataset):
 def load_data(
     data_path: str = "K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
     saved_data_path: str = "encode_data_dict.npy",
-    subset_list: List = [
+    subset_list: list = [
         "GM12878_ENCLB441ZZZ",
         "hESCT0_ENCLB449ZZZ",
         "K562_ENCLB843GMH",

@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Dict
+from typing import Any
 
 import torch
 import torchvision.transforms as T
@@ -17,7 +17,7 @@ from dnadiffusion.utils.utils import EMA
 class TrainLoop:
     def __init__(
         self,
-        data: Dict[str, Any],
+        data: dict[str, Any],
         model: torch.nn.Module,
         accelerator: Accelerator,
         epochs: int = 10000,

@@ -1,6 +1,5 @@
 import os
 import re
-from typing import Dict
 
 import pandas as pd
 
@@ -61,7 +60,7 @@ def motif_composition_matrix(
     return output_df
 
 
-def parse_motif_file(file_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm", download_data: bool = False) -> Dict:
+def parse_motif_file(file_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm", download_data: bool = False) -> dict:
     """Given a file path to the motif pfm file, return a sorted dictionary of motifs."""
     if download_data:
         # Download JASPAR2020_vertebrates.pfm
