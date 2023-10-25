@@ -160,7 +160,7 @@ path = "src/dnadiffusion/__about__.py"
 [tool.hatch.envs.default]
 python = "3.10"
 dependencies = [
-    "mkdocs-material==9.3.1",
+    "mkdocs-material==9.4.6",
     "mkdocstrings==0.23.0",
     "mkdocstrings[python]",
     "mypy==1.6.1",
