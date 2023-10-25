@@ -138,7 +138,7 @@ class GTFProcessing:
         return self.df_gtf
 
     def geneid2genename(self, gene_list):
-        '''given a list of geneid convert it to list names
+        """given a list of geneid convert it to list names
         ex:
             usage
             geneid2genename(["ENSG00000000003", "ENSG00000000004" ])
@@ -148,7 +148,7 @@ class GTFProcessing:
         return:
             conversion results gene_id to gene_name
             list[str]
-        '''
+        """
         gtf_df = self.get_gtf_df()
         dict_conversion = dict(zip(gtf_df["gene_id"].values, gtf_df["gene_name"].values))
         return [dict_conversion[g] for g in gene_list]
