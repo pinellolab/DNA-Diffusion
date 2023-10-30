@@ -1,7 +1,7 @@
 import os
 import pickle
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +16,7 @@ from dnadiffusion.utils.utils import one_hot_encode
 def load_data(
     data_path: str = "K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
     saved_data_path: str = "encode_data.pkl",
-    subset_list: List = [
+    subset_list: list = [
         "GM12878_ENCLB441ZZZ",
         "hESCT0_ENCLB449ZZZ",
         "K562_ENCLB843GMH",
@@ -115,8 +115,8 @@ def save_fasta(df: pd.DataFrame, name: str, num_sequences: int, seq_to_subset_co
 
 
 def generate_motifs_and_fastas(
-    df: pd.DataFrame, name: str, num_sequences: int, subset_list: Optional[List] = None
-) -> Dict[str, Any]:
+    df: pd.DataFrame, name: str, num_sequences: int, subset_list: list | None = None
+) -> dict[str, Any]:
     print("Generating Motifs and Fastas...", name)
     print("---" * 10)
 
@@ -146,8 +146,8 @@ def generate_motifs_and_fastas(
 
 def preprocess_data(
     input_csv: str,
-    subset_list: Optional[List] = None,
-    limit_total_sequences: Optional[int] = None,
+    subset_list: list | None = None,
+    limit_total_sequences: int | None = None,
     number_of_sequences_to_motif_creation: int = 1000,
     save_output: bool = True,
 ):

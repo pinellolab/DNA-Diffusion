@@ -14,7 +14,7 @@ def create_sample(
     cell_types: list,
     conditional_numeric_to_tag: dict,
     number_of_samples: int = 1000,
-    group_number: Optional[list] = None,
+    group_number: list | None = None,
     cond_weight_to_metric: int = 0,
     save_timesteps: bool = False,
     save_dataframe: bool = False,
