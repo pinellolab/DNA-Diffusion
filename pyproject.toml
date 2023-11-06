@@ -22,7 +22,7 @@ dependencies = [
   "gimmemotifs==0.18.0",
   "gtfparse==1.3.0",
   "jupyterlab==4.0.8",
-  "matplotlib==3.8.0",
+  "matplotlib==3.8.1",
   "memory-efficient-attention-pytorch==0.1.6",
   "pandas==2.1.1",
   "pybedtools==0.9.1",
