@@ -30,7 +30,7 @@ dependencies = [
   "sourmash==4.8.4",
   "torch==2.1.0",
   "torchvision==0.16.0",
-  "wandb==0.15.12",
+  "wandb==0.16.0",
 ]
 
 [project.scripts]
