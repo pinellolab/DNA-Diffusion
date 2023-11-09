@@ -21,16 +21,16 @@ dependencies = [
   "genomepy==0.16.1",
   "gimmemotifs==0.18.0",
   "gtfparse==1.3.0",
-  "jupyterlab==4.0.7",
+  "jupyterlab==4.0.8",
   "matplotlib==3.8.0",
   "memory-efficient-attention-pytorch==0.1.6",
-  "pandas==2.1.1",
+  "pandas==2.1.2",
   "pybedtools==0.9.1",
   "seaborn==0.13.0",
   "sourmash==4.8.4",
   "torch==2.1.0",
   "torchvision==0.16.0",
-  "wandb==0.15.12",
+  "wandb==0.16.0",
 ]
 
 [project.scripts]
@@ -160,14 +160,14 @@ path = "src/dnadiffusion/__about__.py"
 [tool.hatch.envs.default]
 python = "3.10"
 dependencies = [
-    "mkdocs-material==9.4.7",
+    "mkdocs-material==9.4.8",
     "mkdocstrings==0.23.0",
     "mkdocstrings[python]",
     "mypy==1.6.1",
     "pytest==7.4.3",
     "pytest-asyncio==0.21.1",
     "pytest-cov==4.1.0",
-    "ruff==0.1.3",
+    "ruff==0.1.5",
     "types-tqdm==4.66.0.2",
     "xdoctest==1.1.2",
 ]
