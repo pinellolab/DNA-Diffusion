@@ -1,5 +1,8 @@
 # Custom
 
+# flyte config file
+.flyte/config.yaml
+
 .hatch/
 .ruff_cache/
 
@@ -10,7 +13,8 @@
 logs/*
 
 # Hydra outputs folder
-outputs/*
+outputs/
+multirun/
 
 # Checkpoints folder
 dnadiffusion/checkpoints/*
