@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore: ["docs/**", "scripts/**", "**.md", "*"]
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, ready_for_review]
+    paths-ignore: ["docs/**", "scripts/**", "**.md", "*"]
+  
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  skip-duplicate-runs:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+    - id: skip_check
+      uses: fkirc/skip-duplicate-actions@v5
+      with:
+        skip_after_successful_duplicate: 'true'
+
+  set-debug:
+    name: set-debug-flag
+    runs-on: ubuntu-latest
+    outputs:
+      debug: ${{ steps.set-debug.outputs.debug }}
+    steps:
+    - id: set-debug
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.event_name }}" == "workflow_call" ]]; then
+          echo "DEBUG=${{ github.event.inputs.debug_enabled }}" >> $GITHUB_ENV
+        else
+          echo "DEBUG=false" >> $GITHUB_ENV
+        fi
+
+  config:
+    needs: skip-duplicate-runs
+    if: ${{ needs.skip-duplicate-runs.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      config-path: ${{ steps.config-output.outputs.path }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create Flyte config from YAML template
+      id: yq-process
+      uses: mikefarah/yq@master
+      with:
+        cmd: "yq e \
+              '.admin.endpoint = strenv(FLYTE_CLUSTER_ENDPOINT) | \
+              .storage.stow.config.project_id = strenv(GCP_PROJECT_ID) | \
+              .storage.stow.config.scopes = strenv(GCP_STORAGE_SCOPES) | \
+              .storage.container = strenv(GCP_STORAGE_CONTAINER)' \
+              .flyte/config-template.yaml > .flyte/config.yaml"
+      env:
+        FLYTE_CLUSTER_ENDPOINT: ${{ secrets.FLYTE_CLUSTER_ENDPOINT }}
+        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        GCP_STORAGE_SCOPES: ${{ secrets.GCP_STORAGE_SCOPES }}
+        GCP_STORAGE_CONTAINER: ${{ secrets.GCP_STORAGE_CONTAINER }}
+
+    - name: Upload Flyte config as an artifact
+      id: config-output
+      uses: actions/upload-artifact@v3
+      with:
+        name: flyte-config
+        path: ${{ secrets.FLYTECTL_CONFIG }}
+
+  build-images:
+    needs: skip-duplicate-runs
+    if: ${{ needs.skip-duplicate-runs.outputs.should_skip != 'true' }}
+    uses: ./.github/workflows/build-images.yaml
+    secrets:
+      GCP_ARTIFACT_REGISTRY_PATH: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
+    with:
+      debug_enabled: false
+
+
+  execute-workflow:
+    needs: [config, build-images, set-debug]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ['3.10']
+    env:
+        FLYTECTL_CONFIG: ${{ secrets.FLYTECTL_CONFIG }}
+        FLYTE_OAUTH_CLIENT_SECRET: ${{ secrets.FLYTE_OAUTH_CLIENT_SECRET }}
+        WORKFLOW_IMAGE: ${{ vars.WORKFLOW_IMAGE }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+  
+    - name: Inject slug/short variables
+      uses: rlespinasse/github-slug-action@v4
+
+    - name: Setup environment
+      uses: ./.github/actions/setup_environment
+      with:
+        python_version: ${{ matrix.python_version }}
+        debug_enabled: ${{ needs.set-debug.outputs.debug }}
+
+    - name: Download Flyte config
+      uses: actions/download-artifact@v3
+      with:
+        name: flyte-config
+        path: .flyte/
+
+    - name: Setup tmate debug session
+      if: ${{ github.event.inputs.debug_enabled == 'true' }}
+      uses: mxschmitt/action-tmate@v3
+  
+    - name: Execute workflow
+      id: execute
+      run: |
+        make run_prod
+
+    - name: Create config tarball
+      id: save-hydra-outputs
+      run: |
+        TAR_FILENAME="hydra_outputs_${GITHUB_SHA_SHORT}.tar.gz"
+        tar -czf $TAR_FILENAME ./outputs/
+        tar -tzf $TAR_FILENAME
+        echo "HYDRA_OUTPUTS_TAR=$TAR_FILENAME" >> $GITHUB_ENV
+
+    - name: Upload config artifact 
+      uses: actions/upload-artifact@v3
+      with:
+        name: hydra-outputs
+        path: ${{ env.HYDRA_OUTPUTS_TAR }}
