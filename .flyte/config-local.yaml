@@ -1,0 +1,8 @@
+admin:
+  endpoint: localhost:30080
+  insecure: true
+storage:
+  connection:
+    endpoint: http://localhost:30002
+    access-key: minio
+    secret-key: miniostorage
