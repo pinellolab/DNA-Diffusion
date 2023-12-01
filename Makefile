@@ -23,6 +23,34 @@ help_sort: ## Display alphabetized version of help.
 	@grep -hE '^[A-Za-z0-9_ \-]*?:.*##.*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 
+#--------
+# package
+#--------
+
+test: ## Run tests. See pyproject.toml for configuration.
+	poetry run pytest
+
+test-cov-xml: ## Run tests with coverage
+	poetry run pytest --cov-report=xml
+
+lint: ## Run linter
+	poetry run black .
+	poetry run ruff --fix .
+
+lint-check: ## Run linter in check mode
+	poetry run black --check .
+	poetry run ruff .
+
+typecheck: ## Run typechecker
+	poetry run pyright
+	
+docs-build: ## Build documentation
+	poetry run mkdocs build
+
+docs-serve: ## Serve documentation
+docs-serve: docs-build
+	poetry run mkdocs serve
+ 
 
 #-------------
 # system / dev
