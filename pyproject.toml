@@ -1,48 +1,21 @@
-[build-system]
-requires = ["hatchling", "hatch-regex-commit"]
-build-backend = "hatchling.build"
+[tool.black]
+target-version = ["py37"]
+line-length = 80
+skip-string-normalization = true
 
-[project]
-name = "dnadiffusion"
-authors = [
-  { name = "dnadiffusion", email = "dnadiffusion@pinellolab.org" }
-]
-description = "Library for probabilistic analysis of protein-protein interaction sequencing data."
-readme = "README.md"
-dynamic = ["version"]
-classifiers = [
-    "Programming Language :: Python :: 3 :: Only",
-]
-requires-python = ">=3.10"
-dependencies = [
-  "accelerate==0.24.1",
-  "click==8.1.7",
-  "einops==0.7.0",
-  "genomepy==0.16.1",
-  "gimmemotifs==0.18.0",
-  "gtfparse==1.3.0",
-  "jupyterlab==4.0.9",
-  "matplotlib==3.8.1",
-  "memory-efficient-attention-pytorch==0.1.6",
-  "pandas==2.1.3",
-  "pybedtools==0.9.1",
-  "seaborn==0.13.0",
-  "sourmash==4.8.4",
-  "torch==2.3.1",
-  "torchvision==0.19.0",
-  "wandb==0.16.0",
-]
-
-[project.scripts]
-dnadiffusion = "dnadiffusion.cli:main"
-
-[project.urls]
-Documentation = "https://pinellolab.github.io/DNA-Diffusion"
-Source = "https://github.com/pinellolab/DNA-Diffusion"
+[tool.docformatter]
+black = true
+wrap-summaries = 80
+wrap-descriptions = 80
+recursive = true
+in-place = true
+diff = true
+make-summary-multi-line = true
+pre-summary-newline = true
 
 [tool.ruff]
-target-version = "py310"
-line-length = 120
+target-version = "py37"
+line-length = 80
 select = [
   "A",
   # "ARG",
@@ -53,6 +26,7 @@ select = [
   "EM",
   # "F",
   # "FBT",
+  "F401",
   "I",
   "ICN",
   "ISC",
@@ -83,18 +57,12 @@ ignore = [
   "RUF007"
 ]
 unfixable = [
-  # Don't touch unused imports
-  "F401",
-]
-exclude = [
-    "src/refactor",
+  # Don't modify unused imports
+  # "F401",
 ]
 
 [tool.ruff.isort]
 known-first-party = ["dnadiffusion"]
-
-[tool.ruff.format]
-quote-style = "double"
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -103,19 +71,180 @@ ban-relative-imports = "all"
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
-[tool.pytest.ini_options]
-addopts = "--cov=src/dnadiffusion/ --cov-report=term-missing --ignore=src/refactor"
-asyncio_mode = "strict"
-
-[tool.coverage.run]
-source_pkgs = ["dnadiffusion", "tests"]
-branch = true
-parallel = true
-omit = [
-  "src/dnadiffusion/__about__.py",
-  "src/dnadiffusion/__main__.py",
-  "tests/conftest.py",
+[tool.pyright]
+include = ["src"]
+exclude = [
+       "**/node_modules",
+       "**/__pycache__",
+       "**/.hypothesis",
+       "**/docs",
 ]
+reportUnnecessaryTypeIgnoreComment = true
+reportUnnecessaryIsInstance = false
+
+[tool.mypy]
+python_version = "3.10"
+
+[[tool.mypy.overrides]]
+module = [
+]
+ignore_missing_imports = true
+warn_unreachable = true
+pretty = true
+show_column_numbers = true
+show_error_codes = true
+show_error_context = true
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+accelerate = "0.24.1"
+click = "8.1.7"
+einops = "0.7.0"
+genomepy = "0.16.1"
+gimmemotifs = "0.18.0"
+gtfparse = "1.3.0"
+jupyterlab = "4.0.9"
+matplotlib = "3.8.1"
+memory-efficient-attention-pytorch = "0.1.6"
+pandas = "1.5.3"
+pybedtools = "0.9.1"
+seaborn = "0.13.0"
+sourmash = "4.8.4"
+torch = "2.1.0"
+torchvision = "0.16.0"
+wandb = "0.16.0"
+
+# workflows
+dataclasses-json = { version = ">=0.5.9", optional = true }
+flytekit = { version = "1.10.1", optional = true }
+fsspec = { version = "<2023.10.0", optional = true }
+hydra-zen = { version = ">=0.11.0", optional = true }
+hydra-joblib-launcher = { version = ">=1.2.0", optional = true }
+mashumaro = { version = ">=3.10", optional = true }
+pyperclip = { version = ">=1.8.2", optional = true }
+python-dotenv = { version = "1.0.0", optional = true }
+rich = { version = "13.6.0", optional = true }
+scikit-learn = { version = ">=1.3.2", optional = true }
+
+# dev dependencies
+black = { version = ">=23.10.0", optional = true, extras = ["jupyter"] }
+jupytext = { version = ">=1.15.2", optional = true }
+jupyter_contrib_nbextensions = { version = ">=0.7.0", optional = true }
+mkdocs-jupyter = { version = ">=0.24.6", optional = true }
+mkdocs-material = { version = ">=9.4.6", optional = true }
+mkdocstrings = { version = ">=0.23.0", optional = true, extras = ["python"] }
+mypy = { version = ">=1.6.1", optional = true }
+notebook = { version = "==6.4.13", optional = true }
+pyright = { version = ">=1.1.336", optional = true }
+pytest = { version = ">=7.4.2", optional = true }
+pytest-asyncio = { version = ">=0.21.1", optional = true }
+pytest-cov = { version = ">=4.1.0", optional = true }
+ruff = { version = ">=0.1.0", optional = true }
+xdoctest = { version = ">=1.1.1", optional = true }
+
+[tool.poetry.group.workflows]
+optional = true
+
+[tool.poetry.group.workflows.dependencies]
+dataclasses-json = ">=0.5.9"
+flytekit = ">=1.10.0"
+fsspec = "<2023.10.0"
+hydra-zen = ">=0.11.0"
+hydra-joblib-launcher = ">=1.2.0"
+mashumaro = ">=3.10"
+pyperclip = ">=1.8.2"
+python-dotenv = "1.0.0"
+rich = "13.6.0"
+scikit-learn = ">=1.3.2"
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+black = { version = ">=23.10.0", extras = ["jupyter"] }
+mypy = ">=1.6.1"
+pyright = ">=1.1.336"
+ruff = ">=0.1.0"
+docformatter = { version = ">=1.7.5", extras = ["tomli"] }
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = ">=7.4.2"
+pytest-asyncio = ">=0.21.1"
+pytest-cov = ">=4.1.0"
+xdoctest = ">=1.1.1"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+jupytext = ">=1.15.2"
+jupyter_contrib_nbextensions = ">=0.7.0"
+mkdocs-jupyter = ">=0.24.6"
+mkdocs-material = ">=9.4.6"
+mkdocstrings = { version = ">=0.23.0", extras = ["python"] }
+notebook = "==6.4.13"
+
+[tool.poetry.extras]
+docs = [
+  "jupytext",
+  "jupyter_contrib_nbextensions",
+  "mkdocs-jupyter",
+  "mkdocs-material",
+  "mkdocstrings",
+  "notebook",
+ ]
+
+lint = [
+  "black",
+  "mypy",
+  "pyright",
+  "ruff",
+ ]
+
+test = [
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "xdoctest",
+ ]
+
+dev = [
+  "black",
+  "jupytext",
+  "jupyter_contrib_nbextensions",
+  "mkdocs-jupyter",
+  "mkdocs-material",
+  "mkdocstrings",
+  "mypy",
+  "notebook",
+  "pyright",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "ruff",
+  "xdoctest",
+ ]
+
+[tool.conda-lock]
+channels = [
+    'conda-forge', 'bioconda', 'nodefaults'
+]
+platforms = [
+    'linux-64',
+    'osx-arm64',
+    'osx-amd64'
+]
+
+[tool.poetry.scripts]
+dna = "dnadiffusion.hydra:main"
+dnadiffusion = "dnadiffusion.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-rA --xdoc --cov=src/dnadiffusion/ --cov-report=term-missing"
+asyncio_mode = "strict"
 
 [tool.coverage.paths]
 dnadiffusion = ["src/dnadiffusion", "*/dnadiffusion/src/dnadiffusion"]
@@ -128,64 +257,44 @@ exclude_lines = [
   "if TYPE_CHECKING:",
 ]
 
-[tool.mypy]
-python_version = "3.10"
-
-[[tool.mypy.overrides]]
-module = [
-    "accelerate",
-    "Bio",
-    "hydra_zen",
-    "memory_efficient_attention_pytorch",
-    "matplotlib",
-    "matplotlib.pyplot",
-    "pandas",
-    "torchvision",
-    "torchvision.transforms",
-    "seaborn",
-    "scipy.special",
-    "sourmash",
-]
-ignore_missing_imports = true
-
-[tool.hatch]
-
-[tool.hatch.build.targets.wheel]
-packages = ['src/dnadiffusion']
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.version]
-path = "src/dnadiffusion/__about__.py"
-
-[tool.hatch.envs.default]
-python = "3.10"
-dependencies = [
-    "mkdocs-material==9.4.8",
-    "mkdocstrings==0.23.0",
-    "mkdocstrings[python]",
-    "mypy==1.10.0",
-    "pytest==7.4.3",
-    "pytest-asyncio==0.21.1",
-    "pytest-cov==4.1.0",
-    "ruff==0.1.6",
-    "types-tqdm==4.66.0.4",
-    "xdoctest==1.1.2",
+[tool.coverage.run]
+source_pkgs = ["dnadiffusion", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/dnadiffusion/__init__.py",
+  "src/dnadiffusion/__main__.py",
+  "tests/conftest.py",
 ]
 
-[tool.hatch.envs.default.scripts]
-test = "pytest -rA"
-test-cov-xml = "pytest -rA --cov-report=xml"
-lint = [
-  "ruff format .",
-  "ruff --fix .",
-  # "mypy src/dnadiffusion/",
+[tool.jupytext]
+formats = "ipynb,text//py:percent,text//md"
+
+[tool.poetry]
+name = "dnadiffusion"
+version = "0.0.0.dev1"
+packages = [
+    { include = "dnadiffusion", from = "src" },
 ]
-lint-check = [
-  "ruff format --check .",
-  "ruff .",
-  # "mypy src/dnadiffusion/",
+description = "Library for benchmarking the impact of transcript count type stratification on trajectory inference."
+authors = ["dnadiffusion team"]
+readme = "README.md"
+homepage = "https://pinellolab.github.io/DNA-Diffusion/"
+repository = "https://github.com/pinellolab/DNA-Diffusion"
+license = "AGPL-3.0-only"
+documentation = "https://pinellolab.github.io/DNA-Diffusion/"
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
 ]
-docs-serve = "mkdocs serve"
-docs-build = "mkdocs build"
+
+[tool.poetry.urls]
+Changelog = "https://github.com/pinellolab/DNA-Diffusion/releases"
+
+[build-system]
+requires = ["poetry-core>=1.6.1"]
+build-backend = "poetry.core.masonry.api"
