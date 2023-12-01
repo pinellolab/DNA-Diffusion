@@ -191,7 +191,7 @@ DNA-Diffusion
 ├─ .gitignore
 ├─ CITATION.cff
 ├─ CODE_OF_CONDUCT.md
-├─ dockerfiles
+├─ containerfiles
 │  └─ Dockerfile
 ├─ docs
 │  ├─ contributors.md
