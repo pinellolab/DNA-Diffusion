@@ -51,6 +51,41 @@ docs-serve: ## Serve documentation
 docs-serve: docs-build
 	poetry run mkdocs serve
  
+#-------------
+# CI
+#-------------
+
+browse: ## Open github repo in browser at HEAD commit.
+	gh browse $(GIT_SHORT_SHA)
+
+GH_ACTIONS_DEBUG ?= false
+
+ci: ## Run CI (GH_ACTIONS_DEBUG default is false).
+	gh workflow run "CI" --ref $(GIT_BRANCH) -f debug_enabled=$(GH_ACTIONS_DEBUG)
+
+build_images: ## Run Build Images (GH_ACTIONS_DEBUG default is false).
+	gh workflow run "Build Images" --ref $(GIT_BRANCH) -f debug_enabled=$(GH_ACTIONS_DEBUG)
+
+ci_view_workflow: ## Open CI workflow summary.
+	gh workflow view "CI"
+
+build_images_view_workflow: ## Open Build Images workflow summary.
+	gh workflow view "Build Images"
+
+docker_login: ## Login to ghcr docker registry. Check regcreds in $HOME/.docker/config.json.
+	docker login ghcr.io -u $(GH_ORG) -p $(GITHUB_TOKEN)
+
+EXISTING_IMAGE_TAG ?= main
+NEW_IMAGE_TAG ?= $(GIT_BRANCH)
+
+# Default bumps main to the checked out branch for dev purposes
+tag_images: ## Add tag to existing images, (default main --> branch, override with make -n tag_images NEW_IMAGE_TAG=latest).
+	crane tag $(WORKFLOW_IMAGE):$(EXISTING_IMAGE_TAG) $(NEW_IMAGE_TAG)
+	crane tag ghcr.io/$(GH_ORG)/$(GH_REPO):$(EXISTING_IMAGE_TAG) $(NEW_IMAGE_TAG)
+
+list_gcr_workflow_image_tags: ## List images in gcr.
+	gcloud container images list --repository=$(GCP_ARTIFACT_REGISTRY_PATH)                                                                                                                             │
+	gcloud container images list-tags $(WORKFLOW_IMAGE)
 
 #-------------
 # system / dev
