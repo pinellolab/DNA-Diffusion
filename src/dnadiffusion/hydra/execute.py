@@ -22,6 +22,10 @@ from flytekit.remote import FlyteRemote
 from hydra_zen import ZenStore, make_config, make_custom_builds_fn, to_yaml, zen
 from omegaconf import DictConfig
 
+from dnadiffusion.constants import (
+    LOCAL_CLUSTER_CONFIG_FILE_PATH,
+    REMOTE_CLUSTER_CONFIG_FILE_PATH,
+)
 from dnadiffusion.hydra.execution_config import (
     ClusterMode,
     ExecutionLocation,
@@ -40,10 +44,6 @@ from dnadiffusion.hydra.execution_utils import (
     git_info_to_workflow_version,
     random_alphanumeric_suffix,
     wait_for_workflow_completion,
-)
-from dnadiffusion.constants import (
-    LOCAL_CLUSTER_CONFIG_FILE_PATH,
-    REMOTE_CLUSTER_CONFIG_FILE_PATH,
 )
 from dnadiffusion.logging import configure_logging
 

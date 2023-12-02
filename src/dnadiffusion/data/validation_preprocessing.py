@@ -2,13 +2,14 @@ import os
 
 import genomepy
 import pandas as pd
-import pybedtools
 from pybedtools import BedTool
 
 from dnadiffusion.utils.data_util import GTFProcessing
 
 
-def combine_all_seqs(cell_list: list, training_data_path: str, save_output: bool = False) -> pd.DataFrame:
+def combine_all_seqs(
+    cell_list: list, training_data_path: str, save_output: bool = False
+) -> pd.DataFrame:
     """A function to take the generated sequences from sample loop and combine them with the training dataset
 
     Args:
@@ -40,7 +41,10 @@ def combine_all_seqs(cell_list: list, training_data_path: str, save_output: bool
         df["CELL_TYPE"] = file_name.upper()
         df["index_number"] = [str(i) for i in df.index]
         df["TAG"] = "GENERATED"
-        df["ID"] = df.apply(lambda x: "_".join([x["index_number"], x["TAG"], x["CELL_TYPE"]]), axis=1)
+        df["ID"] = df.apply(
+            lambda x: "_".join([x["index_number"], x["TAG"], x["CELL_TYPE"]]),
+            axis=1,
+        )
         # Saving the modified dataframe
         dfs_to_save["DF_" + file_name] = df
         # Remove index column
@@ -59,9 +63,14 @@ def combine_all_seqs(cell_list: list, training_data_path: str, save_output: bool
         df_slice.columns = ["SEQUENCE", "CELL_TYPE", "TAG"]
         df_slice["TAG"] = df_slice["TAG"].apply(lambda x: x.upper())
         df_slice["CELL_TYPE"] = df_slice["CELL_TYPE"].apply(lambda x: x.upper())
-        df_slice["CELL_TYPE"] = df_slice["CELL_TYPE"].apply(lambda x: x.split("_")[0])
+        df_slice["CELL_TYPE"] = df_slice["CELL_TYPE"].apply(
+            lambda x: x.split("_")[0]
+        )
         df_slice["index_number"] = [str(i) for i in df_slice.index]
-        df_slice["ID"] = df_slice.apply(lambda x: "_".join([x["index_number"], x["TAG"], x["CELL_TYPE"]]), axis=1)
+        df_slice["ID"] = df_slice.apply(
+            lambda x: "_".join([x["index_number"], x["TAG"], x["CELL_TYPE"]]),
+            axis=1,
+        )
         dfs_to_save[data_in.upper() + "_" + tag_in.upper()] = df_slice
         # Remove index column
         del df_slice["index_number"]
@@ -122,25 +131,35 @@ def validation_table(
     # Filtering chromosomes
     chromosomes = ["chr" + str(i) for i in range(1, 22)] + ["X", "Y"]
     random_seqs = random_seqs[random_seqs["chrom"].isin(chromosomes)]
-    filtered_random_seqs = BedTool.from_dataframe(random_seqs).sequence(f"{genome_path}/hg38/hg38.fa")
+    filtered_random_seqs = BedTool.from_dataframe(random_seqs).sequence(
+        f"{genome_path}/hg38/hg38.fa"
+    )
     # Cleaning up the dataframe and renaming columns
-    random_seqs["SEQUENCE"] = [x.upper() for x in open(filtered_random_seqs.seqfn).read().split("\n") if ">" not in x][
-        :-1
+    random_seqs["SEQUENCE"] = [
+        x.upper()
+        for x in open(filtered_random_seqs.seqfn).read().split("\n")
+        if ">" not in x
+    ][:-1]
+    random_seqs = random_seqs[
+        random_seqs["SEQUENCE"].apply(lambda x: "N" not in x)
     ]
-    random_seqs = random_seqs[random_seqs["SEQUENCE"].apply(lambda x: "N" not in x)]
     random_seqs = random_seqs.head(num_filter_sequences)
-    random_seqs["ID"] = random_seqs.apply(lambda x: f"{x['chrom']}_{x['start']!s}_{x['end']!s}_random", axis=1)
+    random_seqs["ID"] = random_seqs.apply(
+        lambda x: f"{x['chrom']}_{x['start']!s}_{x['end']!s}_random", axis=1
+    )
     random_seqs["CELL_TYPE"] = "NO"
     random_seqs["TAG"] = "RANDOM_GENOME_REGIONS"
-    random_seqs = random_seqs[["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]]
+    random_seqs = random_seqs[
+        ["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]
+    ]
 
     # Promoter sequences
     print("Generating promoter sequences dataframe")
     gtf = GTFProcessing(promoter_path)
     df_gtf = gtf.get_gtf_df()
-    df_gtf_filtered = df_gtf.query("feature == 'transcript'  and gene_type == 'protein_coding'  ").drop_duplicates(
-        "gene_name"
-    )
+    df_gtf_filtered = df_gtf.query(
+        "feature == 'transcript'  and gene_type == 'protein_coding'  "
+    ).drop_duplicates("gene_name")
     df_gtf_filtered["tss_position"] = df_gtf_filtered.apply(
         lambda x: x["start"] if x["strand"] == "+" else x["end"], axis=1
     )
@@ -154,9 +173,15 @@ def validation_table(
     )
     df_gtf_filtered["CELL_TYPE"] = "NO"
     df_gtf_filtered["TAG"] = "PROMOTERS"
-    p_seqs = BedTool.from_dataframe(df_gtf_filtered).sequence(f"{genome_path}/hg38/hg38.fa")
-    df_gtf_filtered["SEQUENCE"] = [x.upper() for x in open(p_seqs.seqfn).read().split("\n") if ">" not in x][:-1]
-    df_gtf_filtered = df_gtf_filtered[["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]]
+    p_seqs = BedTool.from_dataframe(df_gtf_filtered).sequence(
+        f"{genome_path}/hg38/hg38.fa"
+    )
+    df_gtf_filtered["SEQUENCE"] = [
+        x.upper() for x in open(p_seqs.seqfn).read().split("\n") if ">" not in x
+    ][:-1]
+    df_gtf_filtered = df_gtf_filtered[
+        ["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]
+    ]
 
     # Reading the training dataset used to train the model
     print("Generating training dataset dataframe")
@@ -169,24 +194,60 @@ def validation_table(
     df_train_balanced["start"] = df_train_balanced["coord_center"] - 100
     df_train_balanced["end"] = df_train_balanced["coord_center"] + 100
     # Selecting only the columns we need
-    df_train_balanced = df_train_balanced[["chr", "start", "end", "dhs_id", "TAG", "sequence", "data_label"]]
-    df_train_balanced.columns = ["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]
+    df_train_balanced = df_train_balanced[
+        ["chr", "start", "end", "dhs_id", "TAG", "sequence", "data_label"]
+    ]
+    df_train_balanced.columns = [
+        "chrom",
+        "start",
+        "end",
+        "ID",
+        "CELL_TYPE",
+        "SEQUENCE",
+        "TAG",
+    ]
 
     # Reading the generated sequences
     print("Generating synthetic sequences dataframe")
-    df_generated = pd.read_csv(generated_data_path, sep="\t").query("TAG == 'GENERATED'")
-    df_generated_balanced = pd.concat([v for k, v in df_generated.groupby("CELL_TYPE")])
+    df_generated = pd.read_csv(generated_data_path, sep="\t").query(
+        "TAG == 'GENERATED'"
+    )
+    df_generated_balanced = pd.concat(
+        [v for k, v in df_generated.groupby("CELL_TYPE")]
+    )
     # Adding some metadata columns
     df_generated_balanced["chrom"] = "NO"
     df_generated_balanced["start"] = "NO"
     df_generated_balanced["end"] = "NO"
-    df_generated_balanced = df_generated_balanced[["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]]
-    df_generated_balanced.columns = ["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]
-    df_generated_balanced["CELL_TYPE"] = df_generated_balanced["CELL_TYPE"].apply(lambda x: x.split("_")[0])
+    df_generated_balanced = df_generated_balanced[
+        ["chrom", "start", "end", "ID", "CELL_TYPE", "SEQUENCE", "TAG"]
+    ]
+    df_generated_balanced.columns = [
+        "chrom",
+        "start",
+        "end",
+        "ID",
+        "CELL_TYPE",
+        "SEQUENCE",
+        "TAG",
+    ]
+    df_generated_balanced["CELL_TYPE"] = df_generated_balanced[
+        "CELL_TYPE"
+    ].apply(lambda x: x.split("_")[0])
 
     # Combining all the dataframes
     print("Combining all the dataframes")
-    df_final = pd.concat([df_train_balanced, df_generated_balanced, df_gtf_filtered, random_seqs], ignore_index=True)
+    df_final = pd.concat(
+        [
+            df_train_balanced,
+            df_generated_balanced,
+            df_gtf_filtered,
+            random_seqs,
+        ],
+        ignore_index=True,
+    )
     if save_output:
-        df_final.to_csv("DNA_DIFFUSION_VALIDATION_TABLE.txt", sep="\t", index=None)
+        df_final.to_csv(
+            "DNA_DIFFUSION_VALIDATION_TABLE.txt", sep="\t", index=None
+        )
     return df_final
