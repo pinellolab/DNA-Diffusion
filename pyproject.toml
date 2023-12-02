@@ -189,6 +189,19 @@ mkdocstrings = { version = ">=0.23.0", extras = ["python"] }
 notebook = "==6.4.13"
 
 [tool.poetry.extras]
+workflows = [
+  "dataclasses-json",
+  "flytekit",
+  "fsspec",
+  "hydra-zen",
+  "hydra-joblib-launcher",
+  "mashumaro",
+  "pyperclip",
+  "python-dotenv",
+  "rich",
+  "scikit-learn",
+]
+
 docs = [
   "jupytext",
   "jupyter_contrib_nbextensions",
