@@ -52,7 +52,9 @@ def sample(model_path: str, num_samples: int = 1000, heatmap: bool = False):
     cell_list = list(encode_data["tag_to_numeric"].keys())
 
     for i in cell_num_list:
-        print(f"Generating {num_samples} samples for cell {encode_data['numeric_to_tag'][i]}")
+        print(
+            f"Generating {num_samples} samples for cell {encode_data['numeric_to_tag'][i]}"
+        )
         create_sample(
             diffusion,
             conditional_numeric_to_tag=encode_data["numeric_to_tag"],

@@ -7,7 +7,9 @@ from dnadiffusion.utils.train_util import TrainLoop
 
 
 def train():
-    accelerator = Accelerator(split_batches=True, log_with=["wandb"], mixed_precision="bf16")
+    accelerator = Accelerator(
+        split_batches=True, log_with=["wandb"], mixed_precision="bf16"
+    )
 
     data = load_data(
         data_path="src/dnadiffusion/data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
