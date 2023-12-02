@@ -70,7 +70,7 @@ COPY . /root
 # Use local editable installation for development
 # add package extras if needed for debugging e.g. `-e .[dev,docs]`
 RUN pip install --upgrade pip && \
-    pip install -e .
+    pip install -e .[workflows]
 
 # Install pinned version from PyPI instead for production
 # RUN pip install dnadiffusion==0.1.0
