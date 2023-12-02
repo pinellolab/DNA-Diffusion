@@ -99,7 +99,7 @@ jobs:
 
   build-images:
     needs: [test]
-    if: ${{ (contains(github.event.pull_request.labels.*.name, 'build-images') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_build_images)) }}
+    if: ${{ (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_build_images)) }}
     uses: ./.github/workflows/build-images.yaml
     secrets:
       GCP_ARTIFACT_REGISTRY_PATH: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
