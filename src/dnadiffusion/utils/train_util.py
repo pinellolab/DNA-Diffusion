@@ -2,14 +2,16 @@ import copy
 from typing import Any
 
 import torch
-import torchvision.transforms as T
 from accelerate import Accelerator
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from dnadiffusion.data.dataloader import SequenceDataset
-from dnadiffusion.metrics.metrics import compare_motif_list, generate_similarity_using_train
+from dnadiffusion.metrics.metrics import (
+    compare_motif_list,
+    generate_similarity_using_train,
+)
 from dnadiffusion.utils.sample_util import create_sample
 from dnadiffusion.utils.utils import EMA
 
@@ -43,7 +45,9 @@ class TrainLoop:
 
         if self.accelerator.is_main_process:
             self.ema = EMA(0.995)
-            self.ema_model = copy.deepcopy(self.model).eval().requires_grad_(False)
+            self.ema_model = (
+                copy.deepcopy(self.model).eval().requires_grad_(False)
+            )
 
         # Metrics
         self.train_kl, self.test_kl, self.shuffle_kl = 1, 1, 1
@@ -52,18 +56,31 @@ class TrainLoop:
         self.start_epoch = 1
 
         # Dataloader
-        seq_dataset = SequenceDataset(seqs=self.encode_data["X_train"], c=self.encode_data["x_train_cell_type"])
-        self.train_dl = DataLoader(seq_dataset, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+        seq_dataset = SequenceDataset(
+            seqs=self.encode_data["X_train"],
+            c=self.encode_data["x_train_cell_type"],
+        )
+        self.train_dl = DataLoader(
+            seq_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=8,
+            pin_memory=True,
+        )
 
     def train_loop(self):
         # Prepare for training
-        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(self.model, self.optimizer, self.train_dl)
+        self.model, self.optimizer, self.train_dl = self.accelerator.prepare(
+            self.model, self.optimizer, self.train_dl
+        )
 
         # Initialize wandb
         if self.accelerator.is_main_process:
             self.accelerator.init_trackers(
                 "dnadiffusion",
-                init_kwargs={"wandb": {"notes": "testing wandb accelerate script"}},
+                init_kwargs={
+                    "wandb": {"notes": "testing wandb accelerate script"}
+                },
             )
 
         for epoch in tqdm(range(self.start_epoch, self.epochs + 1)):
@@ -76,15 +93,24 @@ class TrainLoop:
                 loss = self.train_step(batch)
 
                 # Logging loss
-                if self.global_step % self.log_step_show == 0 and self.accelerator.is_main_process:
+                if (
+                    self.global_step % self.log_step_show == 0
+                    and self.accelerator.is_main_process
+                ):
                     self.log_step(loss, epoch)
 
             # Sampling
-            if epoch % self.sample_epoch == 0 and self.accelerator.is_main_process:
+            if (
+                epoch % self.sample_epoch == 0
+                and self.accelerator.is_main_process
+            ):
                 self.sample()
 
             # Saving model
-            if epoch % self.save_epoch == 0 and self.accelerator.is_main_process:
+            if (
+                epoch % self.save_epoch == 0
+                and self.accelerator.is_main_process
+            ):
                 self.save_model(epoch)
 
     def train_step(self, batch):
@@ -100,7 +126,9 @@ class TrainLoop:
 
         self.accelerator.wait_for_everyone()
         if self.accelerator.is_main_process:
-            self.ema.step_ema(self.ema_model, self.accelerator.unwrap_model(self.model))
+            self.ema.step_ema(
+                self.ema_model, self.accelerator.unwrap_model(self.model)
+            )
 
         self.accelerator.wait_for_everyone()
         return loss
@@ -130,10 +158,18 @@ class TrainLoop:
             cell_types=self.encode_data["cell_types"],
             number_of_samples=int(self.num_sampling_to_compare_cells / 10),
         )
-        self.seq_similarity = generate_similarity_using_train(self.encode_data["X_train"])
-        self.train_kl = compare_motif_list(synt_df, self.encode_data["train_motifs"])
-        self.test_kl = compare_motif_list(synt_df, self.encode_data["test_motifs"])
-        self.shuffle_kl = compare_motif_list(synt_df, self.encode_data["shuffle_motifs"])
+        self.seq_similarity = generate_similarity_using_train(
+            self.encode_data["X_train"]
+        )
+        self.train_kl = compare_motif_list(
+            synt_df, self.encode_data["train_motifs"]
+        )
+        self.test_kl = compare_motif_list(
+            synt_df, self.encode_data["test_motifs"]
+        )
+        self.shuffle_kl = compare_motif_list(
+            synt_df, self.encode_data["shuffle_motifs"]
+        )
         print("Similarity", self.seq_similarity, "Similarity")
         print("KL_TRAIN", self.train_kl, "KL")
         print("KL_TEST", self.test_kl, "KL")

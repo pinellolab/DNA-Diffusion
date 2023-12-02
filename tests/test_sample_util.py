@@ -3,7 +3,10 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from dnadiffusion.utils.sample_util import convert_sample_to_fasta, extract_motifs
+from dnadiffusion.utils.sample_util import (
+    convert_sample_to_fasta,
+    extract_motifs,
+)
 
 
 @pytest.fixture
