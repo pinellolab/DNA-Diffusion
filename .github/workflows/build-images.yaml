@@ -1,0 +1,79 @@
+name: Build Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: boolean
+        default: false
+    secrets:
+      GCP_ARTIFACT_REGISTRY_PATH:
+        description: "GCP Artifact Registry Path"
+        required: true
+
+env:
+  ARGO_NAMESPACE: argo
+  ARGO_VERSION: v3.5.1
+  CONTAINER_REGISTRY_URL1: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
+  CONTAINER_REGISTRY_URL2: 'ghcr.io/sciexp'
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: sciexp-runners
+    steps:
+    - name: Setup Runner for Argo
+      run: |
+        cd $HOME
+        sudo apt-get update && sudo apt-get install -y curl
+        curl -sLO https://github.com/argoproj/argo-workflows/releases/download/${ARGO_VERSION}/argo-linux-amd64.gz
+        gunzip argo-linux-amd64.gz
+        chmod +x argo-linux-amd64
+        sudo mv ./argo-linux-amd64 /usr/local/bin/argo
+        argo version
+    - name: Check out repository code
+      uses: actions/checkout@v4
+    - name: Inject slug/short variables
+      uses: rlespinasse/github-slug-action@v4
+      with:
+        prefix: CI_
+    - name: Setup tmate debug session
+      if: ${{ github.event.inputs.debug_enabled == 'true' }}
+      uses: mxschmitt/action-tmate@v3
+    - name: build
+      run: |
+        echo "commit sha $CI_GITHUB_SHA"
+        echo "ref $GITHUB_REF"
+        echo "ci ref $CI_GITHUB_REF"
+        echo "ref name $CI_GITHUB_REF_NAME"
+        echo "head ref $CI_GITHUB_HEAD_REF"
+        argo version --short
+        argo submit .argo/build.yaml \
+          --generate-name="${CI_GITHUB_REPOSITORY_NAME_PART}-build-${CI_GITHUB_SHA_SHORT}-" \
+          -p imageName1="${CI_GITHUB_REPOSITORY_NAME_PART}" \
+          -p containerFilePath1="containers/pkg.Dockerfile" \
+          -p imageName2="${CI_GITHUB_REPOSITORY_NAME_PART}-gpu" \
+          -p containerFilePath2="containers/gpu.Dockerfile" \
+          -p appName="${CI_GITHUB_REPOSITORY_NAME_PART}" \
+          -p branch="${CI_GITHUB_REF_NAME}" \
+          -p shortSha="${CI_GITHUB_SHA_SHORT}" \
+          -p containerRegistryURL1="${CONTAINER_REGISTRY_URL1}" \
+          -p containerRegistryURL2="${CONTAINER_REGISTRY_URL2}" \
+          -p gitUrlNoProtocol="github.com/${CI_GITHUB_REPOSITORY_OWNER_PART_SLUG}" \
+          --wait --log
