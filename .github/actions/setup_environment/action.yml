@@ -5,12 +5,14 @@ inputs:
   python_version:
     description: 'Python version to setup'
     required: true
-    type: string
   debug_enabled:
     description: "Run with tmate.io debugging enabled"
     required: true
-    type: boolean
-    default: false
+    default: "false"
+  gpu_enabled:
+    description: "Do not downgrade to CPU libraries"
+    required: true
+    default: "false"
 
 runs:
   using: "composite"
@@ -42,10 +44,16 @@ runs:
     - name: Install dependencies
       shell: bash
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: poetry install -E dev --no-interaction --no-root
+      run: poetry install -E dev -E workflows --no-interaction --no-root
     - name: Install project
       shell: bash
       run: poetry install -E dev --no-interaction
+    - name: Downgrade to torch CPU
+      if: ${{ inputs.gpu_enabled != 'true' }}
+      shell: bash
+      run: |
+        source $VENV
+        poe torch-cpu
     - name: "Setup tmate debug session"
       uses: mxschmitt/action-tmate@v3
-      if: ${{ inputs.debug_enabled }}
+      if: ${{ inputs.debug_enabled == 'true' }}
