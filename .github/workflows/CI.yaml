@@ -81,12 +81,12 @@ jobs:
       with:
         python_version: ${{ matrix.python_version }}
         debug_enabled: ${{ needs.set-debug.outputs.debug }}
+    - name: "Setup tmate debug session"
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ inputs.debug_enabled }}
     - name: Lint and typecheck
       run: |
         make lint-check
-    - name: "Setup tmate debug session"
-      uses: mxschmitt/action-tmate@v3
-      # if: ${{ inputs.debug_enabled }}
     - name: Run tests
       run: |
         make test-cov-xml
