@@ -290,7 +290,7 @@ version = "0.0.0.dev1"
 packages = [
     { include = "dnadiffusion", from = "src" },
 ]
-description = "Library for benchmarking the impact of transcript count type stratification on trajectory inference."
+description = "Generative modeling of regulatory DNA sequences with diffusion probabilistic models."
 authors = ["dnadiffusion team"]
 readme = "README.md"
 homepage = "https://pinellolab.github.io/DNA-Diffusion/"
