@@ -17,7 +17,7 @@ on:
         description: "Run with tmate.io debugging enabled"
         required: true
         type: boolean
-        default: true
+        default: false
       run_build_images:
         description: "Run build-images job"
         required: false
@@ -86,7 +86,7 @@ jobs:
         make lint-check
     - name: "Setup tmate debug session"
       uses: mxschmitt/action-tmate@v3
-      if: ${{ inputs.debug_enabled }}
+      # if: ${{ inputs.debug_enabled }}
     - name: Run tests
       run: |
         make test-cov-xml
