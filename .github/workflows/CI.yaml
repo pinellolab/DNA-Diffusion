@@ -106,7 +106,7 @@ jobs:
     with:
       debug_enabled: false
 
-  config:
+  config-workflows:
     needs: [test]
     if: ${{ (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_execute_workflow)) }}
     runs-on: ubuntu-latest
@@ -140,7 +140,7 @@ jobs:
         path: ${{ secrets.FLYTECTL_CONFIG }}
 
   execute-workflow:
-    needs: [config, build-images, set-debug]
+    needs: [config-workflows, build-images, set-debug]
     runs-on: ubuntu-latest
     strategy:
       matrix:
