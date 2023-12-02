@@ -24,7 +24,7 @@ env:
   ARGO_NAMESPACE: argo
   ARGO_VERSION: v3.5.1
   CONTAINER_REGISTRY_URL1: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
-  CONTAINER_REGISTRY_URL2: 'ghcr.io/sciexp'
+  CONTAINER_REGISTRY_URL2: 'ghcr.io/pinellolab'
 
 defaults:
   run:
@@ -36,7 +36,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: sciexp-runners
+    runs-on: pinellolab-runners
     steps:
     - name: Setup Runner for Argo
       run: |
