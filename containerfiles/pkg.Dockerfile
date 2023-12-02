@@ -22,7 +22,7 @@ COPY . /root
 
 # Local development
 RUN pip install --upgrade pip && \
-    pip install -e .
+    pip install -e .[workflows]
 # Install from PyPI
 # RUN pip install dnadiffusion==0.1.0
 
