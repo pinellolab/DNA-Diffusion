@@ -11,7 +11,14 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
 
 # If debian-based parent image
-RUN apt-get update && apt-get install -y build-essential
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -q && \
+    apt-get install -yq \
+    build-essential \
+    curl \
+    git \
+    make \
+    tree
 
 ENV VENV /opt/venv
 
