@@ -78,7 +78,7 @@ class ExecutionContext:
     version: str = f"dnadiffusion-main-{random_alphanumeric_suffix()}"
     package_path: str = "src"
     import_path: str = "dnadiffusion.workflows"
-    project: str = "flytesnacks"
+    project: str = "dnadiffusion"
     domain: str = "development"
     wait: bool = True
 
@@ -462,7 +462,7 @@ if __name__ == "__main__":
       name: training_workflow
       package_path: src
       import_path: dnadiffusion.workflows
-      project: flytesnacks
+      project: dnadiffusion
       domain: development
       wait: true
     entity_config:
