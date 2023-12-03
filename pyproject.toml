@@ -293,7 +293,7 @@ dna = "dnadiffusion.hydra:main"
 dnadiffusion = "dnadiffusion.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-rA --xdoc --cov=src/dnadiffusion/ --cov-report=term-missing"
+addopts = "-rA --xdoc --cov=src/dnadiffusion/ --cov-report=term-missing --ignore=./notebooks"
 asyncio_mode = "strict"
 
 [tool.coverage.paths]
