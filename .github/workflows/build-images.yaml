@@ -8,6 +8,14 @@ on:
         required: true
         type: boolean
         default: false
+      mode:
+        description: "Container build mode ('dev' uses branch name image tags and 'prod' uses short sha.)"
+        required: true
+        type: choice
+        default: "dev"
+        options:
+          - dev
+          - prod
   workflow_call:
     inputs:
       debug_enabled:
@@ -15,6 +23,11 @@ on:
         required: true
         type: boolean
         default: false
+      mode:
+        description: "Container build mode ('dev' uses branch name image tags and 'prod' uses short sha.)"
+        required: true
+        type: string
+        default: "dev"
     secrets:
       GCP_ARTIFACT_REGISTRY_PATH:
         description: "GCP Artifact Registry Path"
@@ -53,19 +66,23 @@ jobs:
       uses: rlespinasse/github-slug-action@v4
       with:
         prefix: CI_
+    - name: Set Mode
+      run: echo "MODE=${{ github.event.inputs.mode }}" >> $GITHUB_ENV
     - name: Setup tmate debug session
       if: ${{ github.event.inputs.debug_enabled == 'true' }}
       uses: mxschmitt/action-tmate@v3
     - name: build
       run: |
-        echo "commit sha $CI_GITHUB_SHA"
-        echo "ref $GITHUB_REF"
-        echo "ci ref $CI_GITHUB_REF"
-        echo "ref name $CI_GITHUB_REF_NAME"
-        echo "head ref $CI_GITHUB_HEAD_REF"
+        echo "CI commit sha: $CI_GITHUB_SHA"
+        echo "GitHub ref: $GITHUB_REF"
+        echo "CI ref: $CI_GITHUB_REF"
+        echo "CI ref name: $CI_GITHUB_REF_NAME"
+        echo "CI HEAD ref: $CI_GITHUB_HEAD_REF"
+        echo "Image build mode: $MODE"
         argo version --short
         argo submit .argo/build.yaml \
           --generate-name="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-build-${CI_GITHUB_SHA_SHORT}-" \
+          -p mode="$MODE" \
           -p imageName1="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}" \
           -p containerFilePath1="containers/pkg.Dockerfile" \
           -p imageName2="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-gpu" \
