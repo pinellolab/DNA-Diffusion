@@ -15,6 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -q && \
     apt-get install -yq \
     build-essential \
+    zlib1g-dev \
     curl \
     git \
     make \
