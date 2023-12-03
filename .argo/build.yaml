@@ -32,15 +32,15 @@ spec:
                 - name: gitUrlNoProtocol
                   value: '{{workflow.parameters.gitUrlNoProtocol}}'
                 - name: memoryRequest
-                  value: "512Mi" # override default: 512Mi
+                  value: "5Gi" # override default: 512Mi
                 - name: cpuRequest
-                  value: "500m" # override default: 500m
+                  value: "3" # override default: 500m
                 - name: memoryLimit
-                  value: "4Gi" # override default: 2Gi
+                  value: "16Gi" # override default: 2Gi
                 - name: cpuLimit
-                  value: "4" # override default: 2
+                  value: "8" # override default: 2
                 - name: storageRequest
-                  value: "15Gi" # override default: 15Gi
+                  value: "35Gi" # override default: 15Gi
           - name: publish-gpu-container-2
             templateRef:
               name: cwft-kaniko
