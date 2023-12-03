@@ -99,7 +99,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: [set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true'  && needs.set-variables.outputs.skip_tests != 'true'}} 
+    if: ${{ !needs.set-variables.outputs.skip_ci  && !needs.set-variables.outputs.skip_tests }} 
     strategy:
       matrix:
         python_version: ['3.10']
@@ -136,7 +136,7 @@ jobs:
 
   build-images:
     needs: [test, set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_build_images)) }}
+    if: ${{ !needs.set-variables.outputs.skip_ci && (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_build_images)) }}
     uses: ./.github/workflows/build-images.yaml
     secrets:
       GCP_ARTIFACT_REGISTRY_PATH: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
@@ -147,7 +147,7 @@ jobs:
 
   config-workflows:
     needs: [test, set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_execute_workflow)) }}
+    if: ${{ !needs.set-variables.outputs.skip_ci && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_execute_workflow)) }}
     runs-on: ubuntu-latest
     outputs:
       config-path: ${{ steps.config-output.outputs.path }}
@@ -182,7 +182,7 @@ jobs:
 
   execute-workflow:
     needs: [config-workflows, build-images, set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_execute_workflow)) }}
+    if: ${{ !needs.set-variables.outputs.skip_ci && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_execute_workflow)) }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
