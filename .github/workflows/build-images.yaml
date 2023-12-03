@@ -68,8 +68,8 @@ jobs:
         prefix: CI_
     - name: Set Mode
       run: |
-        echo "MODE=${{ github.event.inputs.mode }}"
-        MODE="${{ github.event.inputs.mode }}"
+        echo "MODE=${{ inputs.mode }}"
+        MODE="${{ inputs.mode }}"
         echo "MODE=${MODE}" >> $GITHUB_ENV
     - name: Setup tmate debug session
       if: ${{ github.event.inputs.debug_enabled == 'true' }}
@@ -82,8 +82,8 @@ jobs:
         echo "CI ref name: $CI_GITHUB_REF_NAME"
         echo "CI HEAD ref: $CI_GITHUB_HEAD_REF"
         echo "Image build mode: $MODE"
-        echo "MODE=${{ github.event.inputs.mode }}"
-        MODE="${{ github.event.inputs.mode }}"
+        echo "MODE=${{ inputs.mode }}"
+        MODE="${{ inputs.mode }}"
         argo version --short
         argo submit .argo/build.yaml \
           --generate-name="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-build-${CI_GITHUB_SHA_SHORT}-" \
