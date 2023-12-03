@@ -15,6 +15,8 @@ spec:
               clusterScope: true
             arguments:
               parameters:
+                - name: mode
+                  value: '{{workflow.parameters.mode}}'
                 - name: imageName
                   value: '{{workflow.parameters.imageName1}}'
                 - name: containerFilePath
@@ -48,6 +50,8 @@ spec:
               clusterScope: true
             arguments:
               parameters:
+                - name: mode
+                  value: '{{workflow.parameters.mode}}'
                 - name: imageName
                   value: '{{workflow.parameters.imageName2}}'
                 - name: containerFilePath
