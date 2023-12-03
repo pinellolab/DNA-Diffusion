@@ -112,6 +112,12 @@ jobs:
         python_version: ['3.10']
 
     steps:
+    - name: Check Variables
+      run: |
+        echo "SKIP_CI=${{ needs.set-variables.outputs.skip_ci}}"
+        echo "SKIP_TESTS=${{ needs.set-variables.outputs.skip_tests}}"
+        echo "DEBUG=${{ needs.set-variables.outputs.debug}}"
+        echo "MODE=${{ needs.set-variables.outputs.debug}}"
     - name: Checkout code
       uses: actions/checkout@v4
 
