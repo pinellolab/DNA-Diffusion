@@ -81,7 +81,7 @@ NEW_IMAGE_TAG ?= $(GIT_BRANCH)
 # Default bumps main to the checked out branch for dev purposes
 tag_images: ## Add tag to existing images, (default main --> branch, override with make -n tag_images NEW_IMAGE_TAG=latest).
 	crane tag $(WORKFLOW_IMAGE):$(EXISTING_IMAGE_TAG) $(NEW_IMAGE_TAG)
-	crane tag ghcr.io/$(GH_ORG)/$(GH_REPO):$(EXISTING_IMAGE_TAG) $(NEW_IMAGE_TAG)
+	crane tag ghcr.io/$(GH_ORG)/$(GH_REPO_NAME_SLUG):$(EXISTING_IMAGE_TAG) $(NEW_IMAGE_TAG)
 
 list_gcr_workflow_image_tags: ## List images in gcr.
 	gcloud container images list --repository=$(GCP_ARTIFACT_REGISTRY_PATH)                                                                                                                             │
