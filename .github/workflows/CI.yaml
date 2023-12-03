@@ -71,10 +71,18 @@ jobs:
         fi
 
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'skip-ci') }} ]] && SKIP_CI="true"
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'skip-tests') }} ]] && SKIP_TESTS="true"
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }} ]] && DEBUG="true"
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'workflow-mode-dev') }} ]] && MODE="dev"
+          if ${{ contains(github.event.pull_request.labels.*.name, 'skip-ci') }}; then
+            SKIP_CI="true"
+          fi
+          if ${{ contains(github.event.pull_request.labels.*.name, 'skip-tests') }}; then
+            SKIP_TESTS="true"
+          fi
+          if ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }}; then
+            DEBUG="true"
+          fi
+          if ${{ contains(github.event.pull_request.labels.*.name, 'workflow-mode-dev') }}; then
+            MODE="dev"
+          fi
         fi
 
         echo "DEBUG=$DEBUG"
