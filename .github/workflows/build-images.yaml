@@ -21,8 +21,8 @@ on:
       debug_enabled:
         description: "Run with tmate.io debugging enabled"
         required: true
-        type: boolean
-        default: false
+        type: string
+        default: "false"
       mode:
         description: "Container build mode ('dev' uses branch name image tags and 'prod' uses short sha.)"
         required: true
