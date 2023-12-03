@@ -58,7 +58,8 @@ jobs:
       mode: ${{ steps.set-variables.outputs.mode }}
   
     steps:
-    - id: set-variables
+    - name: Set action variables
+      id: set-variables
       run: |
         DEBUG="false"
         MODE="prod"
