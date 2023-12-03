@@ -87,6 +87,35 @@ list_gcr_workflow_image_tags: ## List images in gcr.
 	gcloud container images list --repository=$(GCP_ARTIFACT_REGISTRY_PATH)                                                                                                                             │
 	gcloud container images list-tags $(WORKFLOW_IMAGE)
 
+#-------------------
+# workflow execution
+#-------------------
+
+run_help: ## Print hydra help for execute script.
+	poetry run dna --help
+
+# Capture additional arguments to pass to hydra-zen cli
+# converting them to make do-nothing targets
+# supports passing hydra overrides as ARGS, e.g.:
+#   make run HYDRA_OVERRIDES="entity_config.inputs.logistic_regression.max_iter=2000 execution_context=local_shell"
+HYDRA_OVERRIDES = $(filter-out $@,$(MAKECMDGOALS))
+%:
+	@:
+
+.PHONY: run
+run: ## Run registered workflow in remote dev mode. (default)
+	poetry run dna $(HYDRA_OVERRIDES)
+
+run_prod: ## Run registered workflow in remote prod mode. (ci default)
+	poetry run dna execution_context=remote_prod $(HYDRA_OVERRIDES)
+
+run_local_cluster: ## Run registered workflow in local cluster dev mode.
+	poetry run dna execution_context=local_cluster_dev $(HYDRA_OVERRIDES)
+
+run_local: ## Run registered workflow in local shell mode. (only with all python tasks)
+	poetry run dna execution_context=local_shell $(HYDRA_OVERRIDES)
+
+
 #-------------
 # system / dev
 #-------------
