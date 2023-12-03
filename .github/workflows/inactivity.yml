@@ -1,4 +1,4 @@
-name: inactivity
+name: Inactivity
 on:
     schedule:
         - cron: "30 1 * * *"
