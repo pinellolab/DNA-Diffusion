@@ -42,15 +42,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  skip-duplicate-runs:
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-    - id: skip_check
-      uses: fkirc/skip-duplicate-actions@v5
-      with:
-        skip_after_successful_duplicate: 'true'
+  # skip-duplicate-runs:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     should_skip: ${{ steps.skip_check.outputs.should_skip }}
+  #   steps:
+  #   - id: skip_check
+  #     uses: fkirc/skip-duplicate-actions@v5
+  #     with:
+  #       skip_after_successful_duplicate: 'true'
 
   set-debug:
     name: set-debug-flag
@@ -68,7 +68,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: [set-debug, skip-duplicate-runs]
+    # needs: [set-debug, skip-duplicate-runs]
+    needs: [set-debug]
     if: ${{ needs.skip-duplicate-runs.outputs.should_skip != 'true' }}
     strategy:
       matrix:
