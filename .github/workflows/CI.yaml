@@ -71,11 +71,16 @@ jobs:
         fi
 
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'skip-ci') }} == "true" ]] && SKIP_CI="true"
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'skip-tests') }} == "true" ]] && SKIP_TESTS="true"
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }} == "true" ]] && DEBUG="true"
-          [[ ${{ contains(github.event.pull_request.labels.*.name, 'workflow-mode-dev') }} == "true" ]] && MODE="dev"
+          [[ ${{ contains(github.event.pull_request.labels.*.name, 'skip-ci') }} ]] && SKIP_CI="true"
+          [[ ${{ contains(github.event.pull_request.labels.*.name, 'skip-tests') }} ]] && SKIP_TESTS="true"
+          [[ ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }} ]] && DEBUG="true"
+          [[ ${{ contains(github.event.pull_request.labels.*.name, 'workflow-mode-dev') }} ]] && MODE="dev"
         fi
+
+        echo "DEBUG=$DEBUG"
+        echo "MODE=$MODE"
+        echo "SKIP_CI=$SKIP_CI"
+        echo "SKIP_TESTS=$SKIP_TESTS"
 
         echo "DEBUG=$DEBUG" >> $GITHUB_ENV
         echo "MODE=$MODE" >> $GITHUB_ENV
