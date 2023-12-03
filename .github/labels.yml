@@ -73,3 +73,15 @@
 - name: execute-workflow
   description: Control workflow execution on PRs
   color: 74da90
+- name: skip-ci
+  description: Skip CI workflow
+  color: 35539d
+- name: skip-tests
+  description: Skip Tests in CI workflow
+  color: 1dd225
+- name: actions-debug
+  description: Enable debugging in actions execution
+  color: 923411
+- name: workflow-mode-dev
+  description: Execute workflows in dev mode (branch name for container image tags)
+  color: 2085aa
