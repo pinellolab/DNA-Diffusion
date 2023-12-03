@@ -97,10 +97,10 @@ jobs:
         echo "SKIP_CI=$SKIP_CI"
         echo "SKIP_TESTS=$SKIP_TESTS"
 
-        echo "DEBUG=$DEBUG" >> $GITHUB_ENV
-        echo "MODE=$MODE" >> $GITHUB_ENV
-        echo "SKIP_CI=$SKIP_CI" >> $GITHUB_ENV
-        echo "SKIP_TESTS=$SKIP_TESTS" >> $GITHUB_ENV
+        echo "DEBUG=$DEBUG" >> $GITHUB_OUTPUT
+        echo "MODE=$MODE" >> $GITHUB_OUTPUT
+        echo "SKIP_CI=$SKIP_CI" >> $GITHUB_OUTPUT
+        echo "SKIP_TESTS=$SKIP_TESTS" >> $GITHUB_OUTPUT
 
 
   test:
