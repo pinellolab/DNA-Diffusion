@@ -58,38 +58,31 @@ jobs:
       mode: ${{ steps.set-variables.outputs.mode }}
   
     steps:
-    - name: Set action variables
-      id: set-variables
+    - id: set-variables
       run: |
+        DEBUG="false"
+        MODE="prod"
+        SKIP_CI="false"
+        SKIP_TESTS="false"
+
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
           DEBUG="${{ github.event.inputs.debug_enabled }}"
           MODE="${{ github.event.inputs.workflow_execution_mode }}"
-        elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+        fi
+
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
           if ${{ contains(github.event.pull_request.labels.*.name, 'skip-ci') }}; then
             SKIP_CI="true"
-          else
-            SKIP_CI="false"
           fi
           if ${{ contains(github.event.pull_request.labels.*.name, 'skip-tests') }}; then
             SKIP_TESTS="true"
-          else
-            SKIP_TESTS="false"
           fi
           if ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }}; then
             DEBUG="true"
-          else
-            DEBUG="false"
           fi
           if ${{ contains(github.event.pull_request.labels.*.name, 'workflow-mode-dev') }}; then
             MODE="dev"
-          else
-            MODE="prod"
           fi
-        else
-          DEBUG="false"
-          MODE="prod"
-          SKIP_CI="false"
-          SKIP_TESTS="false"
         fi
 
         echo "DEBUG=$DEBUG"
