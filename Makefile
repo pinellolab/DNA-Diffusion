@@ -106,6 +106,9 @@ HYDRA_OVERRIDES = $(filter-out $@,$(MAKECMDGOALS))
 run: ## Run registered workflow in remote dev mode. (default)
 	poetry run dna $(HYDRA_OVERRIDES)
 
+run_dev: ## Run registered workflow in remote dev mode.
+	poetry run dna execution_context=remote_dev $(HYDRA_OVERRIDES)
+
 run_prod: ## Run registered workflow in remote prod mode. (ci default)
 	poetry run dna execution_context=remote_prod $(HYDRA_OVERRIDES)
 
