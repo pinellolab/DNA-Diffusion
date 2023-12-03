@@ -1,0 +1,71 @@
+name: Docs
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: Docs-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  set-debug:
+    name: Set debug flag
+    runs-on: ubuntu-latest
+    outputs:
+      debug: ${{ steps.set-debug.outputs.debug }}
+    steps:
+    - id: set-debug
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.event_name }}" == "workflow_call" ]]; then
+          echo "DEBUG=${{ github.event.inputs.debug_enabled }}" >> $GITHUB_ENV
+        else
+          echo "DEBUG=false" >> $GITHUB_ENV
+        fi
+
+  build:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    needs: set-debug
+    strategy:
+      matrix:
+        python_version: ['3.10']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup environment
+        uses: ./.github/actions/setup_environment
+        with:
+          python_version: ${{ matrix.python_version }}
+          debug_enabled: ${{ needs.set-debug.outputs.debug }}
+      - name: Build
+        run: make docs-build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./site
+
+  deploy:
+    name: Deploy documentation
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'github-pages' || 'github-pages-dev' }}
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
