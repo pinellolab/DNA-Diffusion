@@ -67,3 +67,9 @@
 - name: work-in-progress
   description: Work in progress that should not be auto-merged
   color: ffffff
+- name: build-images
+  description: Control image build on PRs
+  color: fef2c0
+- name: execute-workflow
+  description: Control workflow execution on PRs
+  color: 74da90
