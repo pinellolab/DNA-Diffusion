@@ -213,3 +213,19 @@ approve_prs: ## Approve github pull requests from bots: PR_ENTRIES="2-5 10 12-18
 			@gh pr review $$entry --approve; \
 		fi; \
 	done
+
+get_headless_source_branch: ## Get source branch from detached head as in PR CI checkouts.
+ifndef PR
+	$(error PR is not set. Usage: make get_headless_source_branch PR=<PR_NUMBER>)
+endif
+
+	# current_branch_or_sha=$$(git rev-parse --abbrev-ref HEAD)
+	current_branch_or_sha=$$(git symbolic-ref --short HEAD || git rev-parse HEAD)
+	gh pr checkout --detach $(PR)
+
+	git fetch origin +refs/heads/*:refs/remotes/origin/*
+	source_commit_sha=$$(git log -1 --pretty=%B | grep -oE 'Merge [0-9a-f]{40}' | awk '{print $$2}')
+	branch_name=$$(git branch -r --contains $$source_commit_sha | grep -v HEAD | sed -n 's|origin/||p' | xargs)
+	@echo "Branch Name: $$branch_name"
+
+	git checkout $$current_branch_or_sha
