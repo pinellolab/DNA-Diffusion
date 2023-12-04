@@ -8,8 +8,9 @@ RUN apt-get update -yq && \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR ${HOME}
 USER ${MAMBA_USER}
+ENV HOME=${HOME}
+WORKDIR ${HOME}
 
 COPY --chown=${MAMBA_USER}:${MAMBA_USER} . ${HOME}
 
@@ -21,9 +22,9 @@ RUN micromamba install \
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ENV ENV_NAME=base
+ENV PATH="${PATH}:${HOME}/.local/bin"
 
 # /opt/conda/bin/condax
-RUN condax ensure-path
 RUN condax install \
     --channel=conda-forge \
     --link-conflict=overwrite \
