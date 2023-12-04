@@ -66,8 +66,8 @@ jobs:
         SKIP_TESTS="false"
 
         if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          DEBUG="${{ github.event.inputs.debug_enabled }}"
-          MODE="${{ github.event.inputs.workflow_execution_mode }}"
+          DEBUG="${{ inputs.debug_enabled }}"
+          MODE="${{ inputs.workflow_execution_mode }}"
         fi
 
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -97,7 +97,7 @@ jobs:
 
   config-workflows:
     needs: [set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_execute_workflow)) }}
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_execute_workflow)) }}
     runs-on: ubuntu-latest
     outputs:
       config-path: ${{ steps.config-output.outputs.path }}
@@ -180,7 +180,7 @@ jobs:
 
   build-images:
     needs: [set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_build_images)) }}
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_build_images)) }}
     uses: ./.github/workflows/build-images.yaml
     secrets:
       GCP_ARTIFACT_REGISTRY_PATH: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
@@ -190,7 +190,7 @@ jobs:
 
   execute-workflow:
     needs: [config-workflows, build-images, set-variables]
-    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_execute_workflow)) }}
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_execute_workflow)) }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -220,7 +220,7 @@ jobs:
         path: .flyte/
 
     - name: Setup tmate debug session
-      if: ${{ github.event.inputs.debug_enabled == 'true' }}
+      if: ${{ inputs.debug_enabled == 'true' }}
       uses: mxschmitt/action-tmate@v3
   
     - name: Execute workflow
