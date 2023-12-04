@@ -4665,6 +4665,25 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "plumbum"
+version = "1.8.2"
+description = "Plumbum: shell combinators library"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "plumbum-1.8.2-py3-none-any.whl", hash = "sha256:3ad9e5f56c6ec98f6f7988f7ea8b52159662ea9e915868d369dbccbfca0e367e"},
+    {file = "plumbum-1.8.2.tar.gz", hash = "sha256:9e6dc032f4af952665f32f3206567bc23b7858b1413611afe603a3f8ad9bfd75"},
+]
+
+[package.dependencies]
+pywin32 = {version = "*", markers = "platform_system == \"Windows\" and platform_python_implementation != \"PyPy\""}
+
+[package.extras]
+dev = ["paramiko", "psutil", "pytest (>=6.0)", "pytest-cov", "pytest-mock", "pytest-timeout"]
+docs = ["sphinx (>=4.0.0)", "sphinx-rtd-theme (>=1.0.0)"]
+ssh = ["paramiko"]
+
+[[package]]
 name = "poethepoet"
 version = "0.24.4"
 description = "A task runner that works well with poetry."
@@ -7145,9 +7164,9 @@ dev = ["black", "jupyter_contrib_nbextensions", "jupytext", "mkdocs-jupyter", "m
 docs = ["jupyter_contrib_nbextensions", "jupytext", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings", "notebook"]
 lint = ["black", "mypy", "pyright", "ruff"]
 test = ["pytest", "pytest-asyncio", "pytest-cov", "xdoctest"]
-workflows = ["dataclasses-json", "flytekit", "fsspec", "hydra-joblib-launcher", "hydra-zen", "mashumaro", "pyperclip", "python-dotenv", "rich", "scikit-learn"]
+workflows = ["dataclasses-json", "flytekit", "fsspec", "hydra-joblib-launcher", "hydra-zen", "mashumaro", "plumbum", "pyperclip", "python-dotenv", "rich", "scikit-learn"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "b7c3944bf108affbb3c3a3475baf8766f97af69b10d2d9bd1cf873cd69aa7111"
+content-hash = "04461dc1e2a3ab4bf263ff187b2449f1d176ebe9724f7fe5658c77fea3c24ab5"
