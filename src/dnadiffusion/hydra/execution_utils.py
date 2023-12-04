@@ -178,7 +178,7 @@ def git_info_to_workflow_version(
     Retrieves git information for workflow versioning.
     """
     try:
-        git_branch = os.getenv("CI_GITHUB_HEAD_REF") or (
+        git_branch = (
             subprocess.check_output(
                 ["git", "rev-parse", "--abbrev-ref", "HEAD"]
             )
