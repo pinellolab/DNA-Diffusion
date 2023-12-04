@@ -179,7 +179,7 @@ jobs:
         verbose: true
 
   build-images:
-    needs: [test, set-variables]
+    needs: [set-variables]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_build_images)) }}
     uses: ./.github/workflows/build-images.yaml
     secrets:
