@@ -9,7 +9,7 @@ RUN apt-get update -yq && \
     && rm -rf /var/lib/apt/lists/*
 
 USER ${MAMBA_USER}
-ENV HOME=${HOME}
+ENV HOME="/home/${MAMBA_USER}"
 WORKDIR ${HOME}
 
 COPY --chown=${MAMBA_USER}:${MAMBA_USER} . ${HOME}
