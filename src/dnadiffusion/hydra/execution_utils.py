@@ -4,6 +4,7 @@ import logging
 import os
 import pkgutil
 import queue
+import re
 import secrets
 import subprocess
 import sys
@@ -185,6 +186,61 @@ def git_info_to_workflow_version(
             .strip()
             .decode()
         )
+
+        # If the current branch is detached (as in GitHub PRs), try to extract
+        # the source commit
+        if git_branch.lower() == "head":
+            subprocess.run(
+                [
+                    "git",
+                    "fetch",
+                    "origin",
+                    "+refs/heads/*:refs/remotes/origin/*",
+                ],
+                check=True,
+            )
+
+            commit_message = subprocess.check_output(
+                ["git", "log", "-1", "--pretty=%B"], text=True
+            )
+
+            match = re.search(r"Merge ([0-9a-f]{40}) into", commit_message)
+            if match:
+                source_commit_sha = match.group(1)
+
+                git_branch_list = (
+                    subprocess.check_output(
+                        [
+                            "git",
+                            "branch",
+                            "-r",
+                            "--contains",
+                            source_commit_sha,
+                        ],
+                        text=True,
+                    )
+                    .strip()
+                    .split("\n")
+                )
+
+                git_branch = (
+                    next(
+                        (
+                            branch
+                            for branch in git_branch_list
+                            if "HEAD" not in branch
+                        ),
+                        "",
+                    )
+                    .replace("origin/", "")
+                    .strip()
+                )
+            else:
+                git_branch_from_detached_head_failure = (
+                    "Unable to extract source commit SHA from commit message."
+                )
+                raise ValueError(git_branch_from_detached_head_failure)
+
         git_short_sha = (
             subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
             .strip()
