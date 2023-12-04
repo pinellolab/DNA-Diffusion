@@ -92,6 +92,8 @@ jobs:
           -p containerFilePath1="containers/pkg.Dockerfile" \
           -p imageName2="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-gpu" \
           -p containerFilePath2="containers/gpu.Dockerfile" \
+          -p imageName3="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-conda" \
+          -p containerFilePath3="containers/conda.Dockerfile" \
           -p appName="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}" \
           -p branch="${CI_GITHUB_REF_NAME}" \
           -p shortSha="${CI_GITHUB_SHA_SHORT}" \
