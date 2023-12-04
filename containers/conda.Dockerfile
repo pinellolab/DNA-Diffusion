@@ -18,24 +18,25 @@ RUN micromamba install \
     --channel=conda-forge \
     --name=base \
     condax
-RUN /opt/conda/bin/condax install \
+
+ARG MAMBA_DOCKERFILE_ACTIVATE=1
+ENV ENV_NAME=base
+
+# /opt/conda/bin/condax
+RUN condax ensure-path
+RUN condax install \
     --channel=conda-forge \
     --link-conflict=overwrite \
     conda-lock
 
-RUN echo "PATH=${PATH}"
-RUN echo "HOME=${HOME}"
-ENV PATH="${PATH}:${HOME}/.local/bin"
-RUN echo "PATH=${PATH}"
-
-RUN ${HOME}/.condax/conda-lock/bin/conda-lock install \
+# ${HOME}/.condax/conda-lock/bin/conda-lock
+RUN conda-lock install \
     --micromamba \
     --name=dnadiffusion \
     --extras=workflows \
     environments/conda/conda-lock.yml
 
 ENV ENV_NAME=dnadiffusion
-ARG MAMBA_DOCKERFILE_ACTIVATE=1
 # If the environment is not activated,
 # it is also possible to use `micromamba run`
 # RUN micromamba run -n dnadiffusion \
