@@ -18,7 +18,7 @@ RUN micromamba install \
     --channel=conda-forge \
     --name=base \
     condax
-RUN condax install \
+RUN /opt/conda/bin/condax install \
     --channel=conda-forge \
     --link-conflict=overwrite \
     conda-lock
