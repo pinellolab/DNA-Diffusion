@@ -289,6 +289,7 @@ virtual_package_spec = "environments/conda/virtual-packages.yml"
 # not available in conda channels
 hydra-zen = {source = "pypi"}
 hydra-joblib-launcher = {source = "pypi"}
+pip = ">=23.2"
 
 [tool.poetry.scripts]
 dna = "dnadiffusion.hydra:main"
