@@ -72,7 +72,7 @@ jobs:
         MODE="${{ inputs.mode }}"
         echo "MODE=${MODE}" >> $GITHUB_ENV
     - name: Setup tmate debug session
-      if: ${{ github.event.inputs.debug_enabled == 'true' }}
+      if: ${{ inputs.debug_enabled == 'true' }}
       uses: mxschmitt/action-tmate@v3
     - name: build
       run: |

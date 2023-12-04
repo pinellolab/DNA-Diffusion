@@ -32,7 +32,7 @@ jobs:
     - id: set-debug
       run: |
         if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.event_name }}" == "workflow_call" ]]; then
-          echo "DEBUG=${{ github.event.inputs.debug_enabled }}" >> $GITHUB_ENV
+          echo "DEBUG=${{ inputs.debug_enabled }}" >> $GITHUB_ENV
         else
           echo "DEBUG=false" >> $GITHUB_ENV
         fi
