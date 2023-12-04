@@ -176,7 +176,30 @@ def git_info_to_workflow_version(
     logger: logging.Logger,
 ) -> Tuple[str, str, str]:
     """
-    Retrieves git information for workflow versioning.
+    Retrieves git information for workflow versioning using plumbum.
+
+    This function extracts repository name, current branch name, and short SHA.
+    It handles the case where the Git repository is in a detached HEAD state,
+    common in CI environments like GitHub Actions for pull requests.
+
+    Args:
+        logger (logging.Logger): Logger object for logging messages.
+
+    Returns:
+        Tuple[str, str, str]: A tuple containing the repository name,
+                               branch name, and short SHA commit.
+
+    Raises:
+        ValueError: If unable to extract source commit SHA from commit message.
+        ProcessExecutionError: If a git command fails.
+
+    Example:
+        >>> import logging
+        >>> logger = logging.getLogger()
+        >>> # Assuming this test is run in a Git repository
+        >>> repo_name, branch, short_sha = git_info_to_workflow_version(logger)
+        >>> print(isinstance(repo_name, str), isinstance(branch, str), isinstance(short_sha, str))
+        True True True
     """
     try:
         git_branch = (
