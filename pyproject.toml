@@ -153,10 +153,13 @@ xdoctest = { version = ">=1.1.1", optional = true }
 cmd = """
   conda-lock \
   --conda mamba \
+  --kind lock \
+  --kind env \
   --no-dev-dependencies \
   --filter-categories \
   --category workflows \
   --virtual-package-spec environments/conda/virtual-packages.yml \
+  --filename-template "environments/conda/conda-{platform}.lock" \
   --lockfile environments/conda/conda-lock.yml \
   -f pyproject.toml
 """
