@@ -7381,13 +7381,13 @@ package:
     statsd: '>=3.0.0,<4.0.0'
     typing-extensions: '*'
     urllib3: '>=1.22,<2.0.0'
-  url: git+https://github.com/cameronraysmith/flytekit@a34ab93532f32a5c28ff65f72a7a7212e986e77c
+  url: git+https://github.com/cameronraysmith/flytekit@5c6802c97388c40d0431e4fc308e2ed651528952
   hash:
-    sha256: a34ab93532f32a5c28ff65f72a7a7212e986e77c
+    sha256: 5c6802c97388c40d0431e4fc308e2ed651528952
   category: main
   source:
     type: url
-    url: git+https://github.com/cameronraysmith/flytekit@a34ab93532f32a5c28ff65f72a7a7212e986e77c
+    url: git+https://github.com/cameronraysmith/flytekit@5c6802c97388c40d0431e4fc308e2ed651528952
   optional: false
 - name: frozenlist
   version: 1.4.0
