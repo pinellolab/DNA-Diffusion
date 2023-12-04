@@ -23,9 +23,12 @@ RUN /opt/conda/bin/condax install \
     --link-conflict=overwrite \
     conda-lock
 
+RUN echo "PATH=${PATH}"
+RUN echo "HOME=${HOME}"
 ENV PATH="${PATH}:${HOME}/.local/bin"
+RUN echo "PATH=${PATH}"
 
-RUN conda-lock install \
+RUN ${HOME}/.condax/conda-lock/bin/conda-lock install \
     --micromamba \
     --name=dnadiffusion \
     --extras=workflows \
