@@ -66,11 +66,6 @@ jobs:
       uses: rlespinasse/github-slug-action@v4
       with:
         prefix: CI_
-    - name: Set Mode
-      run: |
-        echo "MODE=${{ inputs.mode }}"
-        MODE="${{ inputs.mode }}"
-        echo "MODE=${MODE}" >> $GITHUB_ENV
     - name: Setup tmate debug session
       if: ${{ inputs.debug_enabled == 'true' }}
       uses: mxschmitt/action-tmate@v3
