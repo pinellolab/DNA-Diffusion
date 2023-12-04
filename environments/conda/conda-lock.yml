@@ -15,7 +15,7 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: f9eefec64f621ab1d970c83d052e502a1d7c4a6bb11d28a92306c757ead4b290
+    linux-64: 42e9b88fc91cb23ca1e33ba8aaac203c8c10f75a41a90f7be3097ab61e63c87f
   channels:
   - url: pytorch
     used_env_vars: []
@@ -5006,6 +5006,20 @@ package:
     sha256: 202cc5b4c60e32096b67791f822699bf91670584ac3db7e86ebb1b6a4c584218
   category: main
   optional: false
+- name: pip
+  version: 23.3.1
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.7'
+    setuptools: ''
+    wheel: ''
+  url: https://conda.anaconda.org/conda-forge/noarch/pip-23.3.1-pyhd8ed1ab_0.conda
+  hash:
+    md5: 2400c0b86889f43aa52067161e1fb108
+    sha256: 435829a03e1c6009f013f29bb83de8b876c388820bf8cf69a7baeec25f6a3563
+  category: main
+  optional: false
 - name: pixman
   version: 0.42.2
   manager: conda
@@ -6618,6 +6632,18 @@ package:
   hash:
     md5: 674f6b42484dbfd11906c3b0a93585e9
     sha256: d46fe5f94627cc2cdbed1f3cbadd9693a7ff9550fce2b892ed4d334de841b6ce
+  category: main
+  optional: false
+- name: wheel
+  version: 0.42.0
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.7'
+  url: https://conda.anaconda.org/conda-forge/noarch/wheel-0.42.0-pyhd8ed1ab_0.conda
+  hash:
+    md5: 1cdea58981c5cbc17b51973bcaddcea7
+    sha256: 80be0ccc815ce22f80c141013302839b0ed938a2edb50b846cf48d8a8c1cfa01
   category: main
   optional: false
 - name: xcb-util
