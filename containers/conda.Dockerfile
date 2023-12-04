@@ -1,4 +1,3 @@
-# Use the specified micromamba image as the base
 FROM mambaorg/micromamba:1.5.3-jammy-cuda-12.3.0
 
 USER root
@@ -9,28 +8,39 @@ RUN apt-get update -yq && \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-
-WORKDIR /home/mambauser
+WORKDIR ${HOME}
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
-USER $MAMBA_USER
-RUN echo $HOME
+USER ${MAMBA_USER}
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER . /home/mambauser
+COPY --chown=${MAMBA_USER}:${MAMBA_USER} . ${HOME}
 
-# Create the Conda environment using micromamba
-RUN micromamba create \
+RUN micromamba install \
     --yes \
-    --name=dnadiffusion \
-    --category=main \
-    --category=workflows \
-    --file environment/conda/conda-lock.yml && \
-    micromamba clean --all --yes
+    --channel=conda-forge \
+    --name=base \
+    condax
+RUN condax install \
+    --channel=conda-forge \
+    --link-conflict=overwrite \
+    conda-lock
 
+ENV PATH="${PATH}:${HOME}/.local/bin"
+
+RUN conda-lock install \
+    --micromamba \
+    --name=dnadiffusion \
+    --extras=workflows \
+    environments/conda/conda-lock.yml
+
+ENV ENV_NAME=dnadiffusion
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
+# If the environment is not activated,
+# it is also possible to use `micromamba run`
+# RUN micromamba run -n dnadiffusion \
+#     pip install --no-deps -e .
 RUN pip install --no-deps -e .
 
-# Set additional ARG and ENV as needed
 ARG tag
-ENV FLYTE_INTERNAL_IMAGE $tag
+ENV FLYTE_INTERNAL_IMAGE ${tag}
