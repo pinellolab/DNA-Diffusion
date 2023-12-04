@@ -15,7 +15,7 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: 584ea69c73e907d123fd7ebfe90a4ec4e992e70578678d79b63c329363b17bae
+    linux-64: f9eefec64f621ab1d970c83d052e502a1d7c4a6bb11d28a92306c757ead4b290
   channels:
   - url: pytorch
     used_env_vars: []
@@ -1839,16 +1839,16 @@ package:
     matplotlib-inline: ''
     pexpect: '>4.3'
     pickleshare: ''
-    prompt-toolkit: '>=3.0.30,<3.1.0,!=3.0.37'
+    prompt-toolkit: '>=3.0.41,<3.1.0'
     pygments: '>=2.4.0'
     python: '>=3.9'
     stack_data: ''
     traitlets: '>=5'
     typing_extensions: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/ipython-8.18.1-pyh31011fe_1.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/ipython-8.18.1-pyh31011fe_2.conda
   hash:
-    md5: ac2f9c2e10c2e90e8d135cef51f9753a
-    sha256: 67490e640faa372d663a5c5cd2d61f417cce22a019a4de82a9e5ddb1cf2ee181
+    md5: 5e23d20fc6e33061c063220146579990
+    sha256: c956b70ed41b7f61a780a7e584f03f68e7e5073c8c138960bfbc5e705d9124b1
   category: main
   optional: false
 - name: isoduration
@@ -2100,7 +2100,7 @@ package:
   category: main
   optional: false
 - name: jupyter_server
-  version: 2.11.1
+  version: 2.11.2
   manager: conda
   platform: linux-64
   dependencies:
@@ -2123,10 +2123,10 @@ package:
     tornado: '>=6.2.0'
     traitlets: '>=5.6.0'
     websocket-client: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/jupyter_server-2.11.1-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/jupyter_server-2.11.2-pyhd8ed1ab_0.conda
   hash:
-    md5: 0699b715659c026f7f81c27d0e744205
-    sha256: 605825c0e2d5af7935b37319b9a46ff39e081e7a0f4dc973f0dd583f41c69ce5
+    md5: c831341804aecf5abcdbb348be301f92
+    sha256: 9e56c09fa7f4b95aab30b51008416d041c53cfd94ef3a4abc339d1eabb015df2
   category: main
   optional: false
 - name: jupyter_server_terminals
@@ -3683,7 +3683,7 @@ package:
   category: main
   optional: false
 - name: nbconvert-core
-  version: 7.11.0
+  version: 7.12.0
   manager: conda
   platform: linux-64
   dependencies:
@@ -3704,10 +3704,10 @@ package:
     python: '>=3.8'
     tinycss2: ''
     traitlets: '>=5.0'
-  url: https://conda.anaconda.org/conda-forge/noarch/nbconvert-core-7.11.0-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/nbconvert-core-7.12.0-pyhd8ed1ab_0.conda
   hash:
-    md5: d59e0cb1ca993f8f910cfdf393232acf
-    sha256: 81732e083c4c85a52248e20ff0e40a14b0b49db9cc7ce414e8aa7d6f8980dad0
+    md5: 4d67c68fd0d130091ada039bc2d81b33
+    sha256: 04c3ac88701d98d58139569e4899c3254bf99908179a898cc3dcadd8c0ef44b4
   category: main
   optional: false
 - name: nbformat
@@ -5032,16 +5032,15 @@ package:
   category: main
   optional: false
 - name: platformdirs
-  version: 4.0.0
+  version: 4.1.0
   manager: conda
   platform: linux-64
   dependencies:
-    python: '>=3.7'
-    typing_extensions: '>=4.7.1'
-  url: https://conda.anaconda.org/conda-forge/noarch/platformdirs-4.0.0-pyhd8ed1ab_0.conda
+    python: '>=3.8'
+  url: https://conda.anaconda.org/conda-forge/noarch/platformdirs-4.1.0-pyhd8ed1ab_0.conda
   hash:
-    md5: 6bb4ee32cd435deaeac72776c001e7ac
-    sha256: 67381d3f7cadca7df7699238e0dcce680ad20d7fd28804bab48611fecb084937
+    md5: 45a5065664da0d1dfa8f8cd2eaf05ab9
+    sha256: 9e4ff17ce802159ed31344eb913eaa877688226765b77947b102b42255a53853
   category: main
   optional: false
 - name: plumbum
