@@ -1,11 +1,26 @@
-FROM condaforge/mambaforge:23.1.0-4
+FROM mambaorg/micromamba:1.5.3-jammy-cuda-12.3.0
 
-ARG CONDA_OVERRIDE_CUDA=12.1
-ENV NVIDIA_VISIBLE_DEVICES=all
-ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib64
+WORKDIR /root
+ENV HOME /root
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
 
-WORKDIR /DNA-Diffusion
-COPY . .
+RUN apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN mamba env update -n base -f environments/conda/conda-lock.yml && \
-    pip install --no-deps -e .
+COPY . /root
+
+RUN micromamba create \
+    --name=dnadiffusion \
+    --category=main \
+    --category=workflows \
+    --file environment/conda/conda-lock.yml
+RUN conda activate dnadiffusion
+RUN pip install --no-deps -e .
+
+# Set additional ARG and ENV as needed
+ARG tag
+ENV FLYTE_INTERNAL_IMAGE $tag
