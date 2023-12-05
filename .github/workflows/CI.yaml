@@ -101,9 +101,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       config-path: ${{ steps.config-output.outputs.path }}
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
-      cancel-in-progress: true
       
     steps:
     - name: Checkout code
@@ -137,7 +134,7 @@ jobs:
     needs: [set-variables, config-workflows]
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }} 
     concurrency:
-      group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
+      group: test-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
       cancel-in-progress: true
     strategy:
       matrix:
@@ -189,7 +186,7 @@ jobs:
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_build_images)) }}
     uses: ./.github/workflows/build-images.yaml
     concurrency:
-      group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
+      group: bi-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
       cancel-in-progress: true
     secrets:
       GCP_ARTIFACT_REGISTRY_PATH: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
@@ -202,7 +199,7 @@ jobs:
     if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_execute_workflow)) }}
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
+      group: ef-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
       cancel-in-progress: true
     strategy:
       matrix:
