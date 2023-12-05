@@ -25,6 +25,16 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "ssenan",
+      "name": "Simon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8073222?v=4",
+      "profile": "https://github.com/ssenan",
+      "contributions": [
+        "ideas",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
