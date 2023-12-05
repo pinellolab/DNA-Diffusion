@@ -84,7 +84,7 @@ tag_images: ## Add tag to existing images, (default main --> branch, override wi
 	crane tag ghcr.io/$(GH_ORG)/$(GH_REPO_NAME_SLUG):$(EXISTING_IMAGE_TAG) $(NEW_IMAGE_TAG)
 
 list_gcr_workflow_image_tags: ## List images in gcr.
-	gcloud container images list --repository=$(GCP_ARTIFACT_REGISTRY_PATH)                                                                                                                             │
+	gcloud container images list --repository=$(GCP_ARTIFACT_REGISTRY_PATH)
 	gcloud container images list-tags $(WORKFLOW_IMAGE)
 
 #-------------------
@@ -214,18 +214,30 @@ approve_prs: ## Approve github pull requests from bots: PR_ENTRIES="2-5 10 12-18
 		fi; \
 	done
 
-get_headless_source_branch: ## Get source branch from detached head as in PR CI checkouts.
+CURRENT_BRANCH_OR_SHA = $(shell git symbolic-ref --short HEAD 2>/dev/null || git rev-parse HEAD)
+
+get_pr_source_branch: ## Get source branch from detached head as in PR CI checkouts.
 ifndef PR
-	$(error PR is not set. Usage: make get_headless_source_branch PR=<PR_NUMBER>)
+	$(error PR is not set. Usage: make get_pr_source_branch PR=<PR_NUMBER>)
 endif
 
-	# current_branch_or_sha=$$(git rev-parse --abbrev-ref HEAD)
-	current_branch_or_sha=$$(git symbolic-ref --short HEAD || git rev-parse HEAD)
-	gh pr checkout --detach $(PR)
+	@echo "Current Branch or SHA: $(CURRENT_BRANCH_OR_SHA)"
+
+	# The command
+	# 	gh pr checkout --detach $(PR)
+	# checks out the PR source branch commit which is NOT equivalent to checking
+	# out the staged merge commit. The latter is what occurs in PR CI checkouts
+	# which is available at `refs/pull/$(PR)/merge` and we store in $(PR)-merge
+	git fetch --force origin pull/$(PR)/merge:$(PR)-merge
+	git checkout $(PR)-merge
 
 	git fetch origin +refs/heads/*:refs/remotes/origin/*
-	source_commit_sha=$$(git log -1 --pretty=%B | grep -oE 'Merge [0-9a-f]{40}' | awk '{print $$2}')
-	branch_name=$$(git branch -r --contains $$source_commit_sha | grep -v HEAD | sed -n 's|origin/||p' | xargs)
-	@echo "Branch Name: $$branch_name"
+	PAGER=cat git log -1
+	@echo "\nExtracted Source Commit SHA:"
+	git log -1 --pretty=%B | grep -oE 'Merge [0-9a-f]{40}' | awk '{print $$2}'
+	@echo "\nExtracted Source Branch Name:"
+	source_commit_sha=$$(git log -1 --pretty=%B | grep -oE 'Merge [0-9a-f]{40}' | awk '{print $$2}') && \
+	git branch -r --contains $$source_commit_sha | grep -v HEAD | sed -n 's|origin/||p' | xargs
 
-	git checkout $$current_branch_or_sha
+	@echo "\nReturning to Branch or SHA: $(CURRENT_BRANCH_OR_SHA)"
+	git checkout $(CURRENT_BRANCH_OR_SHA)
