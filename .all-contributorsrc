@@ -16,6 +16,15 @@
         "ideas",
         "code"
       ]
+    },
+    {
+      "login": "lucapinello",
+      "name": "Luca Pinello",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1081322?v=4",
+      "profile": "http://pinellolab.org",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
