@@ -2258,23 +2258,13 @@ numpy = ">=1.7"
 pandas = ">=0.15"
 
 [[package]]
-name = "htseq"
+name = "HTSeq"
 version = "2.0.4"
 description = "A framework to process and analyze data from high-throughput sequencing (HTS) assays"
 optional = false
 python-versions = "*"
-files = [
-    {file = "HTSeq-2.0.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ab32a9e8ff054b5faaca9be9cfbeb4b60777b53568fc05491153396cef1efdb0"},
-    {file = "HTSeq-2.0.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b7d1b2835619c63fd09c7e5d7e06d4cda8aae5b520a0f345101a28b9f25ab2e0"},
-    {file = "HTSeq-2.0.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:506ac5a7ae6d770dc2749bfb9f382469ec61f3ad2840778deeeb04325e28ca26"},
-    {file = "HTSeq-2.0.4-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:ad6abdd738d5d5230d81c69c4dd9e6341cb9d3a95872cd61e91d8bbc9c71c3a4"},
-    {file = "HTSeq-2.0.4-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e74f9d2af92a1f614e6fd51c73c61fcfb205532ac8c41f4085ae21bd9e5dea19"},
-    {file = "HTSeq-2.0.4-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:aa708e70be837293dd97bc259d86d4ae6a8b6b52af54635c6df3553e6ca42271"},
-    {file = "HTSeq-2.0.4-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ff398e8aeeadab013f7e1b36243b97d09bc0775ee54bfda8b6ebfb91c49c9c3f"},
-    {file = "HTSeq-2.0.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ab85c30ba0ffb738ecd42f8abec59f1d719662d554db73bf63ce618180e5235e"},
-    {file = "HTSeq-2.0.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dfe50aee213f9aab2051280e5ca47397a1bce98255726ffc1f9f65f7185e89d6"},
-    {file = "HTSeq-2.0.4.tar.gz", hash = "sha256:5510d855617d61efff2287af4cdc60a73e94bd735e44c15b57f189ea0634e6e0"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 numpy = "*"
@@ -2283,6 +2273,12 @@ pysam = "*"
 [package.extras]
 htseq-qa = ["matplotlib (>=1.4)"]
 test = ["matplotlib (>=1.4)", "pandas (>=1.1.0)", "pytest (>=6.2.5)", "scipy (>=1.5.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/cameronraysmith/htseq.git"
+reference = "setup-sin-numpy"
+resolved_reference = "a807fa6668ba089418c987668c27336f0598b445"
 
 [[package]]
 name = "huggingface-hub"
@@ -7169,4 +7165,4 @@ workflows = ["dataclasses-json", "flytekit", "fsspec", "hydra-joblib-launcher", 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "04461dc1e2a3ab4bf263ff187b2449f1d176ebe9724f7fe5658c77fea3c24ab5"
+content-hash = "dc9193b2beb759ca283a75774c33d9537340793deaf8e825e2095b4d7e000352"
