@@ -28,8 +28,8 @@
 - name: enhancement
   description: New feature or request
   color: a2eeef
-- name: github_actions
-  description: Pull requests that update Github_actions code
+- name: github-actions
+  description: Pull requests that update Github actions code
   color: "000000"
 - name: good first issue
   description: Good for newcomers
