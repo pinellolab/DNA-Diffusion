@@ -207,10 +207,10 @@ approve_prs: ## Approve github pull requests from bots: PR_ENTRIES="2-5 10 12-18
 			start=$${entry%-*}; \
 			end=$${entry#*-}; \
 			for pr in $$(seq $$start $$end); do \
-				@gh pr review $$pr --approve; \
+				gh pr review $$pr --approve; \
 			done; \
 		else \
-			@gh pr review $$entry --approve; \
+			gh pr review $$entry --approve; \
 		fi; \
 	done
 
