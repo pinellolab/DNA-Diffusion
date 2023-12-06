@@ -358,5 +358,5 @@ classifiers = [
 Changelog = "https://github.com/pinellolab/DNA-Diffusion/releases"
 
 [build-system]
-requires = ["poetry-core>=1.6.1"]
+requires = ["poetry-core>=1.7.1"]
 build-backend = "poetry.core.masonry.api"
