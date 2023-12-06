@@ -912,9 +912,9 @@ def preprocess_data(
     # Creating train/test/shuffle groups
     df_test = df[df["chr"] == "chr1"].reset_index(drop=True)
     df_train_shuffled = df[df["chr"] == "chr2"].reset_index(drop=True)
-    df_train = df_train = df[
-        (df["chr"] != "chr1") & (df["chr"] != "chr2")
-    ].reset_index(drop=True)
+    df_train = df[(df["chr"] != "chr1") & (df["chr"] != "chr2")].reset_index(
+        drop=True
+    )
 
     df_train_shuffled["sequence"] = df_train_shuffled["sequence"].apply(
         lambda x: "".join(random.sample(list(x), len(x)))
