@@ -45,6 +45,7 @@ RUN apt-get update -yq \
     libxmlsec1-dev \
     libffi-dev \
     liblzma-dev \
+    swig \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl https://pyenv.run | bash
