@@ -118,6 +118,38 @@ run_local_cluster: ## Run registered workflow in local cluster dev mode.
 run_local: ## Run registered workflow in local shell mode. (only with all python tasks)
 	poetry run dna execution_context=local_shell $(HYDRA_OVERRIDES)
 
+#------------------
+# local image build
+#------------------
+
+# make -n build_local_image LOCAL_CONTAINER_REGISTRY=localhost:30000 GH_REPO_NAME_SLUG=dna-diffusion
+build_local_image: ## Build local image.
+	@echo "building image: $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG):$(GIT_BRANCH)"
+	@echo
+	docker images -a --digests $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG)
+	@echo
+	docker build -t $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG):$(GIT_BRANCH) -f $(ACTIVE_DOCKERFILE) .
+	@echo
+	docker push $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG):$(GIT_BRANCH)
+	@echo
+	docker images -a --digests $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG)
+
+# Use as: make remove_local_image 
+# or: make remove_local_image GIT_BRANCH=tag-other-than-current-branch
+# or: make remove_local_image GIT_BRANCH=sha256:<image-digest>
+remove_local_image: ## Remove local image.
+	@echo "removing image: $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG):$(GIT_BRANCH)"
+	@echo
+	docker images -a --digests $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG)
+	@echo
+	# Check if GIT_BRANCH is a sha256 digest
+	if echo $(GIT_BRANCH) | grep -qE 'sha256:[0-9a-f]{64}'; then \
+	    docker rmi $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG)@$(GIT_BRANCH); \
+	else \
+	    docker rmi $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG):$(GIT_BRANCH); \
+	fi
+	@echo
+	docker images -a --digests $(LOCAL_CONTAINER_REGISTRY)/$(GH_REPO_NAME_SLUG)
 
 #-------------
 # system / dev
