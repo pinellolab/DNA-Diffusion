@@ -34,11 +34,11 @@ test-cov-xml: ## Run tests with coverage
 	poetry run pytest --cov-report=xml
 
 lint: ## Run linter
-	poetry run black .
+	poetry run ruff format .
 	poetry run ruff --fix .
 
 lint-check: ## Run linter in check mode
-	poetry run black --check .
+	poetry run ruff format --check .
 	poetry run ruff .
 
 typecheck: ## Run typechecker
