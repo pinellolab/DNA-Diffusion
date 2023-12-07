@@ -2275,9 +2275,9 @@ test = ["matplotlib (>=1.4)", "pandas (>=1.1.0)", "pytest (>=6.2.5)", "scipy (>=
 
 [package.source]
 type = "git"
-url = "https://github.com/cameronraysmith/htseq.git"
-reference = "setup-sin-numpy"
-resolved_reference = "a807fa6668ba089418c987668c27336f0598b445"
+url = "https://github.com/htseq/htseq.git"
+reference = "d312d39187362c8c9664fa8d127ee0fb24733152"
+resolved_reference = "d312d39187362c8c9664fa8d127ee0fb24733152"
 
 [[package]]
 name = "huggingface-hub"
@@ -7161,4 +7161,4 @@ workflows = ["dataclasses-json", "flytekit", "fsspec", "hydra-joblib-launcher", 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "dc9193b2beb759ca283a75774c33d9537340793deaf8e825e2095b4d7e000352"
+content-hash = "bf63030277b7f842217350a2cf5bd757233b95af589ea335aced6886d396d47e"
