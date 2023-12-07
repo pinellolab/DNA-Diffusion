@@ -16,6 +16,7 @@ RUN apt-get update -q && \
     apt-get install -yq \
     build-essential \
     zlib1g-dev \
+    swig \
     curl \
     git \
     make \
