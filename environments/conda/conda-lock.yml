@@ -1255,11 +1255,13 @@ package:
   manager: conda
   platform: linux-64
   dependencies:
-    python: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/frozendict-2.3.10-pyhaf6a467_2.conda
+    libgcc-ng: '>=12'
+    python: '>=3.10,<3.11.0a0'
+    python_abi: 3.10.*
+  url: https://conda.anaconda.org/conda-forge/linux-64/frozendict-2.3.10-py310h2372a71_3.conda
   hash:
-    md5: 813b3f266d57bfa03eb1f3dac670c441
-    sha256: 3851b1460d66e5f7427e5e1b9242f510ea3fd971862e4a9c7af7674760030a23
+    md5: c5cccf838cb1f3666c053ba1e02857cb
+    sha256: b84bf2b4ebbbc19e34c67255fb7590df6956d58e53a3fc4117c0d3896f08d80c
   category: main
   optional: false
 - name: fsspec
@@ -1427,36 +1429,36 @@ package:
   category: main
   optional: false
 - name: glib
-  version: 2.78.1
+  version: 2.78.2
   manager: conda
   platform: linux-64
   dependencies:
     gettext: '>=0.21.1,<1.0a0'
-    glib-tools: 2.78.1
+    glib-tools: 2.78.2
     libgcc-ng: '>=12'
-    libglib: 2.78.1
+    libglib: 2.78.2
     libstdcxx-ng: '>=12'
     libzlib: '>=1.2.13,<1.3.0a0'
     python: '*'
-  url: https://conda.anaconda.org/conda-forge/linux-64/glib-2.78.1-hfc55251_1.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/glib-2.78.2-hfc55251_0.conda
   hash:
-    md5: 8d7242302bb3d03b9a690b6dda872603
-    sha256: 8bdc5119176bea1cce44342fa53806a11d7b6e55421f3f9c8b4e95a58409fb6e
+    md5: a42d59a57a5984b4dbe3db2b874c030b
+    sha256: 9003facb5f36d3e9dbd3d37720e45f06ffd9b453d7afdaae9421f21e33d289ea
   category: main
   optional: false
 - name: glib-tools
-  version: 2.78.1
+  version: 2.78.2
   manager: conda
   platform: linux-64
   dependencies:
     libgcc-ng: '>=12'
-    libglib: 2.78.1
+    libglib: 2.78.2
     libstdcxx-ng: '>=12'
     libzlib: '>=1.2.13,<1.3.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/glib-tools-2.78.1-hfc55251_1.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/glib-tools-2.78.2-hfc55251_0.conda
   hash:
-    md5: a50918d10114a0bf80fb46c7cc692058
-    sha256: 8f4de6d90c6bfd04a12a42fc87c0b398ff21146a784c8eb81f0490b4dec366c6
+    md5: 64a81c02a3765ed118b102816fcbbc90
+    sha256: 23de6a6791ef1d2f3d7636b041582d497306dab30681bedc2bd63b2d8d05f124
   category: main
   optional: false
 - name: glog
@@ -1845,10 +1847,10 @@ package:
     stack_data: ''
     traitlets: '>=5'
     typing_extensions: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/ipython-8.18.1-pyh31011fe_2.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/ipython-8.18.1-pyh707e725_3.conda
   hash:
-    md5: 5e23d20fc6e33061c063220146579990
-    sha256: c956b70ed41b7f61a780a7e584f03f68e7e5073c8c138960bfbc5e705d9124b1
+    md5: 15c6f45a45f7ac27f6d60b0b084f6761
+    sha256: d98d615ac8ad71de698afbc50e8269570d4b89706821c4ff3058a4ceec69bd9b
   category: main
   optional: false
 - name: isoduration
@@ -2100,7 +2102,7 @@ package:
   category: main
   optional: false
 - name: jupyter_server
-  version: 2.11.2
+  version: 2.12.0
   manager: conda
   platform: linux-64
   dependencies:
@@ -2123,10 +2125,10 @@ package:
     tornado: '>=6.2.0'
     traitlets: '>=5.6.0'
     websocket-client: ''
-  url: https://conda.anaconda.org/conda-forge/noarch/jupyter_server-2.11.2-pyhd8ed1ab_0.conda
+  url: https://conda.anaconda.org/conda-forge/noarch/jupyter_server-2.12.0-pyhd8ed1ab_0.conda
   hash:
-    md5: c831341804aecf5abcdbb348be301f92
-    sha256: 9e56c09fa7f4b95aab30b51008416d041c53cfd94ef3a4abc339d1eabb015df2
+    md5: 51e6ce3714ec4e90f631b600e165c5c2
+    sha256: c1c70d6de6d388eca83b41058e835c630e961bb7375fc618eccb894e14322a77
   category: main
   optional: false
 - name: jupyter_server_terminals
@@ -2675,7 +2677,7 @@ package:
   category: main
   optional: false
 - name: libglib
-  version: 2.78.1
+  version: 2.78.2
   manager: conda
   platform: linux-64
   dependencies:
@@ -2686,10 +2688,10 @@ package:
     libstdcxx-ng: '>=12'
     libzlib: '>=1.2.13,<1.3.0a0'
     pcre2: '>=10.42,<10.43.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/libglib-2.78.1-h783c2da_1.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/libglib-2.78.2-h783c2da_0.conda
   hash:
-    md5: 70052d6c1e84643e30ffefb21ab6950f
-    sha256: 4e6fa28002f834cfc30a64792e95c1701d835cc3d3a4bb18d6e8d16bb8aba05b
+    md5: a69b70cf435577750468d02cbd596094
+    sha256: 66a5dd5e9c13431d0d23324e2d4dd0ad189f6fe003b51bc8880ceeb3f6460f93
   category: main
   optional: false
 - name: libgoogle-cloud
@@ -5663,7 +5665,7 @@ package:
   category: main
   optional: false
 - name: pyzmq
-  version: 25.1.1
+  version: 25.1.2
   manager: conda
   platform: linux-64
   dependencies:
@@ -5673,10 +5675,10 @@ package:
     python: '>=3.10,<3.11.0a0'
     python_abi: 3.10.*
     zeromq: '>=4.3.5,<4.4.0a0'
-  url: https://conda.anaconda.org/conda-forge/linux-64/pyzmq-25.1.1-py310h795f18f_2.conda
+  url: https://conda.anaconda.org/conda-forge/linux-64/pyzmq-25.1.2-py310h795f18f_0.conda
   hash:
-    md5: 6391ac95effeebc612023b9507b558b3
-    sha256: 68fa979d6e92ddef0a93d22a4e902383b89db7ca77aab0682272bdeb4b14881a
+    md5: fa09f98f3acfd3f5de30bd2d27d5cb7f
+    sha256: 6ce93fd1e847ce02c2bbfa6022b639b21d4229d61b21ce0ecacb22c380e5680e
   category: main
   optional: false
 - name: qnorm
@@ -7381,13 +7383,13 @@ package:
     statsd: '>=3.0.0,<4.0.0'
     typing-extensions: '*'
     urllib3: '>=1.22,<2.0.0'
-  url: git+https://github.com/cameronraysmith/flytekit@5c6802c97388c40d0431e4fc308e2ed651528952
+  url: git+https://github.com/cameronraysmith/flytekit@aeb33fbfcec47175f19365523f4a3f38c64a44ad
   hash:
-    sha256: 5c6802c97388c40d0431e4fc308e2ed651528952
+    sha256: aeb33fbfcec47175f19365523f4a3f38c64a44ad
   category: main
   source:
     type: url
-    url: git+https://github.com/cameronraysmith/flytekit@5c6802c97388c40d0431e4fc308e2ed651528952
+    url: git+https://github.com/cameronraysmith/flytekit@aeb33fbfcec47175f19365523f4a3f38c64a44ad
   optional: false
 - name: frozenlist
   version: 1.4.0

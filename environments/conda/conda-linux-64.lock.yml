@@ -154,7 +154,7 @@ dependencies:
   - grpc-cpp=1.46.4=hbad87ad_7
   - krb5=1.20.1=hf9c8cef_0
   - libgcrypt=1.10.3=hd590300_0
-  - libglib=2.78.1=h783c2da_1
+  - libglib=2.78.2=h783c2da_0
   - libhwloc=2.9.1=hd6dc26d_0
   - libllvm15=15.0.7=hadd5161_1
   - libsndfile=1.2.2=hc60ed4a_1
@@ -236,9 +236,9 @@ dependencies:
   - ffmpeg=4.3=hf484d3e_0
   - filelock=3.13.1=pyhd8ed1ab_0
   - fontconfig=2.14.2=h14ed4e7_0
-  - frozendict=2.3.10=pyhaf6a467_2
+  - frozendict=2.3.10=py310h2372a71_3
   - fsspec=2023.9.2=pyh1a96a4e_0
-  - glib-tools=2.78.1=hfc55251_1
+  - glib-tools=2.78.2=hfc55251_0
   - gmpy2=2.1.2=py310h3ec546c_1
   - homer=4.11=pl5262h9f5acd7_8
   - hpack=4.0.0=pyh9f0ad1d_0
@@ -302,7 +302,7 @@ dependencies:
   - pyvcf3=1.0.3=pyhdfd78af_0
   - pywin32-on-windows=0.1.0=pyh1179c8e_3
   - pyyaml=6.0.1=py310h2372a71_1
-  - pyzmq=25.1.1=py310h795f18f_2
+  - pyzmq=25.1.2=py310h795f18f_0
   - rfc3986-validator=0.1.1=pyh9f0ad1d_0
   - rpds-py=0.13.2=py310hcb5633a_0
   - send2trash=1.8.2=pyh41d4057_0
@@ -347,7 +347,7 @@ dependencies:
   - comm=0.1.4=pyhd8ed1ab_0
   - deprecation=2.1.0=pyh9f0ad1d_0
   - fonttools=4.46.0=py310h2372a71_0
-  - glib=2.78.1=hfc55251_1
+  - glib=2.78.2=hfc55251_0
   - h11=0.14.0=pyhd8ed1ab_0
   - h2=4.1.0=pyhd8ed1ab_0
   - htslib=1.17=h6bc39ce_1
@@ -425,7 +425,7 @@ dependencies:
   - argon2-cffi=23.1.0=pyhd8ed1ab_0
   - dnspython=2.4.2=pyhd8ed1ab_1
   - gst-plugins-base=1.21.3=h4243ec0_1
-  - ipython=8.18.1=pyh31011fe_2
+  - ipython=8.18.1=pyh707e725_3
   - isoduration=20.11.0=pyhd8ed1ab_0
   - jsonschema=4.20.0=pyhd8ed1ab_0
   - jupyter_client=8.6.0=pyhd8ed1ab_0
@@ -472,7 +472,7 @@ dependencies:
   - scikit-learn=1.3.2=py310h1fdf081_1
   - statsmodels=0.14.0=py310h1f7b6fc_2
   - htseq=2.0.3=py310h5aa3a86_1
-  - jupyter_server=2.11.2=pyhd8ed1ab_0
+  - jupyter_server=2.12.0=pyhd8ed1ab_0
   - matplotlib=3.8.1=py310hff52083_0
   - mygene=3.2.2=pyh5e36f6f_0
   - perl-html-template=2.97=pl5321hdfd78af_2
@@ -576,4 +576,4 @@ dependencies:
     - adlfs === 2023.10.0 --hash=sha256:dfdc8cc782bd78262435fb1bc2a8cfdbdd80342bb1b1ae9dfff968de912b0b09
     - google-cloud-storage === 2.13.0 --hash=sha256:ab0bf2e1780a1b74cf17fccb13788070b729f50c252f0c94ada2aae0ca95437d
     - gcsfs === 2023.9.2 --hash=sha256:b3e61d07b0ecf3e04627b0cc0df30ee728bc49e31d42de180815601041e62c1b
-    - flytekit @ git+https://github.com/cameronraysmith/flytekit@5c6802c97388c40d0431e4fc308e2ed651528952
+    - flytekit @ git+https://github.com/cameronraysmith/flytekit@aeb33fbfcec47175f19365523f4a3f38c64a44ad
