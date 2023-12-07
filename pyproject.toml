@@ -294,7 +294,6 @@ virtual_package_spec = "environments/conda/virtual-packages.yml"
 [tool.conda-lock.dependencies]
 # transient fork dependency to allow pandas >=2
 flytekit = { git = "https://github.com/cameronraysmith/flytekit.git", branch = "3928-pandas-2"}
-HTSeq = { git = "https://github.com/htseq/htseq.git", rev="d312d39187362c8c9664fa8d127ee0fb24733152" }
 # not available in conda channels
 hydra-zen = {source = "pypi"}
 hydra-joblib-launcher = {source = "pypi"}
