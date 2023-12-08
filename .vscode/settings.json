@@ -1,0 +1,5 @@
+{
+  "cloudcode.autoDependencies": "on",
+  "workbench.iconTheme": "vscode-icons",
+  "workbench.colorTheme": "poimandres"
+}
