@@ -576,4 +576,4 @@ dependencies:
     - adlfs === 2023.10.0 --hash=sha256:dfdc8cc782bd78262435fb1bc2a8cfdbdd80342bb1b1ae9dfff968de912b0b09
     - google-cloud-storage === 2.13.0 --hash=sha256:ab0bf2e1780a1b74cf17fccb13788070b729f50c252f0c94ada2aae0ca95437d
     - gcsfs === 2023.9.2 --hash=sha256:b3e61d07b0ecf3e04627b0cc0df30ee728bc49e31d42de180815601041e62c1b
-    - flytekit @ git+https://github.com/cameronraysmith/flytekit@9c8481ec30ad13707c1ebe8e13c9cb6962e75276
+    - flytekit @ git+https://github.com/cameronraysmith/flytekit@b1e64ba20f1ddd83723e455d2bf893d8f3fc84b7
