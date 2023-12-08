@@ -1,5 +1,23 @@
 {
   "cloudcode.autoDependencies": "on",
   "workbench.iconTheme": "vscode-icons",
-  "workbench.colorTheme": "poimandres"
+  "workbench.colorTheme": "poimandres",
+  "search.exclude": {
+    "**/.devenv/**": true,
+    "**/.direnv/**": true,
+    "**/.hatch/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.ruff_cache/**": true
+  },
+  "files.watcherExclude": {
+    "**/.devenv/**": true,
+    "**/.direnv/**": true,
+    "**/.hatch/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.nox/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/.solid/**": true
+  }
 }
