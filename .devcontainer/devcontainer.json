@@ -1,0 +1,36 @@
+{
+  "name": "test-devenv",
+  "build": {
+    "dockerfile": "./devcontainer.Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mkhl.direnv",
+        // vim extension breaks
+        // during installation
+        // install via `recommends`
+        // "vscodevim.vim@1.26.2",
+        "pmndrs.pmndrs",
+        "jnoortheen.nix-ide",
+        "tamasfe.even-better-toml",
+        "donjayamanne.python-extension-pack",
+        "charliermarsh.ruff",
+        "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+        "googlecloudtools.cloudcode",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "ms-vsliveshare.vsli",
+        "eamodio.gitlens",
+        "GitHub.vscode-pull-request-github",
+        "github.vscode-github-actions",
+        "ms-azuretools.vscode-docker",
+        "ms-toolsai.jupyter",
+        "njzy.stats-bar",
+        "vscode-icons-team.vscode-icons"
+      ]
+    }
+  },
+  "overrideCommand": false
+}
