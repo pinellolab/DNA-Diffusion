@@ -78,38 +78,38 @@ spec:
                   value: "8" # override default: 2
                 - name: storageRequest
                   value: "50Gi" # override default: 15Gi
-          - name: publish-conda-container-3
-            templateRef:
-              name: cwft-kaniko
-              template: build-push-https
-              clusterScope: true
-            arguments:
-              parameters:
-                - name: mode
-                  value: '{{workflow.parameters.mode}}'
-                - name: imageName
-                  value: '{{workflow.parameters.imageName3}}'
-                - name: containerFilePath
-                  value: '{{workflow.parameters.containerFilePath3}}'
-                - name: appName
-                  value: '{{workflow.parameters.appName}}'
-                - name: branch
-                  value: '{{workflow.parameters.branch}}'
-                - name: shortSha
-                  value: '{{workflow.parameters.shortSha}}'
-                - name: containerRegistryURL1
-                  value: '{{workflow.parameters.containerRegistryURL1}}'
-                - name: containerRegistryURL2
-                  value: '{{workflow.parameters.containerRegistryURL2}}'
-                - name: gitUrlNoProtocol
-                  value: '{{workflow.parameters.gitUrlNoProtocol}}'
-                - name: memoryRequest
-                  value: "7Gi" # override default: 512Mi
-                - name: cpuRequest
-                  value: "2" # override default: 500m
-                - name: memoryLimit
-                  value: "32Gi" # override default: 2Gi
-                - name: cpuLimit
-                  value: "8" # override default: 2
-                - name: storageRequest
-                  value: "50Gi" # override default: 15Gi
+          # - name: publish-conda-container-3
+          #   templateRef:
+          #     name: cwft-kaniko
+          #     template: build-push-https
+          #     clusterScope: true
+          #   arguments:
+          #     parameters:
+          #       - name: mode
+          #         value: '{{workflow.parameters.mode}}'
+          #       - name: imageName
+          #         value: '{{workflow.parameters.imageName3}}'
+          #       - name: containerFilePath
+          #         value: '{{workflow.parameters.containerFilePath3}}'
+          #       - name: appName
+          #         value: '{{workflow.parameters.appName}}'
+          #       - name: branch
+          #         value: '{{workflow.parameters.branch}}'
+          #       - name: shortSha
+          #         value: '{{workflow.parameters.shortSha}}'
+          #       - name: containerRegistryURL1
+          #         value: '{{workflow.parameters.containerRegistryURL1}}'
+          #       - name: containerRegistryURL2
+          #         value: '{{workflow.parameters.containerRegistryURL2}}'
+          #       - name: gitUrlNoProtocol
+          #         value: '{{workflow.parameters.gitUrlNoProtocol}}'
+          #       - name: memoryRequest
+          #         value: "7Gi" # override default: 512Mi
+          #       - name: cpuRequest
+          #         value: "2" # override default: 500m
+          #       - name: memoryLimit
+          #         value: "32Gi" # override default: 2Gi
+          #       - name: cpuLimit
+          #         value: "8" # override default: 2
+          #       - name: storageRequest
+          #         value: "50Gi" # override default: 15Gi
