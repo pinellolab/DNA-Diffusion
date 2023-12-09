@@ -52,6 +52,8 @@
                 htslib
                 lazygit
                 poethepoet
+                poetry
+                python310
                 ripgrep
                 starship
                 tree
@@ -66,35 +68,32 @@
                 # disableHint = true;
               };
 
-              # recommended to use 
-              # make targets or poe tasks
-              # instead if working in vscode
               pre-commit.hooks = {
-                # alejandra.enable = true;
-                # ruff.enable = true;
+                alejandra.enable = true;
+                ruff.enable = true;
                 # pyright.enable = true;
               };
 
               difftastic.enable = true;
 
-              languages.python = {
-                enable = true;
-                package = pkgs.python310;
-                poetry = {
-                  enable = true;
-                  activate.enable = true;
-                  install = {
-                    enable = true;
-                    installRootPackage = true;
-                    groups = [
-                      "lint"
-                      "test"
-                      "docs"
-                      "workflows"
-                    ];
-                  };
-                };
-              };
+              # languages.python = {
+              #   enable = true;
+              #   package = pkgs.python310;
+              #   poetry = {
+              #     enable = true;
+              #     activate.enable = true;
+              #     install = {
+              #       enable = true;
+              #       installRootPackage = true;
+              #       groups = [
+              #         "lint"
+              #         "test"
+              #         "docs"
+              #         "workflows"
+              #       ];
+              #     };
+              #   };
+              # };
             }
           ];
         };
