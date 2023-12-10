@@ -72,6 +72,18 @@ ci_view_workflow: ## Open CI workflow summary.
 build_images_view_workflow: ## Open Build Images workflow summary.
 	gh workflow view "Build Images"
 
+codespace_create: ## Create codespace.
+	gh codespace create -R $(GH_REPO) -b $(GIT_BRANCH) -m largePremiumLinux
+
+codespace_list: ## List codespace.
+	PAGER=cat gh codespace list
+
+codespace_stop: ## Stop codespace.
+	gh codespace stop
+
+codespace_delete: ## Delete codespace.
+	gh codespace delete
+
 docker_login: ## Login to ghcr docker registry. Check regcreds in $HOME/.docker/config.json.
 	docker login ghcr.io -u $(GH_ORG) -p $(GITHUB_TOKEN)
 
