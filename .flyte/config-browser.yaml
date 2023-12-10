@@ -1,0 +1,17 @@
+admin:
+  endpoint: ${FLYTE_CLUSTER_ENDPOINT}
+  # authenticate in browser via oauth2-proxy
+  authType: Pkce
+
+logger:
+  show-source: true
+  level: 0
+storage:
+  type: stow
+  stow:
+    kind: google
+    config:
+      json: ""
+      project_id: ${GCP_PROJECT_ID}
+      scopes: ${GCP_STORAGE_SCOPES}
+  container: ${GCP_STORAGE_CONTAINER}
