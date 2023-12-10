@@ -138,6 +138,7 @@
                 ripgrep
                 starship
                 tree
+                yq-go
                 zsh
               ];
 
