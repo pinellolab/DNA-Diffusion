@@ -32,5 +32,6 @@
       ]
     }
   },
-  "overrideCommand": false
+  "overrideCommand": false,
+  "forwardPorts": [53593]
 }
