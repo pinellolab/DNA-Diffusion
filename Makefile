@@ -272,6 +272,7 @@ ghsecrets: ## Update github secrets for GH_REPO from ".env" file.
 	gh secret set FLYTE_CLUSTER_ENDPOINT --repo="$(GH_REPO)" --body="$(FLYTE_CLUSTER_ENDPOINT)"
 	gh secret set FLYTE_OAUTH_CLIENT_SECRET --repo="$(GH_REPO)" --body="$(FLYTE_OAUTH_CLIENT_SECRET)"
 	gh secret set FLYTECTL_CONFIG --repo="$(GH_REPO)" --body="$(FLYTECTL_CONFIG)"
+	gh secret set FLYTECTL_CONFIG_TEMPLATE --repo="$(GH_REPO)" --body="$(FLYTECTL_CONFIG_TEMPLATE)"
 	gh secret set GCP_PROJECT_ID --repo="$(GH_REPO)" --body="$(GCP_PROJECT_ID)"
 	gh secret set GCP_STORAGE_SCOPES --repo="$(GH_REPO)" --body="$(GCP_STORAGE_SCOPES)"
 	gh secret set GCP_STORAGE_CONTAINER --repo="$(GH_REPO)" --body="$(GCP_STORAGE_CONTAINER)"
@@ -293,12 +294,8 @@ ghvars: ## Update github secrets for GH_REPO from ".env" file.
 	PAGER=cat gh variable list --repo=$(GH_REPO)
 
 update_config: ## Update flytectl config file from template.
-	yq e \
-		'.admin.endpoint = strenv(FLYTE_CLUSTER_ENDPOINT) | \
-		.storage.stow.config.project_id = strenv(GCP_PROJECT_ID) | \
-		.storage.stow.config.scopes = strenv(GCP_STORAGE_SCOPES) | \
-		.storage.container = strenv(GCP_STORAGE_CONTAINER)' \
-		.flyte/config-template.yaml > .flyte/config.yaml
+	yq e '.admin.endpoint = strenv(FLYTE_CLUSTER_ENDPOINT) | .storage.stow.config.project_id = strenv(GCP_PROJECT_ID) | .storage.stow.config.scopes = strenv(GCP_STORAGE_SCOPES) | .storage.container = strenv(GCP_STORAGE_CONTAINER)' \
+	$(FLYTECTL_CONFIG_TEMPLATE) > $(FLYTECTL_CONFIG)
 
 tree: ## Print directory tree.
 	tree -a --dirsfirst -L 4 -I ".git|.direnv|.devenv|*pycache*|*ruff_cache*|*pytest_cache*|outputs|multirun|conf|scripts"
