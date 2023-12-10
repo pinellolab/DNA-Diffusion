@@ -7,7 +7,7 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "mkhl.direnv",
+        // "mkhl.direnv",
         // vim extension breaks
         // during installation
         // install via `recommends`
