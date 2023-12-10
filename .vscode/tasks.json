@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "direnv allow",
+            "type": "shell",
+            "command": "direnv allow && env",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
+}
