@@ -2289,6 +2289,29 @@ htseq-qa = ["matplotlib (>=1.4)"]
 test = ["matplotlib (>=1.4)", "pandas (>=1.1.0)", "pytest (>=6.2.5)", "scipy (>=1.5.0)"]
 
 [[package]]
+name = "HTSeq"
+version = "2.0.4"
+description = "A framework to process and analyze data from high-throughput sequencing (HTS) assays"
+optional = false
+python-versions = "*"
+files = []
+develop = false
+
+[package.dependencies]
+numpy = "*"
+pysam = "*"
+
+[package.extras]
+htseq-qa = ["matplotlib (>=1.4)"]
+test = ["matplotlib (>=1.4)", "pandas (>=1.1.0)", "pytest (>=6.2.5)", "scipy (>=1.5.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/htseq/htseq.git"
+reference = "d312d39187362c8c9664fa8d127ee0fb24733152"
+resolved_reference = "d312d39187362c8c9664fa8d127ee0fb24733152"
+
+[[package]]
 name = "huggingface-hub"
 version = "0.19.4"
 description = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
@@ -7159,7 +7182,7 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [extras]
-bioinformatics = ["HTSeq", "genomepy", "gimmemotifs", "gtfparse", "pybedtools", "pysam", "sourmash"]
+bioinformatics = ["HTSeq", "HTSeq", "genomepy", "gimmemotifs", "gtfparse", "pybedtools", "pysam", "sourmash"]
 dev = ["black", "jupyter_contrib_nbextensions", "jupytext", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings", "mypy", "notebook", "poethepoet", "pyright", "pytest", "pytest-asyncio", "pytest-cov", "ruff", "xdoctest"]
 docs = ["jupyter_contrib_nbextensions", "jupytext", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings", "notebook"]
 lint = ["black", "mypy", "pyright", "ruff"]
@@ -7169,4 +7192,4 @@ workflows = ["dataclasses-json", "flytekit", "fsspec", "hydra-joblib-launcher", 
 [metadata]
 lock-version = "2.0"
 python-versions = "3.10.13"
-content-hash = "0f9703fec8f69f719ea22715a855cd87af6aa8ee81d2ed0a3121b54c31a26178"
+content-hash = "ed77b17de886ca4c85d4766d74351c47d0f1478065aff422b657987199cc9e23"
