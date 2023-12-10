@@ -110,7 +110,7 @@
             dnadiffusion = ./src;
           };
           groups = [
-            "bioinformatics"
+            # "bioinformatics"
             "workflows"
             "lint"
             "test"
