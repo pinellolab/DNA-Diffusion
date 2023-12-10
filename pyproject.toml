@@ -119,10 +119,15 @@ genomepy = {version = "0.16.1", optional = true}
 # - has minor incompatibilities with modern C compilers
 # gimmemotifs = "0.18.0"
 gimmemotifs = { git = "https://github.com/cameronraysmith/gimmemotifs.git", branch = "bound-configparser-6" , optional = true}
-# Comment this for `poe conda-lock` generation
+# Comment HTSeq for `poe conda-lock` generation
 # as conda-lock forces default branch sha
-# HTSeq = { git = "https://github.com/htseq/htseq.git", rev="d312d39187362c8c9664fa8d127ee0fb24733152" }
-HTSeq = {version = "2.0.4", optional = true}
+# and conda-forge/bioconda installs HTSeq indirectly via biofluff <- gimmemotifs
+# HTSeq = {version = "2.0.4", optional = true}
+HTSeq = [
+  { markers = "sys_platform == 'linux' and platform_machine == 'x86_64'", version = "2.0.4", optional = true},
+  # HTSeq will not function on darwin aarch64 as it installs with x86_64 linked libraries
+  { markers = "sys_platform == 'darwin'", git = "https://github.com/htseq/htseq.git", rev="d312d39187362c8c9664fa8d127ee0fb24733152", optional = true}
+]
 # gtfparse 1.3.0 never released to bioconda
 gtfparse = {version = "1.3.0", source = "pypi", optional = true}
 pybedtools = { git = "https://github.com/cameronraysmith/pybedtools.git", branch = "cpp17-no-register", optional = true}
@@ -207,8 +212,11 @@ gimmemotifs = { git = "https://github.com/cameronraysmith/gimmemotifs.git", bran
 gtfparse = {version = "1.3.0", source = "pypi"}
 # Comment this for `poe conda-lock` generation
 # as conda-lock forces default branch sha
-# HTSeq = { git = "https://github.com/htseq/htseq.git", rev="d312d39187362c8c9664fa8d127ee0fb24733152" }
-HTSeq = "2.0.4"
+# HTSeq = { version = "2.0.4", markers = "platform_machine == 'x86_64'" }
+HTSeq = [
+  { markers = "sys_platform == 'linux' and platform_machine == 'x86_64'", version = "2.0.4"},
+  { markers = "sys_platform == 'darwin'", git = "https://github.com/htseq/htseq.git", rev="d312d39187362c8c9664fa8d127ee0fb24733152"}
+]
 pybedtools = { git = "https://github.com/cameronraysmith/pybedtools.git", branch = "cpp17-no-register" }
 pysam = "0.22.0"
 sourmash = "4.8.4"
