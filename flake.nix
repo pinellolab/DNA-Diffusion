@@ -5,8 +5,13 @@
     systems.url = "github:nix-systems/default";
     # flake-utils.url = github:numtide/flake-utils;
     devenv.url = "github:cachix/devenv";
-    poetry2nix.url = github:nix-community/poetry2nix;
-    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
+    poetry2nix = {
+      url = github:nix-community/poetry2nix;
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        # flake-utils.follows = "flake-utils";
+      };
+    };
   };
 
   nixConfig = {
