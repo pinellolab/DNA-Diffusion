@@ -98,7 +98,7 @@
             // {
               hydra-core = super.hydra-core.override {preferWheel = true;};
               hydra-joblib-launcher = super.hydra-joblib-launcher.override {preferWheel = true;};
-              mysql-connector-python = super.mysql-connector-python.override {preferWheel = true;};
+              # mysql-connector-python = super.mysql-connector-python.override {preferWheel = true;};
               pysam = super.pysam.override {preferWheel = true;};
               qnorm = super.qnorm.override {preferWheel = true;};
               scipy = super.scipy.override {preferWheel = true;};
