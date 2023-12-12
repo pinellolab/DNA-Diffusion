@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+MANUAL_DIRENV=${1:-.dirman}
+
+mkdir -p "$MANUAL_DIRENV"
+
+(source <(nix print-dev-env \
+            --profile "${MANUAL_DIRENV}"/flake-profile . \
+            --impure \
+            --accept-flake-config);\
+          zsh)
+
+# The above is equivalent to `use flake . --impure --accept-flake-config` in
+# direnv .envrc see direnv stdlib for details of the underlying function
+# definitions from a bash shell, it is also possible to manually execute:
+#
+# $ eval "$(nix print-dev-env --profile .dirman/flake-profile . --impure --accept-flake-config)"
+# $ zsh
+#
+# or, equivalently:
+#
+# $ nix print-dev-env --profile "${MANUAL_DIRENV}"/flake-profile . --impure --accept-flake-config > envsetup
+# $ source envsetup
+# $ zsh
