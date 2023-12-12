@@ -70,6 +70,7 @@
           marshmallow-jsonschema = ["setuptools"];
           mygene = ["setuptools"];
           memory-efficient-attention-pytorch = ["setuptools"];
+          mysql-connector-python = ["setuptools"];
           norns = ["setuptools"];
           pybedtools = ["setuptools" "cython" pkgs.bedtools pkgs.htslib pkgs.zlib];
           pybigwig = [pkgs.zlib pkgs.curl];
@@ -96,9 +97,9 @@
           in
             buildInputsOverrides
             // {
+              htseq = super.htseq.override {preferWheel = true;};
               hydra-core = super.hydra-core.override {preferWheel = true;};
               hydra-joblib-launcher = super.hydra-joblib-launcher.override {preferWheel = true;};
-              # mysql-connector-python = super.mysql-connector-python.override {preferWheel = true;};
               pysam = super.pysam.override {preferWheel = true;};
               qnorm = super.qnorm.override {preferWheel = true;};
               scipy = super.scipy.override {preferWheel = true;};
