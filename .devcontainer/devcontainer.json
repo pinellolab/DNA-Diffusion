@@ -19,7 +19,6 @@
         "charliermarsh.ruff",
         "redhat.vscode-yaml",
         "ms-vscode.makefile-tools",
-        "googlecloudtools.cloudcode",
         "ms-kubernetes-tools.vscode-kubernetes-tools",
         "ms-vsliveshare.vsli",
         "eamodio.gitlens",
