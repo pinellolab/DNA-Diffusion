@@ -229,12 +229,15 @@ install_direnv: ## Install direnv to `/usr/local/bin`. Check script before execu
 	rm -f ./direnv)
 	@echo "see https://direnv.net/docs/hook.html"
 
-dev: ## Setup nix development environment.
-dev: install_direnv install_nix
+setup_dev: ## Setup nix development environment.
+setup_dev: install_direnv install_nix
 	@. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && \
 	nix profile install nixpkgs#cachix && \
 	echo "trusted-users = root $$USER" | sudo tee -a /etc/nix/nix.conf && sudo pkill nix-daemon && \
 	cachix use devenv
+
+devshell: ## Enter nix devshell. See use_flake in `direnv stdlib`.
+	./scripts/flake
 
 cdirenv: ## !!Enable direnv in zshrc.!!
 	@if ! grep -q 'direnv hook zsh' "${HOME}/.zshrc"; then \
