@@ -44,6 +44,13 @@ wandb = {version = "0.16.0", source = "pypi"}
 
 # bioinformatics dep group
 genomepy = {version = "0.16.1", optional = true}
+# genomepy depends on mysql-connector-python which has not been
+# a python package since April 20, 2021 when it began a series of
+# releases starting with 8.0.24 that lacks a setup.py or pyproject.toml
+# in the source distribution. Indeed,
+# pip download mysql-connector-python==8.0.24 --no-binary :all:
+# fails with this notice.
+mysql-connector-python = {version = "8.0.23", optional = true}
 # gimmemotifs 0.18.0 
 # - is not compatible with configparser 6.0.0 but it does not include this bound in its setup.py
 # - has minor incompatibilities with modern C compilers
@@ -129,6 +136,7 @@ optional = true
 
 [tool.poetry.group.bioinformatics.dependencies]
 genomepy = "0.16.1"
+mysql-connector-python = "8.0.23"
 # gimmemotifs 0.18.0 
 # - is not compatible with configparser 6.0.0 but it does not include this bound in its setup.py
 # - has minor incompatibilities with modern C compilers
@@ -202,6 +210,7 @@ notebook = "6.4.13"
 [tool.poetry.extras]
 bioinformatics = [
   "genomepy",
+  "mysql-connector-python",
   "gimmemotifs",
   "gtfparse",
   "HTSeq",
