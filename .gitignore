@@ -3,6 +3,8 @@
 # nix
 .devenv
 .direnv
+# this is a bespoke "manual direnv" folder
+.dirman
 .pre-commit-config.yaml
 
 # flyte config file
