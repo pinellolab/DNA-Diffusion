@@ -72,8 +72,18 @@ ci_view_workflow: ## Open CI workflow summary.
 build_images_view_workflow: ## Open Build Images workflow summary.
 	gh workflow view "Build Images"
 
-codespace_create: ## Create codespace.
-	gh codespace create -R $(GH_REPO) -b $(GIT_BRANCH) -m largePremiumLinux
+# CPU | MEM | DISK | MACHINE_TYPE
+# ----|-----|------|----------------
+#   2 |   8 |   32 | basicLinux32gb
+#   4 |  16 |   32 | standardLinux32gb
+#   8 |  32 |   64 | premiumLinux
+#  16 |  64 |  128 | largePremiumLinux
+MACHINE_TYPE ?= standardLinux32gb
+codespace_create: ## Create codespace. make -n codespace_create MACHINE_TYPE=largePremiumLinux
+	gh codespace create -R $(GH_REPO) -b $(GIT_BRANCH) -m $(MACHINE_TYPE)
+
+code: ## Open codespace in browser.
+	gh codespace code -R $(GH_REPO) --web
 
 codespace_list: ## List codespace.
 	PAGER=cat gh codespace list
