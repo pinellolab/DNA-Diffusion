@@ -50,6 +50,13 @@ docs-build: ## Build documentation
 docs-serve: ## Serve documentation
 docs-serve: docs-build
 	poetry run mkdocs serve
+
+export_pip_requirements: ## Export requirements.txt for pip.
+	poetry export \
+	--format=requirements.txt \
+	--with=workflows,bioinformatics \
+	--output=requirements.txt \
+	--without-hashes
  
 #-------------
 # CI
