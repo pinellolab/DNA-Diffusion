@@ -34,7 +34,7 @@ custom_types_defaults: Dict[str, Tuple[Type, Any]] = {
     "class_weight": (Optional[dict], None),
     "random_state": (Optional[int], None),
     # "solver": (str, "lbfgs"),
-    "max_iter": (int, 2000),
+    "max_iter": (int, 1200),
     # "multi_class": (str, "auto"),
     # "verbose": (int, 0),
     # "warm_start": (bool, False),
@@ -110,7 +110,7 @@ def get_data() -> pd.DataFrame:
 
 
 @task(
-    cache=True,
+    cache=False,
     cache_version="0.1.0",
     retries=3,
     interruptible=True,
