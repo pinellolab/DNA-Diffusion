@@ -18,7 +18,6 @@
         "donjayamanne.python-extension-pack",
         "charliermarsh.ruff",
         "redhat.vscode-yaml",
-        "ms-vscode.makefile-tools",
         "ms-kubernetes-tools.vscode-kubernetes-tools",
         "ms-vsliveshare.vsli",
         "eamodio.gitlens",
