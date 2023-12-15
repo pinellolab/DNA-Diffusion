@@ -2262,13 +2262,23 @@ numpy = ">=1.7"
 pandas = ">=0.15"
 
 [[package]]
-name = "HTSeq"
-version = "2.0.4"
+name = "htseq"
+version = "2.0.5"
 description = "A framework to process and analyze data from high-throughput sequencing (HTS) assays"
 optional = false
 python-versions = "*"
-files = []
-develop = false
+files = [
+    {file = "HTSeq-2.0.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:3df9e3fe6be02b5f8c45b4af8f163017aa56291a4c9114be0042db981ac1c908"},
+    {file = "HTSeq-2.0.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a0441e9f5cc89828c71d9ecb2c3e8e653b0e9ec967c43958103891dafc4d2df0"},
+    {file = "HTSeq-2.0.5-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:676a577c48102834f171b5c381265b22c22e69145302f157610c4ed2757cccb8"},
+    {file = "HTSeq-2.0.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9de97c2e0ca9d222d05527803240d28fd921706130ee7f7147412a91c06874c8"},
+    {file = "HTSeq-2.0.5-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:f932ddca7d09e9c6cf5a0d47b36f1309abd080bc9d6c28a85cbdc43e594d44c8"},
+    {file = "HTSeq-2.0.5-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:8e8b130e82049c850f434cf7f143cd2e5c56cdc0bb3bb92cb4412d1496b3c310"},
+    {file = "HTSeq-2.0.5-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b5b337bca3e4ade6333b42debca0ffce6644d0384c43ec505c0aa52669792fab"},
+    {file = "HTSeq-2.0.5-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:43b4ea95bbea9608deab032eee6d07aa33b27fa64f06198ef6a405b30e6515f6"},
+    {file = "HTSeq-2.0.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a857d78fb4b826f8c4250083ac3e0ba7eeb51cfa2e4cecfdc8f675e6f4ce0a95"},
+    {file = "HTSeq-2.0.5.tar.gz", hash = "sha256:2519675246dd1639115a76c9aacf19ab5bc5bed2f3598bf89cd97be5c0d066b3"},
+]
 
 [package.dependencies]
 numpy = "*"
@@ -2277,12 +2287,6 @@ pysam = "*"
 [package.extras]
 htseq-qa = ["matplotlib (>=1.4)"]
 test = ["matplotlib (>=1.4)", "pandas (>=1.1.0)", "pytest (>=6.2.5)", "scipy (>=1.5.0)"]
-
-[package.source]
-type = "git"
-url = "https://github.com/htseq/htseq.git"
-reference = "d312d39187362c8c9664fa8d127ee0fb24733152"
-resolved_reference = "d312d39187362c8c9664fa8d127ee0fb24733152"
 
 [[package]]
 name = "huggingface-hub"
@@ -7151,7 +7155,7 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.link
 testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [extras]
-bioinformatics = ["HTSeq", "genomepy", "gimmemotifs", "gtfparse", "mysql-connector-python", "pybedtools", "pysam", "sourmash"]
+bioinformatics = ["genomepy", "gimmemotifs", "gtfparse", "htseq", "mysql-connector-python", "pybedtools", "pysam", "sourmash"]
 dev = ["black", "jupyter_contrib_nbextensions", "jupytext", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings", "mypy", "notebook", "poethepoet", "pyright", "pytest", "pytest-asyncio", "pytest-cov", "ruff", "xdoctest"]
 docs = ["jupyter_contrib_nbextensions", "jupytext", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings", "notebook"]
 lint = ["black", "mypy", "pyright", "ruff"]
@@ -7161,4 +7165,4 @@ workflows = ["dataclasses-json", "flytekit", "fsspec", "hydra-joblib-launcher", 
 [metadata]
 lock-version = "2.0"
 python-versions = "3.10.13"
-content-hash = "c3e627c5ca79fcd2b29c5b072809059d79b8dda8bbb7b867b597b17a2df73ccb"
+content-hash = "a53a574a75876b1577397212576b404c9bc254050c12cc0a1e69b1dbe89f32d3"
