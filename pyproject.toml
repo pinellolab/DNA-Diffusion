@@ -129,7 +129,7 @@ mysql-connector-python = "8.0.23"
 gimmemotifs = { git = "https://github.com/cameronraysmith/gimmemotifs.git", branch = "bound-configparser-6" }
 # gtfparse 1.3.0 never released to bioconda
 gtfparse = {version = "1.3.0", source = "pypi"}
-HTSeq = "2.0.5"
+htseq = "2.0.5"
 pybedtools = { git = "https://github.com/cameronraysmith/pybedtools.git", branch = "cpp17-no-register" }
 pysam = "0.22.0"
 sourmash = "4.8.4"
@@ -195,7 +195,7 @@ bioinformatics = [
   "mysql-connector-python",
   "gimmemotifs",
   "gtfparse",
-  "HTSeq",
+  "htseq",
   "pybedtools",
   "pysam",
   "sourmash",
