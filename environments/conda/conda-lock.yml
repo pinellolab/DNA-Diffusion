@@ -15,7 +15,7 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: b21e66c802c70886fa67abd3a3335a477e83eea7bfa7400101673d387d9ed222
+    linux-64: 3994540e7daf257a06a306658222c321a21711251d7e29bdde0fc13fe96f3ee5
   channels:
   - url: pytorch
     used_env_vars: []
@@ -4106,8 +4106,8 @@ package:
   url: https://files.pythonhosted.org/packages/5f/a1/f47c2f7f93e2714f7bcd8ad4b5a8073140af0ec7527b0383f2b78fda28f0/HTSeq-2.0.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   hash:
     sha256: a0441e9f5cc89828c71d9ecb2c3e8e653b0e9ec967c43958103891dafc4d2df0
-  category: main
-  optional: false
+  category: bioinformatics
+  optional: true
 - name: hydra-core
   version: 1.3.2
   manager: pip
