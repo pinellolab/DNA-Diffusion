@@ -32,9 +32,13 @@ def motif_composition_matrix(
     # Extract motifs from sequence file
     df_motifs = motif_composition_helper(main_df)
     # Parsing motifs from JASPAR2020_vertebrates.pfm
-    motifs_dict = parse_motif_file(file_path=motif_pfm_path, download_data=download_data)
+    motifs_dict = parse_motif_file(
+        file_path=motif_pfm_path, download_data=download_data
+    )
 
-    df_motifs["motifs_id_number"] = df_motifs["motifs"].apply(lambda x: motifs_dict[x])
+    df_motifs["motifs_id_number"] = df_motifs["motifs"].apply(
+        lambda x: motifs_dict[x]
+    )
     motif_count = []
     full_motif_list = df_motifs[0].unique().tolist()
     for k, v_df in df_motifs.groupby([0]):
@@ -55,12 +59,19 @@ def motif_composition_matrix(
     main_df.index = main_df["ID"].values
     df_captured_motifs.index = df_captured_motifs["ID"].values
     output_df = pd.concat(
-        [main_df[[x for x in main_df.columns if x != "ID"]], df_captured_motifs.loc[main_df["ID"].values]], axis=1
+        [
+            main_df[[x for x in main_df.columns if x != "ID"]],
+            df_captured_motifs.loc[main_df["ID"].values],
+        ],
+        axis=1,
     )
     return output_df
 
 
-def parse_motif_file(file_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm", download_data: bool = False) -> dict:
+def parse_motif_file(
+    file_path: str = f"{DATA_DIR}/JASPAR2020_vertebrates.pfm",
+    download_data: bool = False,
+) -> dict:
     """Given a file path to the motif pfm file, return a sorted dictionary of motifs."""
     if download_data:
         # Download JASPAR2020_vertebrates.pfm

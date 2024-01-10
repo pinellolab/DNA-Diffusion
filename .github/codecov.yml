@@ -1,0 +1,15 @@
+codecov:
+  branch: main
+
+comment: false
+github_checks: false
+
+coverage:
+  status:
+    project:
+      default:
+        threshold: 10%
+
+    patch: off
+
+    changes: false

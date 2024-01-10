@@ -4,10 +4,7 @@ import gtfparse
 import matplotlib.pyplot as plt
 import pandas as pd
 from Bio import SeqIO
-from IPython.display import HTML, display
 from tqdm import tqdm
-
-from dnadiffusion import DATA_DIR
 
 
 class DataSource:
@@ -27,7 +24,10 @@ class ReferenceGenome(DataSource):
 
     @classmethod
     def from_path(cls, path):
-        genome_dict = {record.id: str(record.seq).upper() for record in SeqIO.parse(path, "fasta")}
+        genome_dict = {
+            record.id: str(record.seq).upper()
+            for record in SeqIO.parse(path, "fasta")
+        }
         return cls(genome_dict, path)
 
     @classmethod
@@ -95,7 +95,9 @@ class SEQ_EXTRACT:
         self.data = pd.read_csv(data, sep="\t")
 
     def extract_seq(self, tag, cell_type):
-        return self.data.query(f'TAG == "{tag}" and CELL_TYPE == "{cell_type}" ').copy()
+        return self.data.query(
+            f'TAG == "{tag}" and CELL_TYPE == "{cell_type}" '
+        ).copy()
 
 
 def seq_extract(data_path: str, tag: str, cell_type: str):
@@ -150,7 +152,9 @@ class GTFProcessing:
             list[str]
         """
         gtf_df = self.get_gtf_df()
-        dict_conversion = dict(zip(gtf_df["gene_id"].values, gtf_df["gene_name"].values))
+        dict_conversion = dict(
+            zip(gtf_df["gene_id"].values, gtf_df["gene_name"].values)
+        )
         return [dict_conversion[g] for g in gene_list]
 
     def __add_interval_lenght(self):
@@ -160,7 +164,9 @@ class GTFProcessing:
     def get_first_exon_df(gtf_df):
         """Group genes by transcript id and returns a df with first  exont relative to strand"""
         out_new_df = []
-        for k, v in gtf_df.query("feature == 'exon' and exon_number == '1' ").groupby("transcript_id"):
+        for k, v in gtf_df.query(
+            "feature == 'exon' and exon_number == '1' "
+        ).groupby("transcript_id"):
             out_new_df.append(v)
 
         return pd.concat(out_new_df)
@@ -170,45 +176,106 @@ class GTFProcessing:
         """Group genes by transcript id and returns a df with last  exont relative to strand"""
 
         out_new_df = []
-        for k, v in tqdm(gtf_df.query("feature == 'exon' ").groupby("transcript_id")):
+        for k, v in tqdm(
+            gtf_df.query("feature == 'exon' ").groupby("transcript_id")
+        ):
             if v.iloc[0].strand == "+":
-                out_new_df.append(v.sort_values("end", ascending=True).iloc[-1].values)
+                out_new_df.append(
+                    v.sort_values("end", ascending=True).iloc[-1].values
+                )
 
                 # print v.sort_values('exon_number').iloc[0]
             if v.iloc[0].strand == "-":
-                out_new_df.append(v.sort_values("start", ascending=True).iloc[0].values)
+                out_new_df.append(
+                    v.sort_values("start", ascending=True).iloc[0].values
+                )
 
         return pd.DataFrame(out_new_df, columns=gtf_df.columns)
 
     @staticmethod
-    def df_to_bed(gtf_df, bed_file_name, fourth_position_feature="gene_name", fifth_position_feature="transcript_id"):
+    def df_to_bed(
+        gtf_df,
+        bed_file_name,
+        fourth_position_feature="gene_name",
+        fifth_position_feature="transcript_id",
+    ):
         """Save a bed_file using a gtf as reference and returns the bed_file_name string"""
 
-        print(gtf_df[["chr", "start", "end", fourth_position_feature, fifth_position_feature, "strand"]].head())
-
-        gtf_df[["chr", "start", "end", fourth_position_feature, fifth_position_feature, "strand"]].to_csv(
-            bed_file_name, sep="\t", header=None, index=None
+        print(
+            gtf_df[
+                [
+                    "chr",
+                    "start",
+                    "end",
+                    fourth_position_feature,
+                    fifth_position_feature,
+                    "strand",
+                ]
+            ].head()
         )
+
+        gtf_df[
+            [
+                "chr",
+                "start",
+                "end",
+                fourth_position_feature,
+                fifth_position_feature,
+                "strand",
+            ]
+        ].to_csv(bed_file_name, sep="\t", header=None, index=None)
         return bed_file_name
 
     @staticmethod
-    def df_to_df_bed(gtf_df, fourth_position_feature="gene_name", fifth_position_feature="transcript_id"):
+    def df_to_df_bed(
+        gtf_df,
+        fourth_position_feature="gene_name",
+        fifth_position_feature="transcript_id",
+    ):
         """Save a bed_file using a gtf as reference and returns df with a bed6 format"""
 
-        print(gtf_df[["chr", "start", "end", fourth_position_feature, fifth_position_feature, "strand"]].head())
+        print(
+            gtf_df[
+                [
+                    "chr",
+                    "start",
+                    "end",
+                    fourth_position_feature,
+                    fifth_position_feature,
+                    "strand",
+                ]
+            ].head()
+        )
 
-        return gtf_df[["chr", "start", "end", fourth_position_feature, fifth_position_feature, "strand"]]
+        return gtf_df[
+            [
+                "chr",
+                "start",
+                "end",
+                fourth_position_feature,
+                fifth_position_feature,
+                "strand",
+            ]
+        ]
 
     @staticmethod
     def hist_generate(gtf_df, feature="transcript_biotype"):
         """
         ex: GTFProcessing.hist_generate(gtf_to_test.head(1600), 'transcript_biotype')
         """
-        x_axis_feature = GTFProcessing.get_first_exon_df(gtf_df).groupby(feature).count()["start"]
+        x_axis_feature = (
+            GTFProcessing.get_first_exon_df(gtf_df)
+            .groupby(feature)
+            .count()["start"]
+        )
         plt.bar(range(0, x_axis_feature.values.shape[0]), x_axis_feature.values)
         print(x_axis_feature.keys())
         print(x_axis_feature.values)
-        plt.xticks(range(0, x_axis_feature.values.shape[0]), (x_axis_feature.keys().values), rotation="vertical")
+        plt.xticks(
+            range(0, x_axis_feature.values.shape[0]),
+            (x_axis_feature.keys().values),
+            rotation="vertical",
+        )
         plt.title(feature)
         plt.show()
 
@@ -222,11 +289,21 @@ class GTFProcessing:
         last_exon_df = GTFProcessing.get_last_exon_df(gtf_df)
         for k, v in tqdm(last_exon_df.groupby("gene_id")):
             if v.iloc[0]["strand"] == "+":
-                return_distal_exon.append(v.sort_values("end", ascending=False).iloc[0].values.tolist())
+                return_distal_exon.append(
+                    v.sort_values("end", ascending=False)
+                    .iloc[0]
+                    .values.tolist()
+                )
             if v.iloc[0]["strand"] == "-":
-                return_distal_exon.append(v.sort_values("start", ascending=True).iloc[0].values.tolist())
+                return_distal_exon.append(
+                    v.sort_values("start", ascending=True)
+                    .iloc[0]
+                    .values.tolist()
+                )
 
-        df_distal_exon_by_gene_id = pd.DataFrame(return_distal_exon, columns=last_exon_df.columns.values.tolist())
+        df_distal_exon_by_gene_id = pd.DataFrame(
+            return_distal_exon, columns=last_exon_df.columns.values.tolist()
+        )
         return df_distal_exon_by_gene_id
 
     @staticmethod
@@ -235,19 +312,41 @@ class GTFProcessing:
         first_exon_df = GTFProcessing.get_first_exon_df(gtf_df)
         for k, v in tqdm(first_exon_df.groupby("gene_id")):
             if v.iloc[0]["strand"] == "+":
-                return_distal_tss.append(v.sort_values("start", ascending=True).iloc[0].values.tolist())
+                return_distal_tss.append(
+                    v.sort_values("start", ascending=True)
+                    .iloc[0]
+                    .values.tolist()
+                )
             if v.iloc[0]["strand"] == "-":
-                return_distal_tss.append(v.sort_values("end", ascending=False).iloc[0].values.tolist())
+                return_distal_tss.append(
+                    v.sort_values("end", ascending=False)
+                    .iloc[0]
+                    .values.tolist()
+                )
 
-        df_distal_exon_by_gene_id = pd.DataFrame(return_distal_tss, columns=first_exon_df.columns.values.tolist())
+        df_distal_exon_by_gene_id = pd.DataFrame(
+            return_distal_tss, columns=first_exon_df.columns.values.tolist()
+        )
         return df_distal_exon_by_gene_id
 
 
 def motif_composition_helper(df: pd.DataFrame):
     fasta_file = open(f"synthetic_motifs.fasta", "w")
-    fasta_file.write("\n".join(df[["SEQUENCE", "ID"]].apply(lambda x: f">{x['ID']}\n{x['SEQUENCE']}", axis=1).tolist()))
+    fasta_file.write(
+        "\n".join(
+            df[["SEQUENCE", "ID"]]
+            .apply(lambda x: f">{x['ID']}\n{x['SEQUENCE']}", axis=1)
+            .tolist()
+        )
+    )
     fasta_file.close()
-    os.system(f"gimme scan synthetic_motifs.fasta  -p  JASPAR2020_vertebrates -g hg38 -n 20 > syn_results_motifs.bed")
-    df_motifs = pd.read_csv(f"syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
-    df_motifs["motifs"] = df_motifs[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
+    os.system(
+        f"gimme scan synthetic_motifs.fasta  -p  JASPAR2020_vertebrates -g hg38 -n 20 > syn_results_motifs.bed"
+    )
+    df_motifs = pd.read_csv(
+        f"syn_results_motifs.bed", sep="\t", skiprows=5, header=None
+    )
+    df_motifs["motifs"] = df_motifs[8].apply(
+        lambda x: x.split('motif_name "')[1].split('"')[0]
+    )
     return df_motifs

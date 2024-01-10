@@ -1,0 +1,101 @@
+name: Build Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: boolean
+        default: false
+      mode:
+        description: "Container build mode ('dev' uses branch name image tags and 'prod' uses short sha.)"
+        required: true
+        type: choice
+        default: "dev"
+        options:
+          - dev
+          - prod
+  workflow_call:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: string
+        default: "false"
+      mode:
+        description: "Container build mode ('dev' uses branch name image tags and 'prod' uses short sha.)"
+        required: true
+        type: string
+        default: "dev"
+    secrets:
+      GCP_ARTIFACT_REGISTRY_PATH:
+        description: "GCP Artifact Registry Path"
+        required: true
+
+env:
+  ARGO_NAMESPACE: argo
+  ARGO_VERSION: v3.5.1
+  CONTAINER_REGISTRY_URL1: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
+  CONTAINER_REGISTRY_URL2: 'ghcr.io/pinellolab'
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: pinellolab-runners
+    steps:
+    - name: Setup Runner for Argo
+      run: |
+        cd $HOME
+        sudo apt-get update && sudo apt-get install -y curl
+        curl -sLO https://github.com/argoproj/argo-workflows/releases/download/${ARGO_VERSION}/argo-linux-amd64.gz
+        gunzip argo-linux-amd64.gz
+        chmod +x argo-linux-amd64
+        sudo mv ./argo-linux-amd64 /usr/local/bin/argo
+        argo version
+    - name: Check out repository code
+      uses: actions/checkout@v4
+    - name: Inject slug/short variables
+      uses: rlespinasse/github-slug-action@v4
+      with:
+        prefix: CI_
+    - name: Setup tmate debug session
+      if: ${{ inputs.debug_enabled == 'true' }}
+      uses: mxschmitt/action-tmate@v3
+    - name: build
+      run: |
+        echo "CI commit sha: $CI_GITHUB_SHA"
+        echo "GitHub ref: $GITHUB_REF"
+        echo "CI ref: $CI_GITHUB_REF"
+        echo "CI ref name: $CI_GITHUB_REF_NAME"
+        echo "CI HEAD ref: $CI_GITHUB_HEAD_REF"
+        echo "Image build mode: $MODE"
+        echo "MODE=${{ inputs.mode }}"
+        MODE="${{ inputs.mode }}"
+        argo version --short
+
+        # disabled conda image build arguments
+        # -p imageName3="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-conda" \ #
+        # -p containerFilePath3="containers/conda.Dockerfile" \ #
+
+        argo submit .argo/build.yaml \
+          --generate-name="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-build-${CI_GITHUB_SHA_SHORT}-" \
+          -p mode="${MODE}" \
+          -p imageName1="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}" \
+          -p containerFilePath1="containers/pkg.Dockerfile" \
+          -p imageName2="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}-gpu" \
+          -p containerFilePath2="containers/gpu.Dockerfile" \
+          -p appName="${CI_GITHUB_REPOSITORY_NAME_PART_SLUG}" \
+          -p branch="${CI_GITHUB_REF_NAME}" \
+          -p shortSha="${CI_GITHUB_SHA_SHORT}" \
+          -p containerRegistryURL1="${CONTAINER_REGISTRY_URL1}" \
+          -p containerRegistryURL2="${CONTAINER_REGISTRY_URL2}" \
+          -p gitUrlNoProtocol="github.com/${CI_GITHUB_REPOSITORY_OWNER_PART_SLUG}" \
+          --wait --log

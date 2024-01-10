@@ -28,8 +28,8 @@
 - name: enhancement
   description: New feature or request
   color: a2eeef
-- name: github_actions
-  description: Pull requests that update Github_actions code
+- name: github-actions
+  description: Pull requests that update Github actions code
   color: "000000"
 - name: good first issue
   description: Good for newcomers
@@ -67,3 +67,21 @@
 - name: work-in-progress
   description: Work in progress that should not be auto-merged
   color: ffffff
+- name: build-images
+  description: Control image build on PRs
+  color: fef2c0
+- name: execute-workflow
+  description: Control workflow execution on PRs
+  color: 74da90
+- name: skip-ci
+  description: Skip CI workflow
+  color: 35539d
+- name: skip-tests
+  description: Skip Tests in CI workflow
+  color: 1dd225
+- name: actions-debug
+  description: Enable debugging in actions execution
+  color: 923411
+- name: workflow-mode-dev
+  description: Execute workflows in dev mode (branch name for container image tags)
+  color: 2085aa

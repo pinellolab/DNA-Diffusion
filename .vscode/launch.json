@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "dnadiffusion debug",
+            "type": "python",
+            "request": "launch",
+            "module": "dnadiffusion",
+            "args": [
+                // toggle to print config with overrides vs execute
+                "-c", "job",
+                //
+                // set execution context
+                "execution_context=local_shell",
+                // "execution_context=local_cluster_dev",
+                // "execution_context=remote_dev",
+                //
+                // workflow example
+                "entity_config=lrwine_training_workflow",
+                "entity_config.inputs._args_.0.logistic_regression.max_iter=1200",
+                //
+                // task example
+                // "entity_config=lrwine_process_data",
+                // "entity_config.inputs._args_=[]",
+                // "entity_config.inputs._args_.0.data.data=[[12.0, 0],[13.0, 1],[9.5, 2]]",
+                // "entity_config.inputs._args_.0.data.columns='[ash, target]'",
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "direnv allow"
+        }
+    ]
+}

@@ -1,4 +1,10 @@
 name: dnadiffusion
+# this manually curated environment.yml file
+# may be deprecated in favor of conda-lock.yml
+# see:
+#     $ poe -d conda-lock
+# and pyproject.toml:
+#     tool.poe.tasks.conda-lock
 channels:
     - nodefaults
     - pytorch

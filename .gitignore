@@ -1,5 +1,15 @@
 # Custom
 
+# nix
+.devenv
+.direnv
+# this is a bespoke "manual direnv" folder
+.dirman
+.pre-commit-config.yaml
+
+# flyte config file
+.flyte/config.yaml
+
 .hatch/
 .ruff_cache/
 
@@ -10,7 +20,8 @@
 logs/*
 
 # Hydra outputs folder
-outputs/*
+outputs/
+multirun/
 
 # Checkpoints folder
 dnadiffusion/checkpoints/*
