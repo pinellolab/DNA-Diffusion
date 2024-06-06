@@ -33,7 +33,7 @@ class UNet(nn.Module):
         self.init_conv = nn.Conv2d(input_channels, init_dim, (7, 7), padding=3)
         dims = [init_dim, *(dim * m for m in dim_mults)]
 
-        in_out = itertools.pairwise(dims)
+        in_out = list(zip(dims[:-1], dims[1:]))
         block_klass = partial(ResnetBlock, groups=resnet_block_groups)
 
         # time embeddings
