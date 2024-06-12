@@ -28,7 +28,7 @@ dependencies = [
   "pybedtools==0.9.1",
   "seaborn==0.13.0",
   "sourmash==4.8.4",
-  "torch==2.1.0",
+  "torch==2.3.1",
   "torchvision==0.16.0",
   "wandb==0.16.0",
 ]
