@@ -1,0 +1,252 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore: ["docs/**", "scripts/**", "**.md", "*"]
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, labeled, reopened, ready_for_review]
+    paths-ignore: ["docs/**", "scripts/**", "**.md", "*"]
+  
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: "Run with tmate.io debugging enabled"
+        required: true
+        type: boolean
+        default: false
+      run_build_images:
+        description: "Run build-images job"
+        required: false
+        type: boolean
+        default: false
+      run_execute_workflow:
+        description: "Run execute-workflow job"
+        required: false
+        type: boolean
+        default: false
+      workflow_execution_mode:
+        description: "Workflow execution mode"
+        required: false
+        type: string
+        default: "prod"
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  actions: write
+  contents: read
+
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+#   cancel-in-progress: true
+
+jobs:
+
+  set-variables:
+    runs-on: ubuntu-latest
+    outputs:
+      debug: ${{ steps.set-variables.outputs.debug }}
+      skip_ci: ${{ steps.set-variables.outputs.skip_ci }}
+      skip_tests: ${{ steps.set-variables.outputs.skip_tests }}
+      mode: ${{ steps.set-variables.outputs.mode }}
+  
+    steps:
+    - name: Set action variables
+      id: set-variables
+      run: |
+        DEBUG="false"
+        MODE="prod"
+        SKIP_CI="false"
+        SKIP_TESTS="false"
+
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          DEBUG="${{ inputs.debug_enabled }}"
+          MODE="${{ inputs.workflow_execution_mode }}"
+        fi
+
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          if ${{ contains(github.event.pull_request.labels.*.name, 'skip-ci') }}; then
+            SKIP_CI="true"
+          fi
+          if ${{ contains(github.event.pull_request.labels.*.name, 'skip-tests') }}; then
+            SKIP_TESTS="true"
+          fi
+          if ${{ contains(github.event.pull_request.labels.*.name, 'actions-debug') }}; then
+            DEBUG="true"
+          fi
+          if ${{ contains(github.event.pull_request.labels.*.name, 'workflow-mode-dev') }}; then
+            MODE="dev"
+          fi
+        fi
+
+        echo "DEBUG=$DEBUG"
+        echo "MODE=$MODE"
+        echo "SKIP_CI=$SKIP_CI"
+        echo "SKIP_TESTS=$SKIP_TESTS"
+
+        echo "DEBUG=$DEBUG" >> $GITHUB_OUTPUT
+        echo "MODE=$MODE" >> $GITHUB_OUTPUT
+        echo "SKIP_CI=$SKIP_CI" >> $GITHUB_OUTPUT
+        echo "SKIP_TESTS=$SKIP_TESTS" >> $GITHUB_OUTPUT
+
+  config-workflows:
+    needs: [set-variables]
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_execute_workflow)) }}
+    runs-on: ubuntu-latest
+    outputs:
+      config-path: ${{ steps.config-output.outputs.path }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create Flyte config from YAML template
+      id: yq-process
+      uses: mikefarah/yq@master
+      with:
+        cmd: "yq e \
+              '.admin.endpoint = strenv(FLYTE_CLUSTER_ENDPOINT) | \
+              .storage.stow.config.project_id = strenv(GCP_PROJECT_ID) | \
+              .storage.stow.config.scopes = strenv(GCP_STORAGE_SCOPES) | \
+              .storage.container = strenv(GCP_STORAGE_CONTAINER)' \
+              .flyte/config-template.yaml > .flyte/config.yaml"
+      env:
+        FLYTE_CLUSTER_ENDPOINT: ${{ secrets.FLYTE_CLUSTER_ENDPOINT }}
+        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        GCP_STORAGE_SCOPES: ${{ secrets.GCP_STORAGE_SCOPES }}
+        GCP_STORAGE_CONTAINER: ${{ secrets.GCP_STORAGE_CONTAINER }}
+      
+    - name: Upload Flyte config as an artifact
+      id: config-output
+      uses: actions/upload-artifact@v3
+      with:
+        name: flyte-config
+        path: ${{ secrets.FLYTECTL_CONFIG }}
+
+  test:
+    runs-on: ubuntu-latest
+    needs: [set-variables, config-workflows]
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && needs.set-variables.outputs.skip_tests != 'true' }} 
+    concurrency:
+      group: test-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
+      cancel-in-progress: true
+    strategy:
+      matrix:
+        python_version: ['3.10']
+
+    steps:
+    - name: Check Variables
+      run: |
+        echo "SKIP_CI=${{ needs.set-variables.outputs.skip_ci }}"
+        echo "SKIP_TESTS=${{ needs.set-variables.outputs.skip_tests }}"
+        echo "DEBUG=${{ needs.set-variables.outputs.debug }}"
+        echo "MODE=${{ needs.set-variables.outputs.mode }}"
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup environment
+      uses: ./.github/actions/setup_environment
+      with:
+        python_version: ${{ matrix.python_version }}
+        debug_enabled: ${{ needs.set-variables.outputs.debug }}
+
+    - name: Download Flyte config
+      uses: actions/download-artifact@v3
+      with:
+        name: flyte-config
+        path: .flyte/
+
+    - name: "Setup tmate debug session"
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ inputs.debug_enabled }}
+
+    - name: Lint and typecheck
+      run: |
+        make lint-check
+
+    - name: Run tests
+      run: |
+        make test-cov-xml
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+        verbose: true
+
+  build-images:
+    needs: [set-variables]
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'build-images') || contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_build_images)) }}
+    uses: ./.github/workflows/build-images.yaml
+    concurrency:
+      group: bi-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
+      cancel-in-progress: true
+    secrets:
+      GCP_ARTIFACT_REGISTRY_PATH: ${{ secrets.GCP_ARTIFACT_REGISTRY_PATH }}
+    with:
+      debug_enabled: ${{ needs.set-variables.outputs.debug }}
+      mode: ${{ needs.set-variables.outputs.mode }}
+
+  execute-workflow:
+    needs: [config-workflows, build-images, set-variables]
+    if: ${{ needs.set-variables.outputs.skip_ci != 'true' && (contains(github.event.pull_request.labels.*.name, 'execute-workflow') || (github.event_name == 'workflow_dispatch' && inputs.run_execute_workflow)) }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ef-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}-${{ needs.set-variables.outputs.mode }}
+      cancel-in-progress: true
+    strategy:
+      matrix:
+        python_version: ['3.10']
+    env:
+        FLYTECTL_CONFIG: ${{ secrets.FLYTECTL_CONFIG }}
+        FLYTE_OAUTH_CLIENT_SECRET: ${{ secrets.FLYTE_OAUTH_CLIENT_SECRET }}
+        WORKFLOW_IMAGE: ${{ vars.WORKFLOW_IMAGE }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+  
+    - name: Inject slug/short variables
+      uses: rlespinasse/github-slug-action@v4
+
+    - name: Setup environment
+      uses: ./.github/actions/setup_environment
+      with:
+        python_version: ${{ matrix.python_version }}
+        debug_enabled: ${{ needs.set-variables.outputs.debug }}
+
+    - name: Download Flyte config
+      uses: actions/download-artifact@v3
+      with:
+        name: flyte-config
+        path: .flyte/
+
+    - name: Setup tmate debug session
+      if: ${{ inputs.debug_enabled == 'true' }}
+      uses: mxschmitt/action-tmate@v3
+  
+    - name: Execute workflow
+      id: execute
+      run: |
+        make run_${{ needs.set-variables.outputs.mode }}
+
+    - name: Create config tarball
+      id: save-hydra-outputs
+      run: |
+        TAR_FILENAME="hydra_outputs_${GITHUB_SHA_SHORT}.tar.gz"
+        tar -czf $TAR_FILENAME ./outputs/
+        tar -tzf $TAR_FILENAME
+        echo "HYDRA_OUTPUTS_TAR=$TAR_FILENAME" >> $GITHUB_ENV
+
+    - name: Upload config artifact 
+      uses: actions/upload-artifact@v3
+      with:
+        name: hydra-outputs
+        path: ${{ env.HYDRA_OUTPUTS_TAR }}

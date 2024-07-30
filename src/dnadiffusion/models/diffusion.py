@@ -29,7 +29,9 @@ class Diffusion(nn.Module):
         self.register_buffer("alphas_cumprod_prev", alphas_cumprod_prev)
         self.register_buffer("sqrt_recip_alphas", torch.sqrt(1.0 / alphas))
         self.register_buffer("sqrt_alphas_cumprod", torch.sqrt(alphas_cumprod))
-        self.register_buffer("sqrt_one_minus_alphas_cumprod", torch.sqrt(1.0 - alphas_cumprod))
+        self.register_buffer(
+            "sqrt_one_minus_alphas_cumprod", torch.sqrt(1.0 - alphas_cumprod)
+        )
         self.register_buffer(
             "posterior_variance",
             betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod),
@@ -57,7 +59,9 @@ class Diffusion(nn.Module):
         )
 
     @torch.no_grad()
-    def p_sample_loop(self, classes, image_size, cond_weight, get_cross_map=False):
+    def p_sample_loop(
+        self, classes, image_size, cond_weight, get_cross_map=False
+    ):
         b = image_size[0]
         device = self.device
 
@@ -84,7 +88,11 @@ class Diffusion(nn.Module):
             sampling_fn = partial(self.p_sample)
 
         for i in reversed(range(0, self.timesteps)):
-            img, cross_matrix = sampling_fn(x=img, t=torch.full((b,), i, device=device, dtype=torch.long), t_index=i)
+            img, cross_matrix = sampling_fn(
+                x=img,
+                t=torch.full((b,), i, device=device, dtype=torch.long),
+                t_index=i,
+            )
             imgs.append(img.cpu().numpy())
             cross_images_final.append(cross_matrix.cpu().numpy())
 
@@ -96,12 +104,17 @@ class Diffusion(nn.Module):
     @torch.no_grad()
     def p_sample(self, x, t, t_index):
         betas_t = extract(self.betas, t, x.shape)
-        sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t, x.shape)
+        sqrt_one_minus_alphas_cumprod_t = extract(
+            self.sqrt_one_minus_alphas_cumprod, t, x.shape
+        )
         sqrt_recip_alphas_t = extract(self.sqrt_recip_alphas, t, x.shape)
 
         # Equation 11 in the paper
         # Use our model (noise predictor) to predict the mean
-        model_mean = sqrt_recip_alphas_t * (x - betas_t * self.model(x, time=t) / sqrt_one_minus_alphas_cumprod_t)
+        model_mean = sqrt_recip_alphas_t * (
+            x
+            - betas_t * self.model(x, time=t) / sqrt_one_minus_alphas_cumprod_t
+        )
 
         if t_index == 0:
             return model_mean
@@ -112,7 +125,9 @@ class Diffusion(nn.Module):
             return model_mean + torch.sqrt(posterior_variance_t) * noise
 
     @torch.no_grad()
-    def p_sample_guided(self, x, classes, t, t_index, context_mask, cond_weight):
+    def p_sample_guided(
+        self, x, classes, t, t_index, context_mask, cond_weight
+    ):
         # adapted from: https://openreview.net/pdf?id=qw8AKxfYbI
         batch_size = x.shape[0]
         device = self.device
@@ -120,15 +135,21 @@ class Diffusion(nn.Module):
         t_double = t.repeat(2).to(device)
         x_double = x.repeat(2, 1, 1, 1).to(device)
         betas_t = extract(self.betas, t_double, x_double.shape, device)
-        sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t_double, x_double.shape, device)
-        sqrt_recip_alphas_t = extract(self.sqrt_recip_alphas, t_double, x_double.shape, device)
+        sqrt_one_minus_alphas_cumprod_t = extract(
+            self.sqrt_one_minus_alphas_cumprod, t_double, x_double.shape, device
+        )
+        sqrt_recip_alphas_t = extract(
+            self.sqrt_recip_alphas, t_double, x_double.shape, device
+        )
 
         # classifier free sampling interpolates between guided and non guided using `cond_weight`
         classes_masked = classes * context_mask
         classes_masked = classes_masked.type(torch.long)
         # model = self.accelerator.unwrap_model(self.model)
         self.model.output_attention = True
-        preds, cross_map_full = self.model(x_double, time=t_double, classes=classes_masked)
+        preds, cross_map_full = self.model(
+            x_double, time=t_double, classes=classes_masked
+        )
         self.model.output_attention = False
         cross_map = cross_map_full[:batch_size]
         eps1 = (1 + cond_weight) * preds[:batch_size]
@@ -138,33 +159,52 @@ class Diffusion(nn.Module):
         # Equation 11 in the paper
         # Use our model (noise predictor) to predict the mean
         model_mean = sqrt_recip_alphas_t[:batch_size] * (
-            x - betas_t[:batch_size] * x_t / sqrt_one_minus_alphas_cumprod_t[:batch_size]
+            x
+            - betas_t[:batch_size]
+            * x_t
+            / sqrt_one_minus_alphas_cumprod_t[:batch_size]
         )
 
         if t_index == 0:
             return model_mean, cross_map
         else:
-            posterior_variance_t = extract(self.posterior_variance, t, x.shape, device)
+            posterior_variance_t = extract(
+                self.posterior_variance, t, x.shape, device
+            )
             noise = torch.randn_like(x)
             # Algorithm 2 line 4:
-            return model_mean + torch.sqrt(posterior_variance_t) * noise, cross_map
+            return (
+                model_mean + torch.sqrt(posterior_variance_t) * noise,
+                cross_map,
+            )
 
     def q_sample(self, x_start, t, noise=None):
         noise = default(noise, torch.randn_like(x_start))
         device = self.device
 
-        sqrt_alphas_cumprod_t = extract(self.sqrt_alphas_cumprod, t, x_start.shape, device)
-        sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape, device)
+        sqrt_alphas_cumprod_t = extract(
+            self.sqrt_alphas_cumprod, t, x_start.shape, device
+        )
+        sqrt_one_minus_alphas_cumprod_t = extract(
+            self.sqrt_one_minus_alphas_cumprod, t, x_start.shape, device
+        )
 
-        return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumprod_t * noise
+        return (
+            sqrt_alphas_cumprod_t * x_start
+            + sqrt_one_minus_alphas_cumprod_t * noise
+        )
 
-    def p_losses(self, x_start, t, classes, noise=None, loss_type="huber", p_uncond=0.1):
+    def p_losses(
+        self, x_start, t, classes, noise=None, loss_type="huber", p_uncond=0.1
+    ):
         device = self.device
         noise = default(noise, torch.randn_like(x_start))
 
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
 
-        context_mask = torch.bernoulli(torch.zeros(classes.shape[0]) + (1 - p_uncond)).to(device)
+        context_mask = torch.bernoulli(
+            torch.zeros(classes.shape[0]) + (1 - p_uncond)
+        ).to(device)
 
         # Mask for unconditional guidance
         classes = classes * context_mask

@@ -1,48 +1,299 @@
-[build-system]
-requires = ["hatchling", "hatch-regex-commit"]
-build-backend = "hatchling.build"
-
-[project]
+[tool.poetry]
 name = "dnadiffusion"
-authors = [
-  { name = "dnadiffusion", email = "dnadiffusion@pinellolab.org" }
+version = "0.0.0.dev1"
+packages = [
+    { include = "dnadiffusion", from = "src" },
 ]
-description = "Library for probabilistic analysis of protein-protein interaction sequencing data."
+description = "Generative modeling of regulatory DNA sequences with diffusion probabilistic models."
+authors = ["dnadiffusion team"]
 readme = "README.md"
-dynamic = ["version"]
+homepage = "https://pinellolab.github.io/DNA-Diffusion/"
+repository = "https://github.com/pinellolab/DNA-Diffusion"
+license = "AGPL-3.0-only"
+documentation = "https://pinellolab.github.io/DNA-Diffusion/"
 classifiers = [
-    "Programming Language :: Python :: 3 :: Only",
-]
-requires-python = ">=3.10"
-dependencies = [
-  "accelerate==0.24.1",
-  "click==8.1.7",
-  "einops==0.7.0",
-  "genomepy==0.16.1",
-  "gimmemotifs==0.18.0",
-  "gtfparse==1.3.0",
-  "jupyterlab==4.0.9",
-  "matplotlib==3.8.1",
-  "memory-efficient-attention-pytorch==0.1.6",
-  "pandas==2.1.3",
-  "pybedtools==0.9.1",
-  "seaborn==0.13.0",
-  "sourmash==4.8.4",
-  "torch==2.3.1",
-  "torchvision==0.19.0",
-  "wandb==0.16.0",
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
 ]
 
-[project.scripts]
-dnadiffusion = "dnadiffusion.cli:main"
+[tool.poetry.urls]
+Changelog = "https://github.com/pinellolab/DNA-Diffusion/releases"
 
-[project.urls]
-Documentation = "https://pinellolab.github.io/DNA-Diffusion"
-Source = "https://github.com/pinellolab/DNA-Diffusion"
+[tool.poetry.dependencies]
+python = "3.10.13"
+accelerate = "0.24.1"
+click = "8.1.7"
+einops = "0.7.0"
+jupyterlab = "4.0.9"
+matplotlib = "3.8.1"
+# not available in a conda channel
+memory-efficient-attention-pytorch = {version = "0.1.6", source = "pypi"}
+numpy = "1.26.2"
+pandas = "2.1.3"
+# pybedtools 0.9.1 uses the ISO C++17 eliminated `register` keyword
+scipy = "1.10.1"
+seaborn = "0.13.0"
+torch = "2.1.0"
+torchvision = "0.16.0"
+# wandb 0.16.0 not yet on conda-forge
+wandb = {version = "0.16.0", source = "pypi"}
+
+#-----------------
+# dev dependencies
+#-----------------
+
+# lint dep group
+black = { version = "23.11.0", optional = true, extras = ["jupyter"] }
+mypy = { version = "1.7.1", optional = true }
+pyright = { version = "1.1.339", optional = true }
+ruff = { version = "0.1.5", optional = true }
+
+# test dep group
+poethepoet = { version = "0.24.4", optional = true }
+pytest = { version = "7.4.3", optional = true }
+pytest-asyncio = { version = "0.21.1", optional = true }
+pytest-cov = { version = "4.1.0", optional = true }
+xdoctest = { version = "1.1.2", optional = true }
+
+# docs dep group
+jupytext = { version = "1.16.0", optional = true }
+jupyter_contrib_nbextensions = { version = "0.7.0", optional = true }
+mkdocs-jupyter = { version = "0.24.6", optional = true }
+mkdocs-material = { version = "9.4.14", optional = true }
+mkdocstrings = { version = "0.24.0", optional = true, extras = ["python"] }
+notebook = { version = "6.4.13", optional = true }
+
+#-----------------
+# aux dependencies
+#-----------------
+
+# workflows dep group
+dataclasses-json = { version = "0.5.9", optional = true }
+# TODO: remove fork install after
+# https://github.com/flyteorg/flytekit/pull/1818
+# flytekit = { version = "1.10.1", optional = true }
+flytekit = { git = "https://github.com/cameronraysmith/flytekit.git", branch = "3928-pandas-2", optional = true }
+# This is only utilized for issue reporting to conda-lock
+# https://github.com/conda/conda-lock/issues/568
+# flytekit = { git = "https://github.com/cameronraysmith/flytekit.git", rev = "b1e64ba20f1ddd83723e455d2bf893d8f3fc84b7", optional = true }
+fsspec = { version = "2023.9.2", optional = true }
+hydra-zen = { version = "0.11.0", optional = true }
+hydra-joblib-launcher = { version = "1.2.0", optional = true }
+mashumaro = { version = "3.11", optional = true }
+plumbum = { version = "1.8.2", optional = true }
+pyperclip = { version = "1.8.2", optional = true }
+python-dotenv = { version = "1.0.0", optional = true }
+rich = { version = "13.6.0", optional = true }
+scikit-learn = { version = "1.3.2", optional = true }
+
+# bioinformatics dep group
+genomepy = {version = "0.16.1", optional = true}
+# genomepy depends on mysql-connector-python which has not been
+# a python package since April 20, 2021 when it began a series of
+# releases starting with 8.0.24 that lacks a setup.py or pyproject.toml
+# in the source distribution. Indeed,
+# pip download mysql-connector-python==8.0.24 --no-binary :all:
+# fails with this notice.
+# https://bugs.mysql.com/bug.php?id=113396
+mysql-connector-python = {version = "8.0.23", optional = true}
+# gimmemotifs 0.18.0 
+# - is not compatible with configparser 6.0.0 but it does not include this bound in its setup.py
+# - has minor incompatibilities with modern C compilers
+# gimmemotifs = "0.18.0"
+gimmemotifs = { git = "https://github.com/cameronraysmith/gimmemotifs.git", branch = "bound-configparser-6" , optional = true}
+# gtfparse 1.3.0 never released to bioconda
+gtfparse = {version = "1.3.0", source = "pypi", optional = true}
+# Comment HTSeq for `poe conda-lock` generation
+# as conda-lock forces default branch sha
+# and conda-forge/bioconda installs HTSeq indirectly via biofluff <- gimmemotifs
+htseq = {version = "2.0.5", optional = true}
+pybedtools = { git = "https://github.com/cameronraysmith/pybedtools.git", branch = "cpp17-no-register", optional = true}
+pysam = {version = "0.22.0", optional = true}
+sourmash = {version = "4.8.4", optional = true}
+
+
+[tool.poetry.group.bioinformatics]
+optional = true
+
+[tool.poetry.group.bioinformatics.dependencies]
+genomepy = "0.16.1"
+mysql-connector-python = "8.0.23"
+# gimmemotifs 0.18.0 
+# - is not compatible with configparser 6.0.0 but it does not include this bound in its setup.py
+# - has minor incompatibilities with modern C compilers
+# gimmemotifs = "0.18.0"
+gimmemotifs = { git = "https://github.com/cameronraysmith/gimmemotifs.git", branch = "bound-configparser-6" }
+# gtfparse 1.3.0 never released to bioconda
+gtfparse = {version = "1.3.0", source = "pypi"}
+htseq = "2.0.5"
+pybedtools = { git = "https://github.com/cameronraysmith/pybedtools.git", branch = "cpp17-no-register" }
+pysam = "0.22.0"
+sourmash = "4.8.4"
+
+
+[tool.poetry.group.workflows]
+optional = true
+
+[tool.poetry.group.workflows.dependencies]
+dataclasses-json = "0.5.9"
+# flytekit = "1.10.1"
+flytekit = { git = "https://github.com/cameronraysmith/flytekit.git", branch = "3928-pandas-2" }
+# This is only utilized for issue reporting to conda-lock
+# https://github.com/conda/conda-lock/issues/568
+# flytekit = { git = "https://github.com/cameronraysmith/flytekit.git", rev = "b1e64ba20f1ddd83723e455d2bf893d8f3fc84b7" }
+fsspec = "2023.9.2"
+hydra-zen = "0.11.0"
+hydra-joblib-launcher = "1.2.0"
+mashumaro = "3.11"
+plumbum = "1.8.2"
+pyperclip = "1.8.2"
+python-dotenv = "1.0.0"
+rich = "13.6.0"
+scikit-learn = "1.3.2"
+
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+black = { version = "23.11.0", extras = ["jupyter"] }
+mypy = "1.7.1"
+pyright = "1.1.339"
+ruff = "0.1.5"
+docformatter = { version = "1.7.5", extras = ["tomli"] }
+
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+poethepoet = "0.24.4"
+pytest = "7.4.3"
+pytest-asyncio = "0.21.1"
+pytest-cov = "4.1.0"
+xdoctest = "1.1.2"
+
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+jupytext = "1.16.0"
+jupyter_contrib_nbextensions = "0.7.0"
+mkdocs-jupyter = "0.24.6"
+mkdocs-material = "9.4.14"
+mkdocstrings = { version = "0.24.0", extras = ["python"] }
+notebook = "6.4.13"
+
+[tool.poetry.extras]
+bioinformatics = [
+  "genomepy",
+  "mysql-connector-python",
+  "gimmemotifs",
+  "gtfparse",
+  "htseq",
+  "pybedtools",
+  "pysam",
+  "sourmash",
+]
+
+workflows = [
+  "dataclasses-json",
+  "flytekit",
+  "fsspec",
+  "hydra-zen",
+  "hydra-joblib-launcher",
+  "mashumaro",
+  "plumbum",
+  "pyperclip",
+  "python-dotenv",
+  "rich",
+  "scikit-learn",
+]
+
+docs = [
+  "jupytext",
+  "jupyter_contrib_nbextensions",
+  "mkdocs-jupyter",
+  "mkdocs-material",
+  "mkdocstrings",
+  "notebook",
+ ]
+
+lint = [
+  "black",
+  "mypy",
+  "pyright",
+  "ruff",
+ ]
+
+test = [
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "xdoctest",
+ ]
+
+dev = [
+  "black",
+  "jupytext",
+  "jupyter_contrib_nbextensions",
+  "mkdocs-jupyter",
+  "mkdocs-material",
+  "mkdocstrings",
+  "mypy",
+  "notebook",
+  "poethepoet",
+  "pyright",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "ruff",
+  "xdoctest",
+ ]
+
+[tool.poe.tasks.conda-lock]
+cmd = """
+  conda-lock \
+  --conda mamba \
+  --kind lock \
+  --kind env \
+  --no-dev-dependencies \
+  --filter-categories \
+  --category workflows \
+  --category bioinformatics \
+  --virtual-package-spec environments/conda/virtual-packages.yml \
+  --filename-template "environments/conda/conda-{platform}.lock" \
+  --lockfile environments/conda/conda-lock.yml \
+  -f pyproject.toml
+"""
+help = "Runs conda-lock to generate a conda environment lock file derived from package dependencies."
+
+[tool.poe.tasks]
+torch-cpu = {cmd="pip install --force-reinstall torch==2.1.0 --index-url https://download.pytorch.org/whl/cpu", help="Installs torch 2.1.0 for CPU"}
+
+[tool.black]
+target-version = ["py37"]
+line-length = 80
+skip-string-normalization = true
+
+[tool.docformatter]
+black = true
+wrap-summaries = 80
+wrap-descriptions = 80
+recursive = true
+in-place = true
+diff = true
+make-summary-multi-line = true
+pre-summary-newline = true
 
 [tool.ruff]
-target-version = "py310"
-line-length = 120
+target-version = "py37"
+line-length = 80
 select = [
   "A",
   # "ARG",
@@ -53,6 +304,7 @@ select = [
   "EM",
   # "F",
   # "FBT",
+  "F401",
   "I",
   "ICN",
   "ISC",
@@ -79,22 +331,14 @@ ignore = [
   "S105", "S106", "S107",
   # Ignore complexity
   "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
-  # Pairwise error to ignore
-  "RUF007"
 ]
 unfixable = [
-  # Don't touch unused imports
-  "F401",
-]
-exclude = [
-    "src/refactor",
+  # Don't modify unused imports
+  # "F401",
 ]
 
 [tool.ruff.isort]
 known-first-party = ["dnadiffusion"]
-
-[tool.ruff.format]
-quote-style = "double"
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -103,19 +347,72 @@ ban-relative-imports = "all"
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
-[tool.pytest.ini_options]
-addopts = "--cov=src/dnadiffusion/ --cov-report=term-missing --ignore=src/refactor"
-asyncio_mode = "strict"
-
-[tool.coverage.run]
-source_pkgs = ["dnadiffusion", "tests"]
-branch = true
-parallel = true
-omit = [
-  "src/dnadiffusion/__about__.py",
-  "src/dnadiffusion/__main__.py",
-  "tests/conftest.py",
+[tool.pyright]
+include = ["src"]
+exclude = [
+       "**/node_modules",
+       "**/__pycache__",
+       "**/.hypothesis",
+       "**/docs",
 ]
+reportUnnecessaryTypeIgnoreComment = true
+reportUnnecessaryIsInstance = false
+
+[tool.mypy]
+python_version = "3.10"
+
+[[tool.mypy.overrides]]
+module = [
+]
+ignore_missing_imports = true
+warn_unreachable = true
+pretty = true
+show_column_numbers = true
+show_error_codes = true
+show_error_context = true
+
+[tool.conda-lock]
+channels = [
+    'nodefaults', 
+    'pytorch',
+    'nvidia',
+    'conda-forge', 
+    'bioconda', 
+]
+platforms = [
+    'linux-64',
+    # 'linux-aarch64',
+    # 'osx-arm64',
+    # 'osx-amd64'
+]
+conda_executor = "mamba"
+log_level = "INFO"
+virtual_package_spec = "environments/conda/virtual-packages.yml"
+
+[tool.conda-lock.dependencies]
+dataclasses-json = {source = "pypi"}
+genomepy = {source = "pypi"}
+# transient fork dependency to allow pandas >=2
+# unfortunately conda-lock takes the default branch sha
+# even if rev is specified explicitly
+flytekit = { git = "https://github.com/cameronraysmith/flytekit.git", branch = "3928-pandas-2" }
+# This is only utilized for issue reporting to conda-lock
+# https://github.com/conda/conda-lock/issues/568
+# flytekit = { git = "https://github.com/cameronraysmith/flytekit.git", rev = "b1e64ba20f1ddd83723e455d2bf893d8f3fc84b7" }
+# not available in conda channels
+htseq = {source = "pypi"}
+hydra-zen = {source = "pypi"}
+hydra-joblib-launcher = {source = "pypi"}
+mysql-connector-python = {source = "pypi"}
+pip = ">=23.2"
+
+[tool.poetry.scripts]
+dna = "dnadiffusion.hydra:main"
+dnadiffusion = "dnadiffusion.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-rA --xdoc --cov=src/dnadiffusion/ --cov-report=term-missing --ignore=./notebooks"
+asyncio_mode = "auto"
 
 [tool.coverage.paths]
 dnadiffusion = ["src/dnadiffusion", "*/dnadiffusion/src/dnadiffusion"]
@@ -128,64 +425,19 @@ exclude_lines = [
   "if TYPE_CHECKING:",
 ]
 
-[tool.mypy]
-python_version = "3.10"
-
-[[tool.mypy.overrides]]
-module = [
-    "accelerate",
-    "Bio",
-    "hydra_zen",
-    "memory_efficient_attention_pytorch",
-    "matplotlib",
-    "matplotlib.pyplot",
-    "pandas",
-    "torchvision",
-    "torchvision.transforms",
-    "seaborn",
-    "scipy.special",
-    "sourmash",
-]
-ignore_missing_imports = true
-
-[tool.hatch]
-
-[tool.hatch.build.targets.wheel]
-packages = ['src/dnadiffusion']
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.version]
-path = "src/dnadiffusion/__about__.py"
-
-[tool.hatch.envs.default]
-python = "3.10"
-dependencies = [
-    "mkdocs-material==9.4.8",
-    "mkdocstrings==0.23.0",
-    "mkdocstrings[python]",
-    "mypy==1.10.0",
-    "pytest==7.4.3",
-    "pytest-asyncio==0.21.1",
-    "pytest-cov==4.1.0",
-    "ruff==0.1.6",
-    "types-tqdm==4.66.0.4",
-    "xdoctest==1.1.2",
+[tool.coverage.run]
+source_pkgs = ["dnadiffusion", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/dnadiffusion/__init__.py",
+  "src/dnadiffusion/__main__.py",
+  "tests/conftest.py",
 ]
 
-[tool.hatch.envs.default.scripts]
-test = "pytest -rA"
-test-cov-xml = "pytest -rA --cov-report=xml"
-lint = [
-  "ruff format .",
-  "ruff --fix .",
-  # "mypy src/dnadiffusion/",
-]
-lint-check = [
-  "ruff format --check .",
-  "ruff .",
-  # "mypy src/dnadiffusion/",
-]
-docs-serve = "mkdocs serve"
-docs-build = "mkdocs build"
+[tool.jupytext]
+formats = "ipynb,text//py:percent,text//md"
+
+[build-system]
+requires = ["poetry-core>=1.7.1"]
+build-backend = "poetry.core.masonry.api"

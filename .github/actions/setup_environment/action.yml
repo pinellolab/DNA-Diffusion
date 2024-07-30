@@ -1,0 +1,59 @@
+name: 'Setup Environment'
+description: 'Shared steps to setup the environment for CI jobs'
+
+inputs:
+  python_version:
+    description: 'Python version to setup'
+    required: true
+  debug_enabled:
+    description: "Run with tmate.io debugging enabled"
+    required: true
+    default: "false"
+  gpu_enabled:
+    description: "Do not downgrade to CPU libraries"
+    required: true
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      id: setup-python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python_version }}
+    - name: Install system dependencies
+      shell: bash
+      run: |
+        echo "install system dependencies"
+        # sudo apt-get update
+        # sudo apt-get install -y tree
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.7.1
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+    - name: Install dependencies
+      shell: bash
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --with docs,lint,test,workflows,bioinformatics --no-interaction --no-root
+    - name: Install project
+      shell: bash
+      run: poetry install --with docs,lint,test,workflows,bioinformatics --no-interaction
+    - name: Downgrade to torch CPU
+      if: ${{ inputs.gpu_enabled != 'true' }}
+      shell: bash
+      run: |
+        source $VENV
+        poe torch-cpu
+    - name: "Setup tmate debug session"
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ inputs.debug_enabled == 'true' }}

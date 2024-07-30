@@ -83,19 +83,27 @@ class EMA:
         self.beta = beta
         self.step = 0
 
-    def update_model_average(self, ma_model: nn.Module, current_model: nn.Module) -> None:
-        for current_params, ma_params in zip(current_model.parameters(), ma_model.parameters()):
+    def update_model_average(
+        self, ma_model: nn.Module, current_model: nn.Module
+    ) -> None:
+        for current_params, ma_params in zip(
+            current_model.parameters(), ma_model.parameters()
+        ):
             old_weight, up_weight = ma_params.data, current_params.data
             ma_params.data = self.update_average(old_weight, up_weight)
 
-    def update_average(self, old: torch.Tensor, new: torch.Tensor) -> torch.Tensor:
+    def update_average(
+        self, old: torch.Tensor, new: torch.Tensor
+    ) -> torch.Tensor:
         if old is None:
             return new
         device = new.device
         old = old.to(device)
         return old * self.beta + (1 - self.beta) * new
 
-    def step_ema(self, ema_model: nn.Module, model: nn.Module, step_start_ema: int = 500) -> None:
+    def step_ema(
+        self, ema_model: nn.Module, model: nn.Module, step_start_ema: int = 500
+    ) -> None:
         if self.step < step_start_ema:
             self.reset_parameters(ema_model, model)
             self.step += 1
@@ -119,7 +127,9 @@ def cosine_beta_schedule(timesteps: int, s: float = 0.008):
     """
     steps = timesteps + 1
     x = torch.linspace(0, timesteps, steps)
-    alphas_cumprod = torch.cos(((x / timesteps) + s) / (1 + s) * torch.pi * 0.5) ** 2
+    alphas_cumprod = (
+        torch.cos(((x / timesteps) + s) / (1 + s) * torch.pi * 0.5) ** 2
+    )
     alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
     betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
     return torch.clip(betas, 0.0001, 0.9999)

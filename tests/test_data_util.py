@@ -18,7 +18,13 @@ def sample_df():
         {
             "SEQUENCE": ["ACTG", "GATC", "TAGC", "GCTA", "ATCG"],
             "CELL_TYPE": ["GM12878", "HEPG2", "HESCT0", "K562", "NO"],
-            "TAG": ["GENERATED", "PROMOTERS", "RANDOM_GENOME_REGIONS", "test", "training"],
+            "TAG": [
+                "GENERATED",
+                "PROMOTERS",
+                "RANDOM_GENOME_REGIONS",
+                "test",
+                "training",
+            ],
         }
     )
 
@@ -28,7 +34,9 @@ def test_seq_extract(tmp_path, sample_df):
     assert len(seqs) == 1
     assert seqs["SEQUENCE"].tolist() == ["ACTG"]
 
-    expected = pd.DataFrame({"SEQUENCE": ["ACTG"], "CELL_TYPE": ["GM12878"], "TAG": ["GENERATED"]})
+    expected = pd.DataFrame(
+        {"SEQUENCE": ["ACTG"], "CELL_TYPE": ["GM12878"], "TAG": ["GENERATED"]}
+    )
 
     pd.testing.assert_frame_equal(seqs, expected)
 
@@ -40,7 +48,14 @@ class MockGenome:
 
 @pytest.fixture
 def mock_df():
-    return pd.DataFrame({"seqname": ["chr1", "chr2"], "start": [10, 20], "end": [100, 200], "summit": [50, 150]})
+    return pd.DataFrame(
+        {
+            "seqname": ["chr1", "chr2"],
+            "start": [10, 20],
+            "end": [100, 200],
+            "summit": [50, 150],
+        }
+    )
 
 
 def test_add_sequence_column(mock_df):
@@ -81,7 +96,9 @@ def test_sequence_bounds():
     assert sequence_bounds(summit, start, end, length) == expected
 
 
-def test_seq_extract(data_path: str = "tests/test_data/data_util/seq_extract_data.txt"):
+def test_seq_extract(
+    data_path: str = "tests/test_data/data_util/seq_extract_data.txt",
+):
     seqs = SEQ_EXTRACT(data_path)
 
     # Dict of all the tag combinations
@@ -99,12 +116,18 @@ def test_seq_extract(data_path: str = "tests/test_data/data_util/seq_extract_dat
         if isinstance(cell_type, list):
             for cell in cell_type:
                 seq_input = seqs.extract_seq(tag, cell).reset_index(drop=True)
-                seq_output = pd.read_csv(f"tests/test_data/data_util/{tag}_{cell}.txt", sep="\t", dtype=object)
+                seq_output = pd.read_csv(
+                    f"tests/test_data/data_util/{tag}_{cell}.txt",
+                    sep="\t",
+                    dtype=object,
+                )
                 # Assert the two dataframes are equal
                 pd.testing.assert_frame_equal(seq_input, seq_output)
         else:
             seq_input = seqs.extract_seq(tag, cell_type).reset_index(drop=True)
-            seq_output = pd.read_csv(f"tests/test_data/data_util/{tag}.txt", sep="\t", dtype=object)
+            seq_output = pd.read_csv(
+                f"tests/test_data/data_util/{tag}.txt", sep="\t", dtype=object
+            )
             # Assert the two dataframes are equal
             pd.testing.assert_frame_equal(seq_input, seq_output)
 
@@ -152,7 +175,9 @@ def mock_fasta(tmpdir):
 
 @pytest.fixture
 def sample_df():
-    return pd.read_csv("tests/test_data/data_util/motif_composition_helper_data.txt", sep="\t")
+    return pd.read_csv(
+        "tests/test_data/data_util/motif_composition_helper_data.txt", sep="\t"
+    )
 
 
 def test_motif_composition_helper(sample_df, mock_fasta, mock_bed):

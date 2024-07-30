@@ -1,9 +1,8 @@
-from unittest.mock import patch
-
-import pandas as pd
 import pytest
 
-from dnadiffusion.metrics.motif_composition import motif_composition_matrix, parse_motif_file
+from dnadiffusion.metrics.motif_composition import (
+    parse_motif_file,
+)
 
 
 def test_parse_motif_file():

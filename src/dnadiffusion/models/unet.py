@@ -1,6 +1,5 @@
 import itertools
 from functools import partial
-from typing import Optional
 
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
 
@@ -66,7 +65,9 @@ class UNet(nn.Module):
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         block_klass(dim_in, dim_in, time_emb_dim=time_dim),
                         Residual(PreNorm(dim_in, LinearAttention(dim_in))),
-                        Downsample(dim_in, dim_out) if not is_last else nn.Conv2d(dim_in, dim_out, 3, padding=1),
+                        Downsample(dim_in, dim_out)
+                        if not is_last
+                        else nn.Conv2d(dim_in, dim_out, 3, padding=1),
                     ]
                 )
             )
@@ -81,10 +82,16 @@ class UNet(nn.Module):
             self.ups.append(
                 nn.ModuleList(
                     [
-                        block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
-                        block_klass(dim_out + dim_in, dim_out, time_emb_dim=time_dim),
+                        block_klass(
+                            dim_out + dim_in, dim_out, time_emb_dim=time_dim
+                        ),
+                        block_klass(
+                            dim_out + dim_in, dim_out, time_emb_dim=time_dim
+                        ),
                         Residual(PreNorm(dim_out, LinearAttention(dim_out))),
-                        Upsample(dim_out, dim_in) if not is_last else nn.Conv2d(dim_out, dim_in, 3, padding=1),
+                        Upsample(dim_out, dim_in)
+                        if not is_last
+                        else nn.Conv2d(dim_out, dim_in, 3, padding=1),
                     ]
                 )
             )
@@ -101,7 +108,9 @@ class UNet(nn.Module):
         )
         self.norm_to_cross = nn.LayerNorm(dim * 4)
 
-    def forward(self, x: torch.Tensor, time: torch.Tensor, classes: torch.Tensor):
+    def forward(
+        self, x: torch.Tensor, time: torch.Tensor, classes: torch.Tensor
+    ):
         x = self.init_conv(x)
         r = x.clone()
 

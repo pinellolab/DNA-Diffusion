@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -36,10 +35,15 @@ def create_sample(
                 classes, (sample_bs, 1, 4, 200), cond_weight_to_metric
             )
             # save cross attention maps in a numpy array
-            np.save(f"cross_att_values_{conditional_numeric_to_tag[group_number]}.npy", cross_att_values)
+            np.save(
+                f"cross_att_values_{conditional_numeric_to_tag[group_number]}.npy",
+                cross_att_values,
+            )
 
         else:
-            sampled_images = diffusion_model.sample(classes, (sample_bs, 1, 4, 200), cond_weight_to_metric)
+            sampled_images = diffusion_model.sample(
+                classes, (sample_bs, 1, 4, 200), cond_weight_to_metric
+            )
 
         if save_timesteps:
             seqs_to_df = {}
@@ -54,7 +58,10 @@ def create_sample(
         else:
             for n_b, x in enumerate(sampled_images[-1]):
                 seq_final = f">seq_test_{n_a}_{n_b}\n" + "".join(
-                    [nucleotides[s] for s in np.argmax(x.reshape(4, 200), axis=0)]
+                    [
+                        nucleotides[s]
+                        for s in np.argmax(x.reshape(4, 200), axis=0)
+                    ]
                 )
                 final_sequences.append(seq_final)
 
@@ -70,7 +77,9 @@ def create_sample(
 
     if save_dataframe:
         # Saving list of sequences to txt file
-        with open(f"final_{conditional_numeric_to_tag[group_number]}.txt", "w") as f:
+        with open(
+            f"final_{conditional_numeric_to_tag[group_number]}.txt", "w"
+        ) as f:
             f.write("\n".join(final_sequences))
         return
 
@@ -83,12 +92,22 @@ def extract_motifs(sequence_list: list):
     motifs = open("synthetic_motifs.fasta", "w")
     motifs.write("\n".join(sequence_list))
     motifs.close()
-    os.system("gimme scan synthetic_motifs.fasta -p JASPAR2020_vertebrates -g hg38 -n 20> syn_results_motifs.bed")
-    df_results_syn = pd.read_csv("syn_results_motifs.bed", sep="\t", skiprows=5, header=None)
+    os.system(
+        "gimme scan synthetic_motifs.fasta -p JASPAR2020_vertebrates -g hg38 -n 20> syn_results_motifs.bed"
+    )
+    df_results_syn = pd.read_csv(
+        "syn_results_motifs.bed", sep="\t", skiprows=5, header=None
+    )
 
-    df_results_syn["motifs"] = df_results_syn[8].apply(lambda x: x.split('motif_name "')[1].split('"')[0])
-    df_results_syn[0] = df_results_syn[0].apply(lambda x: "_".join(x.split("_")[:-1]))
-    df_motifs_count_syn = df_results_syn[[0, "motifs"]].groupby("motifs").count()
+    df_results_syn["motifs"] = df_results_syn[8].apply(
+        lambda x: x.split('motif_name "')[1].split('"')[0]
+    )
+    df_results_syn[0] = df_results_syn[0].apply(
+        lambda x: "_".join(x.split("_")[:-1])
+    )
+    df_motifs_count_syn = (
+        df_results_syn[[0, "motifs"]].groupby("motifs").count()
+    )
     return df_motifs_count_syn
 
 
