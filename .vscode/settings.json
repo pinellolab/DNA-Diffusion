@@ -1,7 +1,7 @@
 {
   "cloudcode.autoDependencies": "on",
   "workbench.iconTheme": "vscode-icons",
-  "workbench.colorTheme": "poimandres",
+  "workbench.colorTheme": "Catppuccin Mocha",
   "search.exclude": {
     "**/.devenv/**": true,
     "**/.direnv/**": true,
