@@ -9,14 +9,36 @@ import pandas as pd
 import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader, Dataset
+from torch.utils.data.distributed import DistributedSampler
 
 from dnadiffusion.utils.utils import one_hot_encode
 
 
+def get_dataloader(
+    dataset: Dataset,
+    batch_size: int,
+    num_workers: int,
+    distributed: bool,
+    pin_memory: bool,
+) -> tuple[DataLoader, Any]:
+    if distributed:
+        sampler = DistributedSampler(dataset, shuffle=True)
+    else:
+        sampler = None
+    dataloader = DataLoader(
+        dataset,
+        batch_size,
+        sampler=sampler,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
+    )
+    return dataloader, sampler
+
+
 def load_data(
-    data_path: str = "K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
-    saved_data_path: str = "encode_data.pkl",
-    subset_list: list = [
+    data_path: str = f"{DATA_DIR}/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
+    saved_data_path: str = f"{DATA_DIR}/encode_data.pkl",
+    subset_list: List = [
         "GM12878_ENCLB441ZZZ",
         "hESCT0_ENCLB449ZZZ",
         "K562_ENCLB843GMH",
@@ -43,11 +65,14 @@ def load_data(
     train_motifs = encode_data["train"]["motifs"]
     train_motifs_cell_specific = encode_data["train"]["final_subset_motifs"]
 
+    validation_motifs = encode_data["validation"]["motifs"]
+    validation_motifs_cell_specific = encode_data["validation"]["final_subset_motifs"]
+
     test_motifs = encode_data["test"]["motifs"]
     test_motifs_cell_specific = encode_data["test"]["final_subset_motifs"]
 
-    shuffle_motifs = encode_data["train_shuffled"]["motifs"]
-    shuffle_motifs_cell_specific = encode_data["train_shuffled"]["final_subset_motifs"]
+    shuffle_motifs = encode_data["validation_shuffle"]["motifs"]
+    shuffle_motifs_cell_specific = encode_data["validation_shuffle"]["final_subset_motifs"]
 
     # Creating sequence dataset
     df = encode_data["train"]["df"]
@@ -56,16 +81,27 @@ def load_data(
     X_train = np.array([x.T.tolist() for x in x_train_seq])
     X_train[X_train == 0] = -1
 
+    # Create test dataset using chr1
+    val_df = encode_data["validation"]["df"]
+    val_test_seq = np.array([one_hot_encode(x, nucleotides, 200) for x in val_df["sequence"] if "N" not in x])
+    X_val = np.array([x.T.tolist() for x in val_test_seq])
+    X_val[X_val == 0] = -1
+
     # Creating labels
     tag_to_numeric = {x: n for n, x in enumerate(df["TAG"].unique(), 1)}
     numeric_to_tag = dict(enumerate(df["TAG"].unique(), 1))
     cell_types = list(numeric_to_tag.keys())
     x_train_cell_type = torch.tensor([tag_to_numeric[x] for x in df["TAG"]])
 
+    # Creating labels for test
+    x_val_cell_type = torch.tensor([tag_to_numeric[x] for x in val_df["TAG"]])
+
     # Collecting variables into a dict
     encode_data_dict = {
         "train_motifs": train_motifs,
         "train_motifs_cell_specific": train_motifs_cell_specific,
+        "validation_motifs": validation_motifs,
+        "validation_motifs_cell_specific": validation_motifs_cell_specific,
         "test_motifs": test_motifs,
         "test_motifs_cell_specific": test_motifs_cell_specific,
         "shuffle_motifs": shuffle_motifs,
@@ -74,7 +110,9 @@ def load_data(
         "numeric_to_tag": numeric_to_tag,
         "cell_types": cell_types,
         "X_train": X_train,
+        "X_val": X_val,
         "x_train_cell_type": x_train_cell_type,
+        "x_val_cell_type": x_val_cell_type,
     }
 
     return encode_data_dict
