@@ -37,6 +37,7 @@ def train(
         torch.manual_seed(0)
     else:
         device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = model.to(device)
         rank_0 = 0
         local_batch_size = batch_size
         torch.manual_seed(0)
