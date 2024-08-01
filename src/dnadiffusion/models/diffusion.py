@@ -187,7 +187,6 @@ class Diffusion(nn.Module):
 
     def forward(self, x, classes):
         device = self.device
-        x = x.type(torch.float32)
         classes = classes.type(torch.long)
         b = x.shape[0]
         t = torch.randint(0, self.timesteps, (b,), device=device).long()
