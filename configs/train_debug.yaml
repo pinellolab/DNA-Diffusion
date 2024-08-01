@@ -1,0 +1,6 @@
+defaults:
+    - model: unet
+    - data: debug
+    - optimizer: adam
+    - diffusion: default
+    - training: debug

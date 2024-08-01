@@ -1,0 +1,5 @@
+_target_: src.dnadiffusion.models.unet.UNet
+dim: 200
+channels: 1
+dim_mults: [1,2,4]
+resnet_block_groups: 4

@@ -1,0 +1,13 @@
+distributed: False
+precision: "float32"
+num_workers: 1
+pin_memory: False
+batch_size: 1
+sample_batch_size: 1
+sequence_length: 200
+num_epochs: 2200
+log_step: 50
+sample_epoch: 5
+checkpoint_epoch: 5
+number_of_samples: 10
+use_wandb: False

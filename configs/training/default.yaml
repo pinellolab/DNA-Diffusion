@@ -1,0 +1,13 @@
+distributed: True
+precision: "bf16"
+num_workers: 8
+pin_memory: True
+batch_size: 120
+sample_batch_size: 10
+sequence_length: 200
+num_epochs: 2200
+log_step: 50
+sample_epoch: 500
+checkpoint_epoch: 500
+number_of_samples: 1000
+use_wandb: True
