@@ -68,7 +68,7 @@ def train(
                 wandb.log({"train_loss": loss, "epoch": epoch}, step=global_step)
 
         for x, y in val_dl:
-            val_loss = val_step(x, y, model, device)
+            val_loss = val_step(x, y, model, device, precision)
 
         print(f"Epoch: {epoch}, Train Loss: {loss}, Val Loss: {val_loss}")
 

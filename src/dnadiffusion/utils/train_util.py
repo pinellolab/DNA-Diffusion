@@ -37,9 +37,9 @@ def train_step(
     else:
         dtype = torch.float32
 
+    x = x.to(device, dtype=dtype)
+    y = y.to(device)
     with torch.autocast(device_type=device, dtype=dtype):
-        x = x.to(device, dtype=dtype)
-        y = y.to(device)
         loss = model(x, y)
 
     optimizer.zero_grad()
@@ -53,8 +53,14 @@ def val_step(
     y: torch.Tensor,
     model: torch.nn.Module,
     device: Any,
+    precision: str | None = None,
 ):
-    x = x.to(device)
+    if precision == "bf16":
+        dtype = torch.bfloat16
+    else:
+        dtype = torch.float32
+
+    x = x.to(device, dtype=dtype)
     y = y.to(device)
     with torch.no_grad():
         loss = model(x, y)
