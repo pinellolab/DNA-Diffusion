@@ -38,6 +38,8 @@ def train_step(
         dtype = torch.float32
 
     with torch.autocast(device_type=device, dtype=dtype):
+        x = x.to(device)
+        y = y.to(device)
         loss = model(x, y)
 
     optimizer.zero_grad()
