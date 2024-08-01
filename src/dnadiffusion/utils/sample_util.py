@@ -10,8 +10,9 @@ from dnadiffusion.utils.utils import convert_to_seq
 
 
 def create_sample(
-    diffusion_model,
+    model: torch.nn.Module,
     cell_types: list,
+    sample_bs: int,
     conditional_numeric_to_tag: dict,
     number_of_samples: int = 1000,
     group_number: list | None = None,
@@ -22,24 +23,24 @@ def create_sample(
 ):
     nucleotides = ["A", "C", "G", "T"]
     final_sequences = []
-    for n_a in tqdm(range(number_of_samples)):
-        sample_bs = 10
+    num_batches = number_of_samples // sample_bs
+    for n_a in tqdm(range(num_batches)):
         if group_number:
             sampled = torch.from_numpy(np.array([group_number] * sample_bs))
         else:
             sampled = torch.from_numpy(np.random.choice(cell_types, sample_bs))
 
-        classes = sampled.float().to(diffusion_model.device)
+        classes = sampled.float().to(model.device)
 
         if generate_attention_maps:
-            sampled_images, cross_att_values = diffusion_model.sample_cross(
+            sampled_images, cross_att_values = model.sample_cross(
                 classes, (sample_bs, 1, 4, 200), cond_weight_to_metric
             )
             # save cross attention maps in a numpy array
             np.save(f"cross_att_values_{conditional_numeric_to_tag[group_number]}.npy", cross_att_values)
 
         else:
-            sampled_images = diffusion_model.sample(classes, (sample_bs, 1, 4, 200), cond_weight_to_metric)
+            sampled_images = model.sample(classes, (sample_bs, 1, 4, 200), cond_weight_to_metric)
 
         if save_timesteps:
             seqs_to_df = {}

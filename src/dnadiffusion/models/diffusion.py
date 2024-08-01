@@ -10,15 +10,17 @@ from dnadiffusion.utils.utils import default, extract, linear_beta_schedule
 class Diffusion(nn.Module):
     def __init__(
         self,
-        model,
-        timesteps,
+        model: nn.Module,
+        timesteps: int,
+        beta_start: float,
+        beta_end: float,
     ):
         super().__init__()
         self.model = model
         self.timesteps = timesteps
 
         # Diffusion params
-        betas = linear_beta_schedule(timesteps, beta_end=0.2)
+        betas = linear_beta_schedule(timesteps, beta_start, beta_end)
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
         alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.0)

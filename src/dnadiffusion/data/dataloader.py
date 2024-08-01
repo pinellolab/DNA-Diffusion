@@ -3,7 +3,6 @@ import pickle
 import random
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
@@ -36,9 +35,9 @@ def get_dataloader(
 
 
 def load_data(
-    data_path: str = f"{DATA_DIR}/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
-    saved_data_path: str = f"{DATA_DIR}/encode_data.pkl",
-    subset_list: List = [
+    data_path: str = "data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
+    saved_data_path: str = "data/encode_data.pkl",
+    subset_list: list = [
         "GM12878_ENCLB441ZZZ",
         "hESCT0_ENCLB449ZZZ",
         "K562_ENCLB843GMH",

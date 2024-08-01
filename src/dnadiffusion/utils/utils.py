@@ -107,9 +107,7 @@ class EMA:
         ema_model.load_state_dict(model.state_dict())
 
 
-def linear_beta_schedule(timesteps: int, beta_end: float = 0.005):
-    beta_start = 0.0001
-
+def linear_beta_schedule(timesteps: int, beta_start: float, beta_end: float):
     return torch.linspace(beta_start, beta_end, timesteps)
 
 
