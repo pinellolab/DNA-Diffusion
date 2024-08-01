@@ -13,6 +13,41 @@ from torch.utils.data.distributed import DistributedSampler
 from dnadiffusion.utils.utils import one_hot_encode
 
 
+def get_dataset(
+    data_path: str,
+    saved_data_path: str,
+    subset_list: list[str],
+    limit_total_sequences: int,
+    num_sampling_to_compare_cells: int,
+    load_saved_data: bool,
+    debug: bool,
+) -> tuple[np.ndarray, torch.Tensor, np.ndarray, torch.Tensor, list[int], dict[int, str]]:
+    encode_data = load_data(
+        data_path,
+        saved_data_path,
+        subset_list,
+        limit_total_sequences,
+        num_sampling_to_compare_cells,
+        load_saved_data,
+    )
+    if debug:
+        x_data = encode_data["X_train"][:1]
+        y_data = encode_data["x_train_cell_type"][:1]
+        x_val_data = encode_data["X_val"][:1]
+        y_val_data = encode_data["x_val_cell_type"][:1]
+
+    else:
+        x_data = encode_data["X_train"]
+        y_data = encode_data["x_train_cell_type"]
+        x_val_data = encode_data["X_val"]
+        y_val_data = encode_data["x_val_cell_type"]
+
+    cell_num_list = encode_data["cell_types"]
+    numeric_to_tag_dict = encode_data["numeric_to_tag"]
+
+    return x_data, y_data, x_val_data, y_val_data, cell_num_list, numeric_to_tag_dict
+
+
 def get_dataloader(
     dataset: Dataset,
     batch_size: int,
@@ -35,17 +70,12 @@ def get_dataloader(
 
 
 def load_data(
-    data_path: str = "data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt",
-    saved_data_path: str = "data/encode_data.pkl",
-    subset_list: list = [
-        "GM12878_ENCLB441ZZZ",
-        "hESCT0_ENCLB449ZZZ",
-        "K562_ENCLB843GMH",
-        "HepG2_ENCLB029COU",
-    ],
-    limit_total_sequences: int = 0,
-    num_sampling_to_compare_cells: int = 1000,
-    load_saved_data: bool = False,
+    data_path: str,
+    saved_data_path: str,
+    subset_list: list,
+    limit_total_sequences: int,
+    num_sampling_to_compare_cells: int,
+    load_saved_data: bool,
 ):
     # Preprocessing data
     if load_saved_data:
