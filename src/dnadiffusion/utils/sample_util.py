@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -11,7 +10,7 @@ from dnadiffusion.utils.utils import convert_to_seq
 
 def create_sample(
     model: torch.nn.Module,
-    cell_types: list,
+    cell_types: list[int],
     sample_bs: int,
     conditional_numeric_to_tag: dict,
     number_of_samples: int = 1000,
@@ -62,7 +61,7 @@ def create_sample(
     if save_timesteps:
         # Saving dataframe containing sequences for each timestep
         pd.concat(final_sequences, ignore_index=True).to_csv(
-            f"final_{conditional_numeric_to_tag[group_number]}.txt",
+            f"data/outputs/{conditional_numeric_to_tag[group_number]}.txt",
             header=True,
             sep="\t",
             index=False,
@@ -71,7 +70,7 @@ def create_sample(
 
     if save_dataframe:
         # Saving list of sequences to txt file
-        with open(f"final_{conditional_numeric_to_tag[group_number]}.txt", "w") as f:
+        with open(f"data/outputs/{conditional_numeric_to_tag[group_number]}.txt", "w") as f:
             f.write("\n".join(final_sequences))
         return
 
