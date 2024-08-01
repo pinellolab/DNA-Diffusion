@@ -1,6 +1,6 @@
 distributed: True
 precision: "bf16"
-num_workers: 8
+num_workers: 2
 pin_memory: True
 batch_size: 120
 sample_batch_size: 10
