@@ -152,8 +152,8 @@ class Diffusion(nn.Module):
             return model_mean + torch.sqrt(posterior_variance_t) * noise, cross_map
 
     def q_sample(self, x_start, t, noise=None):
-        noise = default(noise, torch.randn_like(x_start))
         device = self.device
+        noise = default(noise, torch.randn_like(x_start, device=device))
 
         sqrt_alphas_cumprod_t = extract(self.sqrt_alphas_cumprod, t, x_start.shape, device)
         sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape, device)
@@ -162,7 +162,7 @@ class Diffusion(nn.Module):
 
     def p_losses(self, x_start, t, classes, noise=None, loss_type="huber", p_uncond=0.1):
         device = self.device
-        noise = default(noise, torch.randn_like(x_start))
+        noise = default(noise, torch.randn_like(x_start, device=device))
 
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
 
