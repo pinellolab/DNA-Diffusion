@@ -21,7 +21,7 @@ def get_dataset(
     num_sampling_to_compare_cells: int,
     load_saved_data: bool,
     debug: bool,
-) -> tuple[np.ndarray, torch.Tensor, np.ndarray, torch.Tensor, list[int], dict[int, str]]:
+) -> tuple[Dataset, Dataset, list[int], dict[int, str]]:
     encode_data = load_data(
         data_path,
         saved_data_path,
@@ -45,7 +45,10 @@ def get_dataset(
     cell_num_list = encode_data["cell_types"]
     numeric_to_tag_dict = encode_data["numeric_to_tag"]
 
-    return x_data, y_data, x_val_data, y_val_data, cell_num_list, numeric_to_tag_dict
+    train_data = SequenceDataset(x_data, y_data)
+    val_data = SequenceDataset(x_val_data, y_val_data)
+
+    return train_data, val_data, cell_num_list, numeric_to_tag_dict
 
 
 def get_dataloader(

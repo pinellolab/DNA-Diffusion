@@ -37,7 +37,7 @@ def train_step(
     else:
         dtype = torch.float32
 
-    x = x.to(device, dtype=dtype)
+    x = x.to(device, dtype=torch.float32)
     y = y.to(device)
     with torch.autocast(device_type=device, dtype=dtype):
         loss = model(x, y)
