@@ -1,3 +1,5 @@
+import os
+
 import hydra
 import torch
 import wandb
@@ -7,7 +9,7 @@ from torch.distributed.checkpoint.state_dict import get_state_dict
 from torch.nn.parallel import DistributedDataParallel as DDP
 from tqdm import tqdm
 
-from dnadiffusion.data.dataloader import SequenceDataset, get_dataloader
+from dnadiffusion.data.dataloader import get_dataloader
 from dnadiffusion.utils.sample_util import create_sample
 from dnadiffusion.utils.train_util import distributed_setup, init_wandb, train_step, val_step
 
@@ -31,21 +33,20 @@ def train(
     use_wandb: bool,
 ) -> None:
     if distributed:
+        local_rank = int(os.environ["LOCAL_RANK"])
         rank, device, local_batch_size = distributed_setup(batch_size)
+        device = rank % torch.cuda.device_count()
+        torch.cuda.set_device(device)
         model = DDP(model.to(device), device_ids=[rank])
         rank_0 = rank == 0
-        torch.manual_seed(0)
     else:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model = model.to(device)
         rank_0 = 0
         local_batch_size = batch_size
-        torch.manual_seed(0)
 
     # Data
-    x_data, y_data, x_val_data, y_val_data, cell_num_list, numeric_to_tag_dict = data
-    train_data = SequenceDataset(x_data, y_data)
-    val_data = SequenceDataset(x_val_data, y_val_data)
+    train_data, val_data, cell_num_list, numeric_to_tag_dict = data
 
     train_dl, train_sampler = get_dataloader(train_data, local_batch_size, num_workers, distributed, pin_memory)
     val_dl, _ = get_dataloader(val_data, local_batch_size, num_workers, distributed, pin_memory)
@@ -65,7 +66,7 @@ def train(
             loss = train_step(x, y, model, optimizer, device, precision)
             global_step += 1
             if rank_0 == 0 and global_step % log_step == 0 and use_wandb:
-                wandb.log({"train_loss": loss, "epoch": epoch}, step=global_step)
+                wandb.log({"loss": loss, "epoch": epoch}, step=global_step)
 
         for x, y in val_dl:
             val_loss = val_step(x, y, model, device, precision)
@@ -73,7 +74,7 @@ def train(
         print(f"Epoch: {epoch}, Train Loss: {loss}, Val Loss: {val_loss}")
 
         if rank_0 == 0 and use_wandb:
-            wandb.log({"train_loss": loss, "val_loss": val_loss, "epoch": epoch}, step=global_step)
+            wandb.log({"loss": loss, "val_loss": val_loss, "epoch": epoch}, step=global_step)
 
         if rank_0 == 0 and (epoch + 1) % sample_epoch == 0:
             # for i in data["cell_types"]:
