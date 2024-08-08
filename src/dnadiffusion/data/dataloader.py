@@ -14,19 +14,15 @@ from dnadiffusion.utils.utils import one_hot_encode
 def get_dataset(
     data_path: str,
     saved_data_path: str,
-    subset_list: list[str],
-    limit_total_sequences: int,
-    num_sampling_to_compare_cells: int,
     load_saved_data: bool,
     debug: bool,
+    output_path: str | None = None,
 ) -> tuple[Dataset, Dataset, list[int], dict[int, str]]:
     encode_data = load_data(
         data_path,
         saved_data_path,
-        subset_list,
-        limit_total_sequences,
-        num_sampling_to_compare_cells,
         load_saved_data,
+        output_path,
     )
     if debug:
         x_data = encode_data["X_train"][:1]
@@ -73,10 +69,8 @@ def get_dataloader(
 def load_data(
     data_path: str,
     saved_data_path: str,
-    subset_list: list,
-    limit_total_sequences: int,
-    num_sampling_to_compare_cells: int,
     load_saved_data: bool,
+    output_path: str | None = None,
 ):
     # Preprocessing data
     if load_saved_data:
@@ -84,22 +78,17 @@ def load_data(
             encode_data = pickle.load(f)
 
     else:
-        encode_data = preprocess_data(
-            input_csv=data_path,
-            subset_list=subset_list,
-            limit_total_sequences=limit_total_sequences,
-            number_of_sequences_to_motif_creation=num_sampling_to_compare_cells,
-        )
+        encode_data = preprocess_data(data_path, output_path)
 
     # Creating sequence dataset
-    df = encode_data["train"]["df"]
+    df = encode_data["train_df"]
     nucleotides = ["A", "C", "G", "T"]
     x_train_seq = np.array([one_hot_encode(x, nucleotides, 200) for x in df["sequence"] if "N" not in x])
     X_train = np.array([x.T.tolist() for x in x_train_seq])
     X_train[X_train == 0] = -1
 
     # Create test dataset using chr1
-    val_df = encode_data["validation"]["df"]
+    val_df = encode_data["validation_df"]
     val_test_seq = np.array([one_hot_encode(x, nucleotides, 200) for x in val_df["sequence"] if "N" not in x])
     X_val = np.array([x.T.tolist() for x in val_test_seq])
     X_val[X_val == 0] = -1
@@ -127,7 +116,7 @@ def load_data(
     return encode_data_dict
 
 
-def preprocess_data(input_data_path: str, output_path: str | None = None) -> dict:
+def preprocess_data(input_data_path: str, output_path: str | None = None) -> dict[str, pd.DataFrame]:
     df = pd.read_csv(input_data_path, sep="\t")
 
     df_train = df[(df["chr"] != "chr1") & (df["chr"] != "chr2")].reset_index(drop=True)
