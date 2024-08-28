@@ -166,7 +166,7 @@ dependencies = [
     "mkdocstrings==0.23.0",
     "mkdocstrings[python]",
     "mypy==1.10.0",
-    "pytest==7.4.3",
+    "pytest==7.4.4",
     "pytest-asyncio==0.21.1",
     "pytest-cov==4.1.0",
     "ruff==0.1.6",
