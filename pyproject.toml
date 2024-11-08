@@ -163,7 +163,7 @@ path = "src/dnadiffusion/__about__.py"
 python = "3.10"
 dependencies = [
     "mkdocs-material==9.4.8",
-    "mkdocstrings==0.23.0",
+    "mkdocstrings==0.27.0",
     "mkdocstrings[python]",
     "mypy==1.10.0",
     "pytest==7.4.3",
