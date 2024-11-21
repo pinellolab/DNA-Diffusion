@@ -1,3 +1,4 @@
+
 pull_request_rules:
   - name: self-assign PRs
     conditions:
@@ -8,19 +9,18 @@ pull_request_rules:
       assign:
         add_users:
           - "{{ author }}"
-  - name: automatic queue when not WIP, CI passes, and at least 1 approving review
-    conditions:
-      - "#approved-reviews-by>=1"
-      - check-success=test (3.10)
-      # - check-success=build-and-push-image
-      - base=main
-      - label!=work-in-progress
+  - name: refactored queue action rule
+    conditions: []
     actions:
       queue:
-        method: squash
-        name: default
 queue_rules:
   - name: default
-    conditions:
+    queue_conditions:
+      - "#approved-reviews-by>=1"
+      - check-success=test (3.10)
+      - base=main
+      - label!=work-in-progress
+    merge_conditions:
       - check-success=test (3.10)
       # - check-success=build-and-push-image
+    merge_method: squash
