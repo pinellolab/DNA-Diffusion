@@ -24,7 +24,7 @@ dependencies = [
   "jupyterlab==4.0.9",
   "matplotlib==3.8.1",
   "memory-efficient-attention-pytorch==0.1.6",
-  "pandas==2.1.3",
+  "pandas==2.2.3",
   "pybedtools==0.9.1",
   "seaborn==0.13.0",
   "sourmash==4.8.4",
