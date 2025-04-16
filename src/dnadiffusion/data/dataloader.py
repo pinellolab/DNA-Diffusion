@@ -54,12 +54,15 @@ def get_dataloader(
 ) -> tuple[DataLoader, Any]:
     if distributed:
         sampler = DistributedSampler(dataset, shuffle=True)
+        shuffle = False
     else:
         sampler = None
+        shuffle = True
     dataloader = DataLoader(
         dataset,
         batch_size,
         sampler=sampler,
+        shuffle=shuffle,
         num_workers=num_workers,
         pin_memory=pin_memory,
     )
@@ -168,6 +171,4 @@ class SequenceDataset(Dataset):
 
 
 if __name__ == "__main__":
-    # preprocess_data("data/HepG2_ENCLB029COU.txt", output_path="data/hepg2_encode_data.pkl")
-    # preprocess_data("data/GM12878_ENCLB441ZZZ.txt", output_path="data/gm12878_encode_data.pkl")
-    preprocess_data("data/K562_ENCLB843GMH.txt", output_path="data/k562_encode_data.pkl")
+    pass
