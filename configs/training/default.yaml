@@ -4,7 +4,6 @@ num_workers: 2
 pin_memory: True
 batch_size: 120
 sample_batch_size: 10
-sequence_length: 200
 num_epochs: 5000
 min_epochs: 2000
 patience: 10
