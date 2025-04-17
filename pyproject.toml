@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "dnadiffusion"
 authors = [{ name = "dnadiffusion", email = "dnadiffusion@pinellolab.org" }]
-description = "Library for probabilistic analysis of protein-protein interaction sequencing data."
+description = "Library for generation of synthetic regulatory elements using diffusion models"
 readme = "README.md"
 dynamic = ["version"]
 classifiers = ["Programming Language :: Python :: 3 :: Only"]
