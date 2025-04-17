@@ -20,6 +20,7 @@ dependencies = [
     "seaborn>=0.13.2",
     "torch>=2.6.0",
     "torchvision>=0.21.0",
+    "tqdm>=4.67.1",
     "wandb>=0.19.9",
 ]
 
@@ -71,26 +72,6 @@ tests = ["tests", "*/dnadiffusion/tests"]
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
-
-# [tool.mypy]
-# python_version = "3.10"
-#
-# [[tool.mypy.overrides]]
-# module = [
-#     "accelerate",
-#     "Bio",
-#     "hydra_zen",
-#     "memory_efficient_attention_pytorch",
-#     "matplotlib",
-#     "matplotlib.pyplot",
-#     "pandas",
-#     "torchvision",
-#     "torchvision.transforms",
-#     "seaborn",
-#     "scipy.special",
-#     "sourmash",
-# ]
-# ignore_missing_imports = true
 
 [tool.hatch]
 
