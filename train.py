@@ -135,7 +135,7 @@ def train(
                 )
 
 
-@hydra.main(config_path="configs", config_name="train_debug", version_base="1.3")
+@hydra.main(config_path="configs", config_name="train", version_base="1.3")
 def main(cfg: DictConfig) -> None:
     print(OmegaConf.to_yaml(cfg))
     train_setup = {**cfg.training}
