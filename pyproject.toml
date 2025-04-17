@@ -32,7 +32,7 @@ Documentation = "https://pinellolab.github.io/DNA-Diffusion"
 Source = "https://github.com/pinellolab/DNA-Diffusion"
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py312"
 line-length = 120
 extend-include = ["*.ipynb"]
 select = ["E", "F", "I"]
@@ -71,9 +71,10 @@ dnadiffusion = ["src/dnadiffusion", "*/dnadiffusion/src/dnadiffusion"]
 tests = ["tests", "*/dnadiffusion/tests"]
 
 [tool.coverage.report]
-exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
+exclude_lines = ["no cov", "if **name** == .__main__.:", "if TYPE_CHECKING:"]
 
-[tool.hatch]
+[tool.hatch.version]
+path = "src/dnadiffusion/__about__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ['src/dnadiffusion']
@@ -81,36 +82,9 @@ packages = ['src/dnadiffusion']
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.hatch.version]
-path = "src/dnadiffusion/__about__.py"
-
-[tool.hatch.envs.default]
-python = "3.10"
-dependencies = [
-    "mkdocs-material==9.4.8",
-    "mkdocstrings==0.23.0",
-    "mkdocstrings[python]",
-    "mypy==1.10.0",
-    "pytest==7.4.3",
-    "pytest-asyncio==0.21.1",
-    "pytest-cov==4.1.0",
-    "ruff==0.1.6",
-    "types-tqdm==4.66.0.4",
-    "xdoctest==1.1.2",
+[dependency-groups]
+dev = [
+    "pytest-cov>=6.1.1",
+    "pytest>=8.3.5",
+    "ruff>=0.11.5",
 ]
-
-[tool.hatch.envs.default.scripts]
-test = "pytest -rA"
-test-cov-xml = "pytest -rA --cov-report=xml"
-lint = [
-    "ruff format .",
-    "ruff --fix .",
-    # "mypy src/dnadiffusion/",
-]
-lint-check = [
-    "ruff format --check .",
-    "ruff .",
-    # "mypy src/dnadiffusion/",
-]
-docs-serve = "mkdocs serve"
-docs-build = "mkdocs build"
