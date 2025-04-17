@@ -33,9 +33,11 @@ def train(
     use_wandb: bool,
 ) -> None:
     if distributed:
+        local_rank = int(os.environ["LOCAL_RANK"])
         rank, device, local_batch_size = distributed_setup(batch_size)
-        model = DDP(model, device_ids=[rank])
-        device = torch.device(f"cuda:{rank}")
+        device = f"cuda:{local_rank}"
+        torch.cuda.set_device(device)
+        model = DDP(model.to(device), device_ids=[rank])
         rank_0 = rank == 0
     else:
         device = "cuda" if torch.cuda.is_available() else "cpu"
