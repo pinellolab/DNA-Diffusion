@@ -48,6 +48,7 @@ def train_step(
     return loss.mean().item()
 
 
+@torch.no_grad()
 def val_step(
     x: torch.Tensor,
     y: torch.Tensor,
@@ -62,6 +63,5 @@ def val_step(
 
     x = x.to(device, dtype=dtype)
     y = y.to(device)
-    with torch.no_grad():
-        loss = model(x, y)
+    loss = model(x, y)
     return loss.mean().item()
