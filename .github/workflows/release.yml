@@ -47,7 +47,7 @@ jobs:
 
     - name: Publish the release notes
       if: ${{ inputs.release_enabled }}
-      uses: release-drafter/release-drafter@v5.25.0
+      uses: release-drafter/release-drafter@v6.1.0
       with:
         publish: true
         prerelease: false
