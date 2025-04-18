@@ -1,10 +1,20 @@
-import itertools
 from functools import partial
-from typing import Optional
 
+import torch
+import torch.nn as nn
 from memory_efficient_attention_pytorch import Attention as EfficientAttention
 
-from dnadiffusion.models.layers import *
+from dnadiffusion.models.layers import (
+    Attention,
+    Downsample,
+    LearnedSinusoidalPosEmb,
+    LinearAttention,
+    PreNorm,
+    Residual,
+    ResnetBlock,
+    Upsample,
+)
+from dnadiffusion.utils.utils import default
 
 
 class UNet(nn.Module):
@@ -12,7 +22,7 @@ class UNet(nn.Module):
         self,
         dim: int,
         init_dim: int | None = None,
-        dim_mults: tuple = (1, 2, 4),
+        dim_mults: list = [1, 2, 4],
         channels: int = 1,
         resnet_block_groups: int = 8,
         learned_sinusoidal_dim: int = 18,
@@ -20,8 +30,6 @@ class UNet(nn.Module):
         output_attention: bool = False,
     ) -> None:
         super().__init__()
-
-        # determine dimensions
 
         channels = 1
         self.channels = channels

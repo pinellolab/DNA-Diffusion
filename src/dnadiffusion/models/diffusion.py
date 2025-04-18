@@ -10,15 +10,17 @@ from dnadiffusion.utils.utils import default, extract, linear_beta_schedule
 class Diffusion(nn.Module):
     def __init__(
         self,
-        model,
-        timesteps,
+        model: nn.Module,
+        timesteps: int,
+        beta_start: float,
+        beta_end: float,
     ):
         super().__init__()
         self.model = model
         self.timesteps = timesteps
 
         # Diffusion params
-        betas = linear_beta_schedule(timesteps, beta_end=0.2)
+        betas = linear_beta_schedule(timesteps, beta_start, beta_end)
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
         alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.0)
@@ -150,8 +152,8 @@ class Diffusion(nn.Module):
             return model_mean + torch.sqrt(posterior_variance_t) * noise, cross_map
 
     def q_sample(self, x_start, t, noise=None):
-        noise = default(noise, torch.randn_like(x_start))
         device = self.device
+        noise = default(noise, torch.randn_like(x_start, device=device))
 
         sqrt_alphas_cumprod_t = extract(self.sqrt_alphas_cumprod, t, x_start.shape, device)
         sqrt_one_minus_alphas_cumprod_t = extract(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape, device)
@@ -160,7 +162,7 @@ class Diffusion(nn.Module):
 
     def p_losses(self, x_start, t, classes, noise=None, loss_type="huber", p_uncond=0.1):
         device = self.device
-        noise = default(noise, torch.randn_like(x_start))
+        noise = default(noise, torch.randn_like(x_start, device=device))
 
         x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
 
@@ -185,7 +187,6 @@ class Diffusion(nn.Module):
 
     def forward(self, x, classes):
         device = self.device
-        x = x.type(torch.float32)
         classes = classes.type(torch.long)
         b = x.shape[0]
         t = torch.randint(0, self.timesteps, (b,), device=device).long()

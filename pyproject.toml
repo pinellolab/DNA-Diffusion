@@ -4,33 +4,24 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dnadiffusion"
-authors = [
-  { name = "dnadiffusion", email = "dnadiffusion@pinellolab.org" }
-]
-description = "Library for probabilistic analysis of protein-protein interaction sequencing data."
+authors = [{ name = "dnadiffusion", email = "dnadiffusion@pinellolab.org" }]
+description = "Library for generation of synthetic regulatory elements using diffusion models"
 readme = "README.md"
 dynamic = ["version"]
-classifiers = [
-    "Programming Language :: Python :: 3 :: Only",
-]
-requires-python = ">=3.10"
+classifiers = ["Programming Language :: Python :: 3 :: Only"]
+requires-python = ">=3.12"
 dependencies = [
-  "accelerate==0.24.1",
-  "click==8.1.7",
-  "einops==0.7.0",
-  "genomepy==0.16.1",
-  "gimmemotifs==0.18.0",
-  "gtfparse==1.3.0",
-  "jupyterlab==4.0.9",
-  "matplotlib==3.8.1",
-  "memory-efficient-attention-pytorch==0.1.6",
-  "pandas==2.1.3",
-  "pybedtools==0.9.1",
-  "seaborn==0.13.0",
-  "sourmash==4.8.4",
-  "torch==2.3.1",
-  "torchvision==0.19.0",
-  "wandb==0.16.0",
+    "einops>=0.8.1",
+    "hydra-core>=1.3.2",
+    "jupyterlab>=4.4.0",
+    "matplotlib>=3.10.1",
+    "memory-efficient-attention-pytorch>=0.1.6",
+    "pandas>=2.2.3",
+    "seaborn>=0.13.2",
+    "torch>=2.6.0",
+    "torchvision>=0.21.0",
+    "tqdm>=4.67.1",
+    "wandb>=0.19.9",
 ]
 
 [project.scripts]
@@ -41,54 +32,12 @@ Documentation = "https://pinellolab.github.io/DNA-Diffusion"
 Source = "https://github.com/pinellolab/DNA-Diffusion"
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py312"
 line-length = 120
-select = [
-  "A",
-  # "ARG",
-  # "B",
-  "C",
-  "DTZ",
-  # "E",
-  "EM",
-  # "F",
-  # "FBT",
-  "I",
-  "ICN",
-  "ISC",
-  # "N",
-  "PLC",
-  "PLE",
-  "PLR",
-  "PLW",
-  "Q",
-  "RUF",
-  # "S",
-  # "T",
-  "TID",
-  "UP",
-  "W",
-  "YTT",
-]
-ignore = [
-  # Allow non-abstract empty methods in abstract base classes
-  "B027",
-  # Allow boolean positional values in function calls, like `dict.get(... True)`
-  "FBT003",
-  # Ignore checks for possible passwords
-  "S105", "S106", "S107",
-  # Ignore complexity
-  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
-  # Pairwise error to ignore
-  "RUF007"
-]
-unfixable = [
-  # Don't touch unused imports
-  "F401",
-]
-exclude = [
-    "src/refactor",
-]
+extend-include = ["*.ipynb"]
+select = ["E", "F", "I"]
+ignore = ["E721", "E731", "E741", "E742", "E743"]
+exclude = ["src/refactor"]
 
 [tool.ruff.isort]
 known-first-party = ["dnadiffusion"]
@@ -112,9 +61,9 @@ source_pkgs = ["dnadiffusion", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/dnadiffusion/__about__.py",
-  "src/dnadiffusion/__main__.py",
-  "tests/conftest.py",
+    "src/dnadiffusion/__about__.py",
+    "src/dnadiffusion/__main__.py",
+    "tests/conftest.py",
 ]
 
 [tool.coverage.paths]
@@ -122,33 +71,10 @@ dnadiffusion = ["src/dnadiffusion", "*/dnadiffusion/src/dnadiffusion"]
 tests = ["tests", "*/dnadiffusion/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if **name** == .__main__.:", "if TYPE_CHECKING:"]
 
-[tool.mypy]
-python_version = "3.10"
-
-[[tool.mypy.overrides]]
-module = [
-    "accelerate",
-    "Bio",
-    "hydra_zen",
-    "memory_efficient_attention_pytorch",
-    "matplotlib",
-    "matplotlib.pyplot",
-    "pandas",
-    "torchvision",
-    "torchvision.transforms",
-    "seaborn",
-    "scipy.special",
-    "sourmash",
-]
-ignore_missing_imports = true
-
-[tool.hatch]
+[tool.hatch.version]
+path = "src/dnadiffusion/__about__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ['src/dnadiffusion']
@@ -156,36 +82,9 @@ packages = ['src/dnadiffusion']
 [tool.hatch.metadata]
 allow-direct-references = true
 
-[tool.hatch.version]
-path = "src/dnadiffusion/__about__.py"
-
-[tool.hatch.envs.default]
-python = "3.10"
-dependencies = [
-    "mkdocs-material==9.4.8",
-    "mkdocstrings==0.23.0",
-    "mkdocstrings[python]",
-    "mypy==1.10.0",
-    "pytest==7.4.3",
-    "pytest-asyncio==0.21.1",
-    "pytest-cov==4.1.0",
-    "ruff==0.1.6",
-    "types-tqdm==4.66.0.4",
-    "xdoctest==1.1.2",
+[dependency-groups]
+dev = [
+    "pytest-cov>=6.1.1",
+    "pytest>=8.3.5",
+    "ruff>=0.11.5",
 ]
-
-[tool.hatch.envs.default.scripts]
-test = "pytest -rA"
-test-cov-xml = "pytest -rA --cov-report=xml"
-lint = [
-  "ruff format .",
-  "ruff --fix .",
-  # "mypy src/dnadiffusion/",
-]
-lint-check = [
-  "ruff format --check .",
-  "ruff .",
-  # "mypy src/dnadiffusion/",
-]
-docs-serve = "mkdocs serve"
-docs-build = "mkdocs build"

@@ -1,5 +1,4 @@
 import math
-from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -25,7 +24,6 @@ class SinusoidalPositionEmbeddings(nn.Module):
 
 
 class ResBlock(nn.Module):
-
     """
     Iniialize a residual block with two convolutions followed by batchnorm layers
     """

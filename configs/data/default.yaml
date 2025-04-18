@@ -1,0 +1,5 @@
+_target_: src.dnadiffusion.data.dataloader.get_dataset
+data_path: "data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
+saved_data_path: "data/encode_data.pkl"
+load_saved_data: True
+debug: False

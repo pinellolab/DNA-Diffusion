@@ -1,0 +1,5 @@
+_target_: src.dnadiffusion.data.dataloader.get_dataset
+data_path: "data/K562_ENCLB843GMH.txt"
+saved_data_path: "data/k562_encode_data.pkl"
+load_saved_data: True
+debug: False
