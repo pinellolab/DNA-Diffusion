@@ -34,15 +34,33 @@ DNA-Diffusion is diffusion-based model for generation of 200bp cell type-specifi
 
 
 ## Installation
-Our preferred package / project manager is [uv](https://github.com/astral-sh/uv).
-To install the necessary packages, run:
+Our preferred package / project manager is [uv](https://github.com/astral-sh/uv). Please follow their recommended instructions for installation.
+
+To clone the repository and install the necessary packages, run:
 
 ```bash
+git clone  https://github.com/pinellolab/DNA-Diffusion.git
+cd DNA-Diffusion
 uv sync
 ```
-This will create a virtual environment in `.venv` and install all dependencies listed in the pyproject.toml file.
+
+This will create a virtual environment in `.venv` and install all dependencies listed in the pyproject.toml file. This is compatible with both CPU and GPU, but preferred operating system is Linux with an A100 GPU.
 
 ## Usage
+
+### Training
+If you would like to train the model, we provide a basic config file for training the diffusion model. To train the model call:
+
+```bash
+uv run train.py
+```
+
+We also provide a base config for debugging that will use a single sequence for training. You can override the default training script to use this debugging config by calling:
+
+```bash
+uv run train.py -cn train_debug
+```
+
 
 ### Sequence Generation
 We provide a basic config file for generating sequences using the diffusion model resulting in 1000 sequences made per cell type. Base generation utilizes a guidance scale 1.0, however this can be tuned within the sample.py with the `cond_weight_to_metric` parameter. To generate sequences call:
@@ -51,13 +69,12 @@ We provide a basic config file for generating sequences using the diffusion mode
 uv run sample.py
 ```
 
-
-### Training
-If you would like to train the model, we provide a basic config file for training the diffusion model. To train the model call:
+The default setup for sampling will generate 1000 sequences per cell type. You can override the default sampling script to generate one sequence per cell type with the following cli flags:
 
 ```bash
-uv run train.py
+uv run sample.py sampling.number_of_samples=1 sampling.sample_batch_size=1
 ```
+
 
 
 ## Contributors ✨
