@@ -26,12 +26,14 @@ def sample(
 
     # Load checkpoint
     print("Loading checkpoint")
-    checkpoint_dict = torch.load(checkpoint_path)
+    checkpoint_dict = (
+        torch.load(checkpoint_path) if torch.cuda.is_available() else torch.load(checkpoint_path, map_location="cpu")
+    )
     model.load_state_dict(checkpoint_dict["model"])
 
     # Send model to device
     print("Sending model to device")
-    model = model.to("cuda")
+    model = model.to("cuda") if torch.cuda.is_available() else model
 
     for i in cell_num_list:
         print(f"Generating {number_of_samples} samples for cell {numeric_to_tag_dict[i]}")
