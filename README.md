@@ -44,12 +44,14 @@ cd DNA-Diffusion
 uv sync
 ```
 
-This will create a virtual environment in `.venv` and install all dependencies listed in the pyproject.toml file. This is compatible with both CPU and GPU, but preferred operating system is Linux with an A100 GPU.
+This will create a virtual environment in `.venv` and install all dependencies listed in the pyproject.toml file. This is compatible with both CPU and GPU, but preferred operating system is Linux with a recent GPU (e.g. A100 GPU).
 
 ## Usage
 
 ### Training
-If you would like to train the model, we provide a basic config file for training the diffusion model. To train the model call:
+To train the DNA-Diffusion model, we provide a basic config file for training the diffusion model on the same subset of chromatin accessible regionsfrom the DHS Index dataset used in our main manuscript (K562, GM12878, HepG2, HESC cell lines). 
+
+To train the model call:
 
 ```bash
 uv run train.py
