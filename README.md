@@ -49,7 +49,7 @@ This will create a virtual environment in `.venv` and install all dependencies l
 ## Usage
 
 ### Training
-To train the DNA-Diffusion model, we provide a basic config file for training the diffusion model on the same subset of chromatin accessible regionsfrom the DHS Index dataset used in our main manuscript (K562, GM12878, HepG2, HESC cell lines). 
+To train the DNA-Diffusion model, we provide a basic config file for training the diffusion model on the same subset of chromatin accessible regions from the DHS Index dataset used in our main manuscript (K562, GM12878, HepG2, hESC cell lines).
 
 To train the model call:
 
