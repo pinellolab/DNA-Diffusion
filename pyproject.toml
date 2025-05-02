@@ -35,20 +35,20 @@ Source = "https://github.com/pinellolab/DNA-Diffusion"
 target-version = "py312"
 line-length = 120
 extend-include = ["*.ipynb"]
-select = ["E", "F", "I"]
-ignore = ["E721", "E731", "E741", "E742", "E743"]
+lint.select = ["E", "F", "I"]
+lint.ignore = ["E721", "E731", "E741", "E742", "E743"]
 exclude = ["src/refactor"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["dnadiffusion"]
 
 [tool.ruff.format]
 quote-style = "double"
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
@@ -87,4 +87,7 @@ dev = [
     "pytest-cov>=6.1.1",
     "pytest>=8.3.5",
     "ruff>=0.11.5",
+    "mkdocs-material>=9.6.12",
+    "mkdocstrings>=0.29.1",
+    "pytest-asyncio>=0.26.0",
 ]
