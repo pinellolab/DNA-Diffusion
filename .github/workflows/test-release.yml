@@ -33,7 +33,7 @@ jobs:
       - name: Publish package on TestPyPI
         run: uv publish --index testpypi dist/*
       - name: Publish the release notes
-        uses: release-drafter/release-drafter@v6.1
+        uses: release-drafter/release-drafter@v6
         with:
           publish: false
           prerelease: true
