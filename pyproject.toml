@@ -53,25 +53,26 @@ ban-relative-imports = "all"
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/dnadiffusion/ --cov-report=term-missing --ignore=src/refactor"
+# addopts = "--cov=src/dnadiffusion/ --cov-report=term-missing --ignore=src/refactor"
+testpaths = ["tests"]
 asyncio_mode = "strict"
 
-[tool.coverage.run]
-source_pkgs = ["dnadiffusion", "tests"]
-branch = true
-parallel = true
-omit = [
-    "src/dnadiffusion/__about__.py",
-    "src/dnadiffusion/__main__.py",
-    "tests/conftest.py",
-]
+# [tool.coverage.run]
+# source_pkgs = ["dnadiffusion", "tests"]
+# branch = true
+# parallel = true
+# omit = [
+#     "src/dnadiffusion/__about__.py",
+#     "src/dnadiffusion/__main__.py",
+#     "tests/conftest.py",
+# ]
+#
+# [tool.coverage.paths]
+# dnadiffusion = ["src/dnadiffusion", "*/dnadiffusion/src/dnadiffusion"]
+# tests = ["tests", "*/dnadiffusion/tests"]
 
-[tool.coverage.paths]
-dnadiffusion = ["src/dnadiffusion", "*/dnadiffusion/src/dnadiffusion"]
-tests = ["tests", "*/dnadiffusion/tests"]
-
-[tool.coverage.report]
-exclude_lines = ["no cov", "if **name** == .__main__.:", "if TYPE_CHECKING:"]
+# [tool.coverage.report]
+# exclude_lines = ["no cov", "if **name** == .__main__.:", "if TYPE_CHECKING:"]
 
 [tool.hatch.version]
 path = "src/dnadiffusion/__about__.py"
