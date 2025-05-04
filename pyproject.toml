@@ -92,3 +92,8 @@ dev = [
     "mkdocstrings[python]>=0.29.1",
     "pytest-asyncio>=0.26.0",
 ]
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish_url = "https://test.pypi.org/legacy/"
