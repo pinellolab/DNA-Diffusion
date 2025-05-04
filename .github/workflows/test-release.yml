@@ -1,71 +1,42 @@
+---
 name: Test Release
-
-on: 
+on:
   workflow_dispatch:
   workflow_run:
-    workflows: 
-      - Build
-      - Docker
+    workflows: [Build]
     branches: main
-    types: 
-      - completed
-
+    types: [completed]
 jobs:
   release:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Upgrade pip
-      run: |
-        python -m pip install --upgrade pip
-        pip --version
-
-    - name: Install hatch
-      run: |
-        pip install hatch
-        hatch --version
-
-    - name: Check if there is a parent commit
-      id: check-parent-commit
-      run: |
-        echo "sha=$(git rev-parse --verify --quiet HEAD^)" >> $GITHUB_OUTPUT
-
-    - name: Detect and tag new version
-      id: check-version
-      if: steps.check-parent-commit.outputs.sha
-      uses: salsify/action-detect-and-tag-new-version@v2.0.3
-      with:
-        version-command: |
-          bash -o pipefail -c "hatch -q version"
-
-    - name: Build package
-      run: |
-        hatch build
-
-    - name: Publish package on TestPyPI
-      if: "steps.check-version.outputs.tag"
-      uses: pypa/gh-action-pypi-publish@v1.8.10
-      with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_TOKEN }}
-        repository-url: https://test.pypi.org/legacy/
-
-    - name: Publish the release notes
-      uses: release-drafter/release-drafter@v5.25.0
-      with:
-        publish: false
-        prerelease: true
-        tag: ${{ steps.check-version.outputs.tag }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
- 
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Check if there is a parent commit
+        id: check-parent-commit
+        run: |
+          echo "sha=$(git rev-parse --verify --quiet HEAD^)" >> $GITHUB_OUTPUT
+      - name: Detect and tag new version
+        id: check-version
+        if: steps.check-parent-commit.outputs.sha
+        uses: salsify/action-detect-and-tag-new-version@v2.0.3
+        with:
+          version-command: |
+            cat __about__.py | grep '^__version__ = ' | cut -d '"' -f 2
+      - name: Build package
+        run: |
+          uv build
+      - name: Publish package on TestPyPI
+        run: uv publish --index testpypi dist/*
+      - name: Publish the release notes
+        uses: release-drafter/release-drafter@v6.1
+        with:
+          publish: false
+          prerelease: true
+          tag: ${{ steps.check-version.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
