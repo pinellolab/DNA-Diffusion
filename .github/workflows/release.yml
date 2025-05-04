@@ -23,7 +23,7 @@ jobs:
           uv build
       - name: Publish package on PyPI
         if: ${{ inputs.release_enabled }}
-        run: uv publish dist/*
+        run: uv publish --username __token__ --password ${{secrets.PYPI_TOKEN}} dist/*
       - name: Publish the release notes
         if: ${{ inputs.release_enabled }}
         uses: release-drafter/release-drafter@v6
