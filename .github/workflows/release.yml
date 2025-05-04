@@ -26,7 +26,7 @@ jobs:
         run: uv publish dist/*
       - name: Publish the release notes
         if: ${{ inputs.release_enabled }}
-        uses: release-drafter/release-drafter@v6.1
+        uses: release-drafter/release-drafter@v6
         with:
           publish: true
           prerelease: false
