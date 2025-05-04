@@ -24,8 +24,6 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - name: Set up Python
-        run: uv python install
       - name: Install project + dev deps
         run: uv sync --locked --all-extras --dev
       - name: Build documentation

@@ -3,7 +3,7 @@ name: Build
 on:
   workflow_dispatch:
   push:
-  branches: [main]
+    branches: [main]
   pull_request:
 jobs:
   build:
@@ -15,8 +15,6 @@ jobs:
       with:
         enable-cache: true
         cache-dependency-glob: uv.lock
-    - name: Setup python
-      uses: uv python install
     - name: Install the project
       run: uv sync --locked --all-extras --dev
     - name: Lint check
@@ -25,9 +23,11 @@ jobs:
         uv run ruff  .
     - name: Test
       run: |
-        uv run pytest -rA --cov-report=xml
-    - uses: codecov/codecov-action@v5
-        with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        fail_ci_if_error: true
-        verbose: true
+        uv run pytest
+      # run: |
+      #   uv run pytest -rA --cov-report=xml
+    # - uses: codecov/codecov-action@v5
+    #     with:
+    #     token: ${{ secrets.CODECOV_TOKEN }}
+    #     fail_ci_if_error: true
+    #     verbose: true
