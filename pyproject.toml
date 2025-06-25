@@ -17,6 +17,7 @@ dependencies = [
     "matplotlib>=3.10.1",
     "memory-efficient-attention-pytorch>=0.1.6",
     "pandas>=2.2.3",
+    "safetensors>=0.5.3",
     "seaborn>=0.13.2",
     "torch>=2.6.0",
     "torchvision>=0.21.0",
