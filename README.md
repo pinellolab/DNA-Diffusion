@@ -24,6 +24,16 @@
 
 ---
 
+## Contents
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Data](#data)
+  - [Training](#training)
+  - [Model Checkpoint](#model-checkpoint)
+  - [Sequence Generation](#sequence-generation)
+  - [Examples](#examples)
+
 ## Introduction
 
 DNA-Diffusion is diffusion-based model for generation of 200bp cell type-specific synthetic regulatory elements.
