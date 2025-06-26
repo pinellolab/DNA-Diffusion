@@ -2,6 +2,7 @@ import hydra
 import torch
 import torch.nn as nn
 from omegaconf import DictConfig, OmegaConf
+from safetensors.torch import load_file
 
 from dnadiffusion.utils.sample_util import create_sample
 
@@ -28,7 +29,7 @@ def sample(
     # Load checkpoint
     print("Loading checkpoint")
     checkpoint_dict = (
-        torch.load(checkpoint_path) if torch.cuda.is_available() else torch.load(checkpoint_path, map_location="cpu")
+        load_file(checkpoint_path) if torch.cuda.is_available() else load_file(checkpoint_path, device="cpu")
     )
     # Load unet state dict
     model.model.load_state_dict(checkpoint_dict["model"])
