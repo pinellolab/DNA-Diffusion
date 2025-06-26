@@ -32,7 +32,9 @@
   - [Training](#training)
   - [Model Checkpoint](#model-checkpoint)
   - [Sequence Generation](#sequence-generation)
-  - [Examples](#examples)
+- [Examples](#examples)
+  - [Training Notebook](#training-notebook)
+  - [Sequence Generation Notebook](#sequence-generation-notebook)
 
 ## Introduction
 
@@ -56,28 +58,27 @@ uv sync
 
 This will create a virtual environment in `.venv` and install all dependencies listed in the `uv.lock` file. This is compatible with both CPU and GPU, but preferred operating system is Linux with a recent GPU (e.g. A100 GPU). For detailed versions of the dependencies, please refer to the `uv.lock` file.
 
-## Usage
+## Recreating data curation, training and sequence generation processes
 
 ### Data
-We provide a small subset of the DHS Index dataset for training that is located at `data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt`.
+We provide a small subset of the DHS Index dataset that was used for  training at `data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt`.
 
 If you would like to recreate the dataset, you can call:
 
 ```bash
-uv run master_dataset_and_filter.py
+uv run data/master_dataset_and_filter.py
 ```
-which will download all the necessary data and create a file `data/master_dataset.ftr` containing the full ~3.59 million dataset and a file `data/filtered_dataset.txt` containing the same subset of sequences as above.
+which will download all the necessary data and create a file `data/master_dataset.ftr` containing the full ~3.59 million dataset and a file `data/filtered_dataset.txt` containing the same subset of sequences as above. A rendered version of this code is provided at `notebooks/marimo_master_dataset_and_filter.ipynb`.
 
 
-To run data curation process as a notebook a marimo notebook file can be found at `notebooks/marimo_master_dataset_and_filter.py` with a rendered version of the notebook provided at `notebooks/marimo_master_dataset_and_filter.ipynb`.
+To run data curation process as a notebook, a marimo notebook file can be found at `notebooks/marimo_master_dataset_and_filter.py`.
 
 This notebook can be opened/run with the following command:
 ```bash
 uvx marimo edit notebooks/marimo_master_dataset_and_filter.py
 ```
 
-All of the data processing files make use of uv to manage dependencies and so all libraries are installed when you run the above commands. See [uv documentation](https://docs.astral.sh/uv/guides/scripts/) for more information on how to run uv scripts.
-
+All of the data processing files make use of uv to manage dependencies and so all libraries are installed when you run the above commands. See [uv documentation](https://docs.astral.sh/uv/guides/scripts/) for more information on how to run uv scripts and [marimo documentation](https://docs.marimo.io/) for more information on how to run marimo notebooks.
 
 
 ### Training
@@ -96,36 +97,67 @@ uv run train.py -cn train_debug
 ```
 
 ### Model Checkpoint
-We have uploaded the model checkpoint to [HuggingFace](https://huggingface.co/ssenan/DNA-Diffusion). We provide both a .pt file and a .safetensors file for the model. The .safetensors file is recommended as it is more efficient and secure. Prior to generating sequences, download the model checkpoint and update the corresponding path in `configs/sampling/default_hf.yaml` or `configs/sampling/default.yaml` to point to the downloaded model checkpoint.
-
+We have uploaded the model checkpoint to [HuggingFace](https://huggingface.co/ssenan/DNA-Diffusion).  Below we provide an example script that handles downloading the model checkpoint and loading it for sequence generation.
 
 ### Sequence Generation
-We provide a basic config file for generating sequences using the diffusion model resulting in 1000 sequences made per cell type. Base generation utilizes a guidance scale 1.0, however this can be tuned within the sample.py with the `cond_weight_to_metric` parameter. To generate sequences call:
+We provide a basic config file for generating sequences using the diffusion model resulting in 1000 sequences made per cell type.  To generate sequences using the trained model, you can run the following command:
 
 ```bash
-uv run sample.py
+uv run sample_hf.py
 ```
 
 The default setup for sampling will generate 1000 sequences per cell type. You can override the default sampling script to generate one sequence per cell type with the following cli flags:
 
 ```bash
-uv run sample.py sampling.number_of_samples=1 sampling.sample_batch_size=1
+uv run sample_hf.py sampling.number_of_samples=1 sampling.sample_batch_size=1
 ```
 
-To generate sequences using the trained model hosted on Hugging Face call:
+Base generation utilizes a guidance scale 1.0, however this can be tuned within the sample.py with the `guidance_scale` parameter. This can be overridden in the command line as follows (generating using guidance scale 7.0):
+
 ```bash
-uv run sample_hf.py
+uv run sample_hf.py sampling.guidance_scale=7.0 sampling.number_of_samples=1 sampling.sample_batch_size=1
 ```
 
-### Examples
+If you would prefer to download the model checkpoint from Hugging Face and use it directly, you can run the following command to download the model and save it in the checkpoint directory:
+```bash
+wget https://huggingface.co/ssenan/DNA-Diffusion/resolve/main/model.safetensors -O checkpoints/model.safetensors
+```
 
-We provide an example notebook for training and sampling with the diffusion model. This notebook runs the previous commands for training and sampling.
-See `notebooks/train_sample.ipynb` for more details.
+Then you can run the sampling script with the following command:
+```
+uv run sample.py
+```
 
-We also provide a jupyter notebook for generating sequences with the diffusion model using the trained model hosted on Hugging Face. This notebook runs the previous commands for sampling and shows some example outputs.
-See `notebooks/sample.ipynb` for more details.
+## Examples
+
+### Training Notebook
+
+We provide an example colab notebook for training and sampling with the diffusion model. This notebook runs the previous commands for training and sampling.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/160tjHJFtnf-Sj7uyLDBAQjFwUywqOT96?usp=sharing)
+
+along with a copy of the notebook at `notebooks/training_and_sequence_generation.ipynb`
+
+### Sequence Generation Notebook
+We also provide a colab notebook for generating sequences with the diffusion model using the trained model hosted on Hugging Face. This notebook runs the previous commands for sampling and shows some example outputs.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1fLjWUkEFka8xyu5Q5uoklnJW7AZ37Tgn?usp=sharing)
+
+along with a copy of the notebook at `notebooks/sequence_generation.ipynb`
 
 Both examples were run on Google Colab using a T4 GPU.
+
+## Using your own data
+
+DNA-Diffusion is designed to be flexible and can be adapted to your own data. To use your own data, you will need to follow these steps:
+
+* Prepare your data in the same format as the DHS Index dataset. The data should be a tab separated text file with the following columns:
+  * `chr`: the chromosome of the regulatory element (e.g. chr1, chr2, etc.)
+  * `sequence`: the DNA sequence of the regulatory element
+  * `TAG`: the cell type of the regulatory element (e.g. K562, hESCT0, HepG2, GM12878, etc.)
+
+* It's expected that your sequences are 200bp long, however the model can be adapted to work with different sequence lengths by the dataloading code at `src/dnadiffusion/data/dataloader.py`. You can change the `sequence_length` parameter in the function `load_data` to the desired length, but keep in mind that the original model is trained on 200bp sequences and so the results may not be as good if you use a different length.
+* The model is designed to work with discrete class labels for the cell types, so you will need to ensure that your data is in the same format. If you have continuous labels, you can binarize them into discrete classes using a threshold or some other method. This value is contained within the `TAG` column of the dataset.
 
 ## Contributors ✨
 

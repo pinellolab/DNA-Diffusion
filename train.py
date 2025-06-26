@@ -90,9 +90,9 @@ def train(
             best_val_loss = avg_val_loss
             patience_counter = 0
             if distributed:
-                best_model_state, best_optimizer_state = get_state_dict(model, optimizer)
+                best_model_state, best_optimizer_state = get_state_dict(model.module.model, optimizer)
             else:
-                best_model_state = model.state_dict()
+                best_model_state = model.model.state_dict()
                 best_optimizer_state = optimizer.state_dict()
 
             if rank_0:

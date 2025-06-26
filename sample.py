@@ -2,6 +2,7 @@ import hydra
 import torch
 import torch.nn as nn
 from omegaconf import DictConfig, OmegaConf
+from safetensors.torch import load_file
 
 from dnadiffusion.utils.sample_util import create_sample
 
@@ -12,6 +13,7 @@ def sample(
     checkpoint_path: str,
     sample_batch_size: int,
     number_of_samples: int,
+    guidance_scale: float,
 ) -> None:
     print(data)
     """numeric_to_tag_dict, cell_num_list, cell_list = (
@@ -26,10 +28,18 @@ def sample(
 
     # Load checkpoint
     print("Loading checkpoint")
-    checkpoint_dict = (
-        torch.load(checkpoint_path) if torch.cuda.is_available() else torch.load(checkpoint_path, map_location="cpu")
-    )
-    model.load_state_dict(checkpoint_dict["model"])
+    if checkpoint_path.endswith(".safetensors"):
+        checkpoint_dict = (
+            load_file(checkpoint_path) if torch.cuda.is_available() else load_file(checkpoint_path, device="cpu")
+        )
+    else:
+        checkpoint_dict = (
+            torch.load(checkpoint_path, map_location="cuda")
+            if torch.cuda.is_available()
+            else torch.load(checkpoint_path, map_location="cpu")
+        )
+    # Load unet state dict
+    model.model.load_state_dict(checkpoint_dict["model"])
 
     # Send model to device
     print("Sending model to device")
@@ -44,7 +54,7 @@ def sample(
             conditional_numeric_to_tag=numeric_to_tag_dict,
             number_of_samples=number_of_samples,
             group_number=i,
-            cond_weight_to_metric=1.0,
+            cond_weight_to_metric=guidance_scale,
             save_timesteps=False,
             save_dataframe=True,
             generate_attention_maps=False,

@@ -1,3 +1,4 @@
-checkpoint_path: "checkpoints/DNA-Diffusion.safetensors"
+checkpoint_path: "ssenan/DNA-Diffusion"
 sample_batch_size: 10
 number_of_samples: 1000
+guidance_scale: 1.0

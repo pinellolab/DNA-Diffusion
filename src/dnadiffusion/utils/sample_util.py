@@ -17,6 +17,7 @@ def create_sample(
     save_timesteps: bool = False,
     save_dataframe: bool = False,
     generate_attention_maps: bool = False,
+    sequence_length: int = 200,
 ) -> None:
     nucleotides = ["A", "C", "G", "T"]
     final_sequences = []
@@ -31,13 +32,13 @@ def create_sample(
 
         if generate_attention_maps:
             sampled_images, cross_att_values = model.sample_cross(
-                classes, (sample_bs, 1, 4, 200), cond_weight_to_metric
+                classes, (sample_bs, 1, 4, sequence_length), cond_weight_to_metric
             )
             # save cross attention maps in a numpy array
             np.save(f"cross_att_values_{conditional_numeric_to_tag[group_number]}.npy", cross_att_values)
 
         else:
-            sampled_images = model.sample(classes, (sample_bs, 1, 4, 200), cond_weight_to_metric)
+            sampled_images = model.sample(classes, (sample_bs, 1, 4, sequence_length), cond_weight_to_metric)
 
         if save_timesteps:
             seqs_to_df = {}
@@ -52,7 +53,7 @@ def create_sample(
         else:
             for n_b, x in enumerate(sampled_images[-1]):
                 seq_final = f">seq_test_{n_a}_{n_b}\n" + "".join(
-                    [nucleotides[s] for s in np.argmax(x.reshape(4, 200), axis=0)]
+                    [nucleotides[s] for s in np.argmax(x.reshape(4, sequence_length), axis=0)]
                 )
                 final_sequences.append(seq_final)
 
