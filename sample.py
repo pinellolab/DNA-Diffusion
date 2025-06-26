@@ -28,9 +28,16 @@ def sample(
 
     # Load checkpoint
     print("Loading checkpoint")
-    checkpoint_dict = (
-        load_file(checkpoint_path) if torch.cuda.is_available() else load_file(checkpoint_path, device="cpu")
-    )
+    if checkpoint_path.endswith(".safetensors"):
+        checkpoint_dict = (
+            load_file(checkpoint_path) if torch.cuda.is_available() else load_file(checkpoint_path, device="cpu")
+        )
+    else:
+        checkpoint_dict = (
+            torch.load(checkpoint_path, map_location="cuda")
+            if torch.cuda.is_available()
+            else torch.load(checkpoint_path, map_location="cpu")
+        )
     # Load unet state dict
     model.model.load_state_dict(checkpoint_dict["model"])
 
