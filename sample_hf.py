@@ -1,14 +1,18 @@
 import hydra
 import torch
+import torch.nn as nn
 from omegaconf import DictConfig, OmegaConf
 
-from dnadiffusion.data.dataloader import get_dataset
-from dnadiffusion.models.diffusion import Diffusion
-from dnadiffusion.models.pretrained_unet import PretrainedUNet
 from dnadiffusion.utils.sample_util import create_sample
 
 
-def sample(data, model, sample_batch_size, number_of_samples):
+def sample(
+    data: dict,
+    model: nn.Module,
+    sample_batch_size: int,
+    number_of_samples: int,
+    guidance_scale: float,
+):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
     print(f"Model sent to {device}")
@@ -28,7 +32,7 @@ def sample(data, model, sample_batch_size, number_of_samples):
             conditional_numeric_to_tag=numeric_to_tag_dict,
             number_of_samples=number_of_samples,
             group_number=cell_type,
-            cond_weight_to_metric=1.0,
+            cond_weight_to_metric=guidance_scale,
             save_timesteps=False,
             save_dataframe=True,
             generate_attention_maps=False,
@@ -38,7 +42,6 @@ def sample(data, model, sample_batch_size, number_of_samples):
 @hydra.main(config_path="configs", config_name="sample_hf", version_base="1.3")
 def main(cfg: DictConfig) -> None:
     print(OmegaConf.to_yaml(cfg))
-
     pretrained_unet = hydra.utils.instantiate(cfg.model)
     unet = pretrained_unet.model
     diffusion = hydra.utils.instantiate(cfg.diffusion, model=unet)
@@ -49,7 +52,9 @@ def main(cfg: DictConfig) -> None:
         model=diffusion,
         sample_batch_size=cfg.sampling.sample_batch_size,
         number_of_samples=cfg.sampling.number_of_samples,
+        guidance_scale=cfg.sampling.guidance_scale,
     )
+
 
 if __name__ == "__main__":
     main()

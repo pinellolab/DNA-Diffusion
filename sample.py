@@ -12,6 +12,7 @@ def sample(
     checkpoint_path: str,
     sample_batch_size: int,
     number_of_samples: int,
+    guidance_scale: float,
 ) -> None:
     print(data)
     """numeric_to_tag_dict, cell_num_list, cell_list = (
@@ -45,7 +46,7 @@ def sample(
             conditional_numeric_to_tag=numeric_to_tag_dict,
             number_of_samples=number_of_samples,
             group_number=i,
-            cond_weight_to_metric=1.0,
+            cond_weight_to_metric=guidance_scale,
             save_timesteps=False,
             save_dataframe=True,
             generate_attention_maps=False,

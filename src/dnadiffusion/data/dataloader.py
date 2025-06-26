@@ -74,6 +74,7 @@ def load_data(
     saved_data_path: str,
     load_saved_data: bool,
     output_path: str | None = None,
+    sequence_length: int = 200,
 ):
     # Preprocessing data
     if load_saved_data:
@@ -86,13 +87,13 @@ def load_data(
     # Creating sequence dataset
     df = encode_data["train_df"]
     nucleotides = ["A", "C", "G", "T"]
-    x_train_seq = np.array([one_hot_encode(x, nucleotides, 200) for x in df["sequence"] if "N" not in x])
+    x_train_seq = np.array([one_hot_encode(x, nucleotides, sequence_length) for x in df["sequence"] if "N" not in x])
     X_train = np.array([x.T.tolist() for x in x_train_seq])
     X_train[X_train == 0] = -1
 
     # Create test dataset using chr1
     val_df = encode_data["validation_df"]
-    val_test_seq = np.array([one_hot_encode(x, nucleotides, 200) for x in val_df["sequence"] if "N" not in x])
+    val_test_seq = np.array([one_hot_encode(x, nucleotides, sequence_length) for x in val_df["sequence"] if "N" not in x])
     X_val = np.array([x.T.tolist() for x in val_test_seq])
     X_val[X_val == 0] = -1
 
