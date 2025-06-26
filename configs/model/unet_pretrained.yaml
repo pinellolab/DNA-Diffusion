@@ -1,0 +1,2 @@
+_target_: src.dnadiffusion.models.pretrained_unet.PretrainedUNet.from_pretrained
+pretrained_model_name_or_path: "ssenan/DNA-Diffusion"
