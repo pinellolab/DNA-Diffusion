@@ -29,7 +29,8 @@ def sample(
     checkpoint_dict = (
         torch.load(checkpoint_path) if torch.cuda.is_available() else torch.load(checkpoint_path, map_location="cpu")
     )
-    model.load_state_dict(checkpoint_dict["model"])
+    # Load unet state dict
+    model.model.load_state_dict(checkpoint_dict["model"])
 
     # Send model to device
     print("Sending model to device")
