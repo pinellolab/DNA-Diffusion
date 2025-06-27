@@ -27,7 +27,7 @@
 ## Contents
 - [Introduction](#introduction)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Recreating data curation, training and sequence generation processes](#recreating-data-curation-training-and-sequence-generation-processes)
   - [Data](#data)
   - [Training](#training)
   - [Model Checkpoint](#model-checkpoint)
