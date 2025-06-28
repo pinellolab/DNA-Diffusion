@@ -125,11 +125,10 @@ def train(
             for i in cell_num_list:
                 create_sample(
                     model,
-                    cell_types=cell_num_list,
+                    cell_type=i,
                     sample_bs=sample_batch_size,
                     conditional_numeric_to_tag=numeric_to_tag_dict,
                     number_of_samples=number_of_samples,
-                    group_number=i,
                     cond_weight_to_metric=1,
                     save_timesteps=False,
                     save_dataframe=True,

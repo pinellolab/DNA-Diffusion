@@ -45,6 +45,49 @@ def get_dataset(
     return train_data, val_data, cell_num_list, numeric_to_tag_dict
 
 
+def get_dataset_for_sampling(
+    data_path: str,
+    saved_data_path: str,
+    load_saved_data: bool,
+    debug: bool,
+    output_path: str | None = None,
+    cell_types: str | list[str] | None = None,
+) -> tuple[Dataset, Dataset, list[int], dict[int, str]]:
+    train_data, val_data, cell_num_list, numeric_to_tag_dict = get_dataset(
+        data_path, saved_data_path, load_saved_data, debug, output_path
+    )
+
+    if cell_types is None:
+        return train_data, val_data, cell_num_list, numeric_to_tag_dict
+
+    if isinstance(cell_types, str):
+        if "," in cell_types:
+            cell_types = [ct.strip() for ct in cell_types.split(",")]
+        else:
+            cell_types = [cell_types]
+
+    tag_to_numeric = {tag: num for num, tag in numeric_to_tag_dict.items()}
+
+    filtered_cell_nums = []
+    for cell_type_query in cell_types:
+        if cell_type_query in tag_to_numeric:
+            filtered_cell_nums.append(tag_to_numeric[cell_type_query])
+        else:
+            matches = [tag for tag in tag_to_numeric.keys() if cell_type_query.lower() in tag.lower()]
+            if len(matches) == 1:
+                filtered_cell_nums.append(tag_to_numeric[matches[0]])
+                print(f"Matched '{cell_type_query}' to '{matches[0]}'")
+            elif len(matches) > 1:
+                print(f"Warning: '{cell_type_query}' matches multiple cell types: {matches}. Please be more specific.")
+            else:
+                print(f"Warning: Cell type '{cell_type_query}' not found in dataset. Available types: {list(tag_to_numeric.keys())}")
+
+    if not filtered_cell_nums:
+        raise ValueError(f"No valid cell types found. Available types: {list(tag_to_numeric.keys())}")
+
+    return train_data, val_data, filtered_cell_nums, numeric_to_tag_dict
+
+
 def get_dataloader(
     dataset: Dataset,
     batch_size: int,

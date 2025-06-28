@@ -27,11 +27,10 @@ def sample(
 
         create_sample(
             model,
-            cell_types=cell_num_list,
+            cell_type=cell_type,
             sample_bs=sample_batch_size,
             conditional_numeric_to_tag=numeric_to_tag_dict,
             number_of_samples=number_of_samples,
-            group_number=cell_type,
             cond_weight_to_metric=guidance_scale,
             save_timesteps=False,
             save_dataframe=True,
