@@ -94,6 +94,9 @@ We have uploaded the model checkpoint to [HuggingFace](https://huggingface.co/ss
 If you would like to use a model checkpoint generated from the training script above, ensure you update the `checkpoint_path` within the config file `configs/sampling/default.yaml` to point to the location of the model checkpoint. By default, this is set to `checkpoints/model.safetensors`, so you will need to ensure that the model checkpoint is saved in this location. Both `pt` and `safetensors` formats are supported, so you can use either format for the model checkpoint. An example of overriding the checkpoint path from the command line is described in the sequence generation section below.
 
 ### Sequence Generation
+
+#### Generate using Hugging Face Checkpoint
+
 We provide a basic config file for generating sequences using the diffusion model resulting in 1000 sequences made per cell type.  To generate sequences using the trained model, you can run the following command:
 
 ```bash
@@ -123,6 +126,8 @@ or for both K562 and GM12878 cell types, you can run:
 uv run sample_hf.py 'data.cell_types="K562,GM12878"' sampling.number_of_samples=1 sampling.sample_batch_size=1
 ```
 Cell types can be specified as a comma separated string or as a list.
+
+#### Generate using Local Checkpoint
 
 If you would prefer to download the model checkpoint from Hugging Face and use it directly, you can run the following command to download the model and save it in the checkpoint directory:
 ```bash
@@ -171,6 +176,19 @@ additional metadata columns like start, end, continuous accessibility are allowe
 
 * It's expected that your sequences are 200bp long, however the model can be adapted to work with different sequence lengths by the dataloading code at `src/dnadiffusion/data/dataloader.py`. You can change the `sequence_length` parameter in the function `load_data` to the desired length, but keep in mind that the original model is trained on 200bp sequences so the results may not be as good if you use a different length.
 * The model is designed to work with discrete class labels for the cell types, so you will need to ensure that your data is in the same format. If you have continuous labels, you can binarize them into discrete classes using a threshold or some other method. This value is contained within the `TAG` column of the dataset.
+
+The data loading config can be found at `configs/data/default.yaml`, and you can override the default data loading config by passing the `data` parameter to the command line. For example, to use a custom data file, you can run:
+
+```bash
+uv run train.py data.data_path=path/to/your/data.txt data.load_saved_data=False
+```
+
+It is important to set `data.load_saved_data=False` to ensure that cached data is not used, and instead is regenerated from the provided data file. This will ensure that the model is trained on your own data. This will overwrite the default pkl file, so if you would like to keep the original data, you can set `data.saved_data_path` to a different path. For example:
+
+```bash
+uv run train.py data.data_path=path/to/your/data.txt data.load_saved_data=False data.saved_data_path=path/to/your/saved_data.pkl
+```
+
 
 ## Contributors ✨
 
