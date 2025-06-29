@@ -1,4 +1,5 @@
-checkpoint_path: "model.safetensors"
+checkpoint_path: "checkpoints/model.safetensors"
+# checkpoint_path: "checkpoints/DNA-Diffusion.pt"
 sample_batch_size: 10
 number_of_samples: 1000
 guidance_scale: 1.0

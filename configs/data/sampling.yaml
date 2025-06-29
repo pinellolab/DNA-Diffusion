@@ -1,0 +1,6 @@
+_target_: src.dnadiffusion.data.dataloader.get_dataset_for_sampling
+data_path: "data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt"
+saved_data_path: "data/encode_data.pkl"
+load_saved_data: True
+debug: False
+cell_types: null  # null means all cell types, or specify like ["K562", "HepG2"]
