@@ -26,7 +26,7 @@ def sample(
             if torch.cuda.is_available()
             else torch.load(checkpoint_path, map_location="cpu")
         )
-        model.load_state_dict(checkpoint_dict["model"])
+        model.model.load_state_dict(checkpoint_dict["model"])
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
