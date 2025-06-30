@@ -16,13 +16,11 @@ def get_dataset(
     saved_data_path: str,
     load_saved_data: bool,
     debug: bool,
-    output_path: str | None = None,
 ) -> tuple[Dataset, Dataset, list[int], dict[int, str]]:
     encode_data = load_data(
         data_path,
         saved_data_path,
         load_saved_data,
-        output_path,
     )
     if debug:
         x_data = encode_data["X_train"][:1]
@@ -50,11 +48,13 @@ def get_dataset_for_sampling(
     saved_data_path: str,
     load_saved_data: bool,
     debug: bool,
-    output_path: str | None = None,
     cell_types: str | list[str] | None = None,
 ) -> tuple[Dataset, Dataset, list[int], dict[int, str]]:
     train_data, val_data, cell_num_list, numeric_to_tag_dict = get_dataset(
-        data_path, saved_data_path, load_saved_data, debug, output_path
+        data_path,
+        saved_data_path,
+        load_saved_data,
+        debug,
     )
 
     if cell_types is None:
@@ -80,7 +80,9 @@ def get_dataset_for_sampling(
             elif len(matches) > 1:
                 print(f"Warning: '{cell_type_query}' matches multiple cell types: {matches}. Please be more specific.")
             else:
-                print(f"Warning: Cell type '{cell_type_query}' not found in dataset. Available types: {list(tag_to_numeric.keys())}")
+                print(
+                    f"Warning: Cell type '{cell_type_query}' not found in dataset. Available types: {list(tag_to_numeric.keys())}"
+                )
 
     if not filtered_cell_nums:
         raise ValueError(f"No valid cell types found. Available types: {list(tag_to_numeric.keys())}")
@@ -116,7 +118,6 @@ def load_data(
     data_path: str,
     saved_data_path: str,
     load_saved_data: bool,
-    output_path: str | None = None,
     sequence_length: int = 200,
 ):
     # Preprocessing data
@@ -125,6 +126,7 @@ def load_data(
             encode_data = pickle.load(f)
 
     else:
+        output_path = saved_data_path
         encode_data = preprocess_data(data_path, output_path)
 
     # Creating sequence dataset
@@ -136,7 +138,9 @@ def load_data(
 
     # Create test dataset using chr1
     val_df = encode_data["validation_df"]
-    val_test_seq = np.array([one_hot_encode(x, nucleotides, sequence_length) for x in val_df["sequence"] if "N" not in x])
+    val_test_seq = np.array(
+        [one_hot_encode(x, nucleotides, sequence_length) for x in val_df["sequence"] if "N" not in x]
+    )
     X_val = np.array([x.T.tolist() for x in val_test_seq])
     X_val[X_val == 0] = -1
 

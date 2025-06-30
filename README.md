@@ -193,6 +193,12 @@ It is important to set `data.load_saved_data=False` to ensure that cached data i
 uv run train.py data.data_path=path/to/your/data.txt data.load_saved_data=False data.saved_data_path=path/to/your/saved_data.pkl
 ```
 
+A colab notebook demonstrating an example of training using your own data is provided. This example uses a dummy dataset of three 200bp sequences with a single cell type "CELL_A".
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1aQJm91rmmS4do-B-iYTloDBjZU7hD4ud?usp=sharing)
+
+along with a copy of the notebook at `notebooks/new_data_training_and_sequence_generation.ipynb`. This example was run on Google Colab using a T4 GPU.
+
 
 ## Contributors ✨
 
