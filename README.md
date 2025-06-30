@@ -48,6 +48,10 @@ DNA-Diffusion is diffusion-based model for generation of 200bp cell type-specifi
 
 ## Installation
 Our preferred package / project manager is [uv](https://github.com/astral-sh/uv). Please follow their recommended instructions for installation.
+For ease we provide their recommended Linux installation command below:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 To clone the repository and install the necessary packages, run:
 
@@ -167,7 +171,7 @@ Both examples were run on Google Colab using a T4 GPU.
 
 DNA-Diffusion is designed to be flexible and can be adapted to your own data. To use your own data, you will need to follow these steps:
 
-* Prepare your data in the same format as the DHS Index dataset. The data should be a tab separated text file contains at least the following columns:
+* Prepare your data in the same format as our DHS Index [dataset](data/K562_hESCT0_HepG2_GM12878_12k_sequences_per_group.txt). The data should be a tab separated text file contains at least the following columns:
   * `chr`: the chromosome of the regulatory element (e.g. chr1, chr2, etc.)
   * `sequence`: the DNA sequence of the regulatory element
   * `TAG`: the cell type of the regulatory element (e.g. K562, hESCT0, HepG2, GM12878, etc.)
