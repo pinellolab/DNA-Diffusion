@@ -52,7 +52,7 @@ def train(
     val_dl, _ = get_dataloader(val_data, local_batch_size, num_workers, distributed, pin_memory)
 
     # Metrics
-    if rank_0 == 0 and use_wandb:
+    if rank_0 and use_wandb:
         init_wandb()
 
     global_step = 0
