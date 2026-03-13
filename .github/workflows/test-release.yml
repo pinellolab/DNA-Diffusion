@@ -34,7 +34,7 @@ jobs:
         run: uv publish --index testpypi --username __token__ --password ${{secrets.TEST_PYPI_TOKEN}}
           dist/*
       - name: Publish the release notes
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@v7
         with:
           publish: false
           prerelease: true
