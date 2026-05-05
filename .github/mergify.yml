@@ -21,6 +21,6 @@ pull_request_rules:
         name: default
 queue_rules:
   - name: default
-    conditions:
+    merge_conditions:
       - check-success=test (3.10)
       # - check-success=build-and-push-image
